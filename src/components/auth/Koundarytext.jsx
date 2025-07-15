@@ -6,7 +6,7 @@ const Koundarytext = () => {
     <img
   src={KoundaryTextImg}
   alt="Koundary"
-  className="w-[350px] h-auto mb-10"
+  className="w-[300px] h-auto mb-10"
 />
   );
 };
