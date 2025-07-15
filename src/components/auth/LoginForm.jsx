@@ -13,7 +13,7 @@ function LoginForm() {
   }
 
   return (
-<form onSubmit={handleSubmit} className="w-full h-screen flex items-center justify-center">
+<form onSubmit={handleSubmit} className="w-full flex items-center justify-center">
   <div className="flex flex-col gap-3">
     
     {/* ID + PW + 로그인 */}
@@ -60,7 +60,6 @@ function LoginForm() {
     </div>
   </div>
 </form>
-
   )
 }
 
