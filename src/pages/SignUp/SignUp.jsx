@@ -1,5 +1,16 @@
 import React from "react";
 
+const squareButtonStyle = {
+  width: "100px",
+  height: "40px",
+  padding: "8px 12px",
+  border: "1px solid #2e8ada",
+  color: "#2e8ada",
+  borderRadius: "0px",
+  backgroundColor: "transparent",
+  cursor: "pointer"
+};
+
 const Signup = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
@@ -28,7 +39,7 @@ const Signup = () => {
         <div>
           <select
             className="border px-3 py-2 rounded text-gray-700"
-            style={{ width: "310px", height: "40px" }}
+            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0" }}
           >
             <option>선택하세요</option>
           </select>
@@ -43,7 +54,7 @@ const Signup = () => {
         <div>
           <select
             className="border px-3 py-2 rounded text-gray-700"
-            style={{ width: "310px", height: "40px" }}
+            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0" }}
           >
             <option>선택하세요</option>
           </select>
@@ -58,15 +69,10 @@ const Signup = () => {
         <div className="flex justify-between">
           <input
             type="text"
-            className="border px-3 py-2 rounded"
-            style={{ width: "300px", height: "35px"}}
+            className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
+            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
           />
-          <button
-            className="border px-3 py-2 rounded text-blue-500 border-blue-400"
-            style={{ width: "100px" }}
-          >
-            중복 확인
-          </button>
+          <button style={squareButtonStyle}>중복 확인</button>
         </div>
 
 
@@ -78,15 +84,10 @@ const Signup = () => {
         <div className="flex justify-between">
           <input
             type="text"
-            className="border px-3 py-2 rounded"
-            style={{ width: "300px", height: "35px"}}
+            className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
+            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
           />
-          <button
-            className="border px-3 py-2 rounded text-blue-500 border-blue-400"
-            style={{ width: "100px" }}
-          >
-            중복 확인
-          </button>
+          <button style={squareButtonStyle}>중복 확인</button>
         </div>
 
 
@@ -98,8 +99,8 @@ const Signup = () => {
         <div>
           <input
             type="password"
-            className="border px-3 py-2 rounded"
-            style={{ width: "300px", height: "35px" }}
+            className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
+            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
           />
         </div>
 
@@ -112,8 +113,8 @@ const Signup = () => {
         <div>
           <input
             type="password"
-            className="border px-3 py-2 rounded"
-            style={{ width: "300px", height: "35px" }}
+            className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
+            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
           />
         </div>
 
@@ -126,15 +127,10 @@ const Signup = () => {
         <div className="flex gap-2" style={{ width: "100%" }}>
           <input
             type="email"
-            className="border px-3 py-2 rounded"
-            style={{ width: "300px", height: "35px" }}
+            className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
+            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
           />
-          <button
-            className="border px-3 py-2 rounded text-blue-500 border-blue-400"
-            style={{ width: "100px" }}
-          >
-            전송
-          </button>
+          <button style={squareButtonStyle}>전송</button>
         </div>
 
 
@@ -147,22 +143,19 @@ const Signup = () => {
         <div className="flex gap-2" style={{ width: "100%" }}>
           <input
             type="text"
-            className="border px-3 py-2 rounded"
-            style={{ width: "300px", height: "35px" }}
+            className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
+            // className="border-none border-b-2 border-black focus:outline-none px-3 py-2 bg-gray-100"
+
+            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
           />
-          <button
-            className="border px-3 py-2 rounded text-blue-500 border-blue-400"
-            style={{ width: "100px" }}
-          >
-              전송
-          </button>
+          <button style={squareButtonStyle}>확인</button>
         </div>
 
 
-        {/* 가입 버튼 */}
+        {/* 회원가입 버튼 */}
         <button
           className="bg-blue-500 text-white py-2 rounded mt-2"
-          style={{ width: "310px", height: "35px" }}
+          style={{ width: "310px", height: "35px", backgroundColor: "#2e8ada", color: "#ffffff" }}
         >
           회원가입
         </button>
