@@ -238,7 +238,24 @@ const Signup = () => {
 
         {/* 회원가입 버튼 */}
         <button
-          style={{ ...squareButtonStyle, width: "315px", backgroundColor: "#2e8ada", color: "#ffffff" }}
+          style={{
+            width: "315px",
+            height: "40px",
+            padding: "8px 12px",
+            border: "1px solid #2e8ada",
+            color: "#2e8ada",
+            backgroundColor: "transparent",
+            cursor: "pointer",
+            transition: "all 0.2s ease-in-out",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = "transparent";
+            e.target.style.color = "#2e8ada";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = "#2e8ada";
+            e.target.style.color = "#fff";
+          }}
         >
           회원가입
         </button>
