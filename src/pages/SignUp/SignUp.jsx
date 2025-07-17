@@ -39,7 +39,7 @@ const Signup = () => {
         <div>
           <select
             className="border px-3 py-2 rounded text-gray-700"
-            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0" }}
+            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0", border:"none" }}
           >
             <option>선택하세요</option>
           </select>
@@ -54,7 +54,7 @@ const Signup = () => {
         <div>
           <select
             className="border px-3 py-2 rounded text-gray-700"
-            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0" }}
+            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0", border:"none" }}
           >
             <option>선택하세요</option>
           </select>
@@ -70,9 +70,30 @@ const Signup = () => {
           <input
             type="text"
             className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
-            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
+            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0", border:"none" }}
           />
-          <button style={squareButtonStyle}>중복 확인</button>
+          <button
+            style={{
+              width: "100px",
+              height: "40px",
+              padding: "8px 12px",
+              border: "1px solid #2e8ada",
+              color: "#2e8ada",
+              backgroundColor: "transparent",
+              cursor: "pointer",
+              transition: "all 0.2s ease-in-out",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "#2e8ada";
+              e.target.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "transparent";
+              e.target.style.color = "#2e8ada";
+            }}
+          >
+            중복 확인
+          </button>
         </div>
 
 
@@ -85,9 +106,30 @@ const Signup = () => {
           <input
             type="text"
             className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
-            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
+            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0", border:"none" }}
           />
-          <button style={squareButtonStyle}>중복 확인</button>
+          <button
+            style={{
+              width: "100px",
+              height: "40px",
+              padding: "8px 12px",
+              border: "1px solid #2e8ada",
+              color: "#2e8ada",
+              backgroundColor: "transparent",
+              cursor: "pointer",
+              transition: "all 0.2s ease-in-out",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "#2e8ada";
+              e.target.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "transparent";
+              e.target.style.color = "#2e8ada";
+            }}
+          >
+            중복 확인
+          </button>
         </div>
 
 
@@ -100,7 +142,7 @@ const Signup = () => {
           <input
             type="password"
             className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
-            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
+            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0", border:"none" }}
           />
         </div>
 
@@ -114,7 +156,7 @@ const Signup = () => {
           <input
             type="password"
             className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
-            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
+            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0", border:"none" }}
           />
         </div>
 
@@ -128,9 +170,30 @@ const Signup = () => {
           <input
             type="email"
             className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
-            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
+            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0", border:"none" }}
           />
-          <button style={squareButtonStyle}>전송</button>
+          <button
+            style={{
+              width: "100px",
+              height: "40px",
+              padding: "8px 12px",
+              border: "1px solid #2e8ada",
+              color: "#2e8ada",
+              backgroundColor: "transparent",
+              cursor: "pointer",
+              transition: "all 0.2s ease-in-out",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "#2e8ada";
+              e.target.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "transparent";
+              e.target.style.color = "#2e8ada";
+            }}
+          >
+            전송 
+          </button>
         </div>
 
 
@@ -146,16 +209,36 @@ const Signup = () => {
             className="border-b border-gray-400 focus:outline-none px-3 py-2 bg-gray-100"
             // className="border-none border-b-2 border-black focus:outline-none px-3 py-2 bg-gray-100"
 
-            style={{ width: "300px", height: "35px", backgroundColor: "#f0f0f0" }}
+            style={{ width: "310px", height: "40px", backgroundColor: "#f0f0f0", border:"none" }}
           />
-          <button style={squareButtonStyle}>확인</button>
+          <button
+            style={{
+              width: "100px",
+              height: "40px",
+              padding: "8px 12px",
+              border: "1px solid #2e8ada",
+              color: "#2e8ada",
+              backgroundColor: "transparent",
+              cursor: "pointer",
+              transition: "all 0.2s ease-in-out",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "#2e8ada";
+              e.target.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "transparent";
+              e.target.style.color = "#2e8ada";
+            }}
+          >
+            확인
+          </button>
         </div>
 
 
         {/* 회원가입 버튼 */}
         <button
-          className="bg-blue-500 text-white py-2 rounded mt-2"
-          style={{ width: "310px", height: "35px", backgroundColor: "#2e8ada", color: "#ffffff" }}
+          style={{ ...squareButtonStyle, width: "315px", backgroundColor: "#2e8ada", color: "#ffffff" }}
         >
           회원가입
         </button>
