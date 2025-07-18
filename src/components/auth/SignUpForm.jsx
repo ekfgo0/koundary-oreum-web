@@ -1,115 +1,99 @@
 import React, { useState } from 'react';
 
-// 회원가입 폼 컴포넌트 정의
+const labelStyle = {
+  display: 'block',
+  marginBottom: '4px',
+  fontSize: '14px',
+  color: '#333',
+};
+
 const SignUpForm = () => {
-  // 사용자의 입력값을 저장하는 상태
   const [form, setForm] = useState({
-    country: '',            // 국적
-    university: '',         // 소속 대학
-    nickname: '',           // 닉네임
-    ID: '',                 // 아이디
-    password: '',           // 비밀번호
-    confirmPassword: '',    // 비밀번호 확인
-    email: '',              // 이메일
-    verificationCode: '',   // 인증번호
+    country: '',
+    university: '',
+    nickname: '',
+    ID: '',
+    password: '',
+    confirmPassword: '',
+    email: '',
+    verificationCode: '',
   });
 
-  // 입력창의 값을 바꿀 때 실행되는 함수
   const handleChange = (e) => {
-    const { name, value } = e.target; // input의 name과 value 가져오기
-    setForm((prev) => ({ ...prev, [name]: value })); // 기존 값은 유지하고 바뀐 필드만 업데이트
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  return (
-    <form>
-      {/* 제목 */}
-      <h2 className="text-3xl font-bold text-center mb-8 text-blue-500">Koundary</h2>
+  const selectStyle = {
+    width: '300px',
+    height: '40px',
+    backgroundColor: '#f0f0f0',
+    border: 'none',
+    padding: '0 10px',
+  };
 
-      {/* 국적 선택 */}
-      <select name="country" value={form.country} onChange={handleChange}>
-        <option value="">국적 선택</option>
-        <option value="대한민국">대한민국</option>
-        <option value="미국">미국</option>
-        <option value="영국">영국</option>
-        <option value="케나다">케나다</option>
-      </select>
+  const inputStyle = {
+    width: '280px',
+    height: '40px',
+    backgroundColor: '#f0f0f0',
+    border: 'none',
+    padding: '0 10px',
+  };
 
-      {/* 소속 대학 선택 */}
-      <select name="university" value={form.university} onChange={handleChange}>
-        <option value="">소속대학 선택</option>
-        {/* 여기서 구현을 어디서 가져와야할지 진짜 하나하나 다 적어야할지.. */}
-      </select>
+  const rowStyle = {
+    display: 'flex',
+    gap: '10px',
+  };
 
-      {/* 닉네임 입력 + 중복확인 버튼 */}
-      <div>
-        <input
-          type="text"
-          name="nickname"
-          placeholder="닉네임"
-          value={form.nickname}
-          onChange={handleChange}
-        />
-        <button type="button">중복확인</button>
-      </div>
+  const buttonStyle = {
+    width: '100px',
+    height: '40px',
+    border: '1px solid #2e8ada',
+    backgroundColor: 'transparent',
+    color: '#2e8ada',
+    cursor: 'pointer',
+  };
 
-      {/* 아이디 입력 + 중복확인 버튼 */}
-      <div>
-        <input
-          type="text"
-          name="userId"
-          placeholder="아이디"
-          value={form.userId}
-          onChange={handleChange}
-        />
-        <button type="button">중복확인</button>
-      </div>
+return (
+  <div>
+    <label htmlFor="country" style={labelStyle}>국적 선택</label>
+    <select name="country" id="country" value={form.country} onChange={handleChange} style={selectStyle}>
+      <option value="">선택하세요</option>
+      <option value="대한민국">대한민국</option>
+      <option value="미국">미국</option>
+      <option value="영국">영국</option>
+      <option value="캐나다">캐나다</option>
+    </select>
 
-      {/* 비밀번호 입력 */}
-      <input
-        type="password"
-        name="password"
-        placeholder="비밀번호"
-        value={form.password}
-        onChange={handleChange}
-      />
+    <label htmlFor="university" style={labelStyle}>소속대학 선택</label>
+    <select name="university" value={form.university} onChange={handleChange} style={selectStyle}>
+      <option value="">선택하세요</option>
+    </select>
 
-      {/* 비밀번호 확인 */}
-      <input
-        type="password"
-        name="confirmPassword"
-        placeholder="비밀번호 확인"
-        value={form.confirmPassword}
-        onChange={handleChange}
-      />
+    <label htmlFor="nickname" style={labelStyle}>닉네임</label>
+    <input type="text" name="nickname" value={form.nickname} onChange={handleChange} style={inputStyle} />
+    <button type="button" style={buttonStyle}>중복확인</button>
 
-      {/* 이메일 입력 + 전송 버튼 */}
-      <div>
-        <input
-          type="email"
-          name="email"
-          placeholder="본인대학 이메일"
-          value={form.email}
-          onChange={handleChange}
-        />
-        <button type="button">전송</button>
-      </div>
+    <label htmlFor="ID" style={labelStyle}>아이디</label>
+    <input type="text" name="ID" value={form.ID} onChange={handleChange} style={inputStyle} />
+    <button type="button" style={buttonStyle}>중복확인</button>
 
-      {/* 인증번호 입력 + 확인 버튼 */}
-      <div>
-        <input
-          type="text"
-          name="verificationCode"
-          placeholder="인증번호"
-          value={form.verificationCode}
-          onChange={handleChange}
-        />
-        <button type="button">확인</button>
-      </div>
+    <label htmlFor="password" style={labelStyle}>비밀번호</label>
+    <input type="password" name="password" value={form.password} onChange={handleChange} style={inputStyle} />
 
-      {/* 회원가입 제출 버튼 */}
-      <button type="submit">회원가입</button>
-    </form>
-  );
-};
+    <label htmlFor="confirmPassword" style={labelStyle}>비밀번호 확인</label>
+    <input type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} style={inputStyle} />
+
+    <label htmlFor="email" style={labelStyle}>본인대학 이메일</label>
+    <input type="email" name="email" value={form.email} onChange={handleChange} style={inputStyle} />
+    <button type="button" style={buttonStyle}>전송</button>
+
+    <label htmlFor="verificationCode" style={labelStyle}>인증번호</label>
+    <input type="text" name="verificationCode" placeholder="인증번호" value={form.verificationCode} onChange={handleChange} style={inputStyle} />
+    <button type="button" style={buttonStyle}>확인</button>
+
+    <button type="submit" style={{ ...buttonStyle, width: '100%' }}>회원가입</button>
+  </div>
+);}
 
 export default SignUpForm;
