@@ -8,9 +8,10 @@ const SignUp = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '100vh',
+        width: '100vw',
+        height: '100vh',
+        margin: 0,            
         backgroundColor: '#ffffff',
-        padding: '1rem',
       }}
     >
       <div
