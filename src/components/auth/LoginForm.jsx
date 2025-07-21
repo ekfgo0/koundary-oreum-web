@@ -68,8 +68,10 @@ function LoginForm() {
       {/* 로그인 버튼 */}
       <button 
         type="submit"
-        className="ml-2 w-[84px] h-[94px] font-bold text-sm border bg-transparent rounded-none flex items-center justify-center focus:outline-none focus:ring-0"
-        style={{ backgroundColor:'#2e8ada', borderColor: '#2e8ada', color: 'white' }}
+        className="ml-2 w-[84px] h-[94px] ml-4 font-bold text-sm border border-[#2e8ada] bg-[#2e8ada] text-white 
+             rounded-none flex items-center justify-center 
+             focus:outline-none focus:ring-0 
+             hover:bg-[#086cc3] transition-colors duration-200"
       >
         로그인
       </button>
