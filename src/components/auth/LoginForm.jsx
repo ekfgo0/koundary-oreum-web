@@ -8,7 +8,8 @@ function LoginForm() {
   const [password, setPassword] = useState('')
 
   const handleSubmit = async(e) => {
-    e.preventDefault()
+    e.preventDefault();
+    console.log('로그인 시도!', id, password);
 
 
     // 유효성 검사 
@@ -30,9 +31,6 @@ function LoginForm() {
     alert(err.message || '로그인에 실패했습니다.')
   }
 }
-
-    // 로그인 API 호출
-    console.log('로그인 시도!', id, password)
 
 
   return (
