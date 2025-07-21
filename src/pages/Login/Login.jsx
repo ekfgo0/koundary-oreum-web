@@ -1,6 +1,6 @@
 import LoginForm from '../../components/auth/LoginForm';
 import LoginLogo from '../../components/auth/LoginLogo';
-import Koundarytext from '../../components/auth/Koundarytext';
+import Koundarylogo from '../../components/auth/Koundarylogo';
 import LanguageSelector from '../../components/auth/LanguageSelector';
 
 
@@ -9,7 +9,7 @@ function Login() {
     <div className="min-h-screen flex flex-col items-center justify-between">
       <div className="flex flex-col items-center pt-[8vh]">
         <LoginLogo />
-        <Koundarytext />
+        <Koundarylogo />
         <div className="mt-6 w-[340px]">
           <LoginForm />
         </div>

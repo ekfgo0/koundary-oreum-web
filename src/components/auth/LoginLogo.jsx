@@ -1,5 +1,5 @@
 import React from "react";
-import LoginLogoImg from "../common/logo.jpg";  // ← 확장자 주의!
+import LoginLogoImg from "../common/Teamlogo.jpg";  // ← 확장자 주의!
 
 const LoginLogo = () => {
   return (
