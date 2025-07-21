@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { isEmpty } from '../../utils/validator' 
+import { login } from '../../api/auth'
 
 
 function LoginForm() {
   const [id, setId] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault()
 
 
@@ -16,10 +17,23 @@ function LoginForm() {
       return;
     } 
 
+    try {
+        const result = await login(id, password)
+        console.log('로그인 성공', result)
+
+       // 토큰 저장 (예: localStorage)
+        localStorage.setItem('token', result.token)
+
+      // 🔀 페이지 이동 (예: 게시판 등)
+         window.location.href = '/main'
+      } catch (err) {
+    alert(err.message || '로그인에 실패했습니다.')
+  }
+}
 
     // 로그인 API 호출
     console.log('로그인 시도!', id, password)
-  }
+
 
   return (
 <form onSubmit={handleSubmit} className="w-full flex items-center justify-center">
@@ -70,6 +84,6 @@ function LoginForm() {
   </div>
 </form>
   )
-}
 
-export default LoginForm
+}
+export default LoginForm;
