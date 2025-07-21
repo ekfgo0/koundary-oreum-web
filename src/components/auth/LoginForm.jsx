@@ -1,5 +1,6 @@
-// src/components/auth/LoginForm.jsx
 import { useState } from 'react'
+import { isEmpty } from '../../utils/validator' 
+
 
 function LoginForm() {
   const [id, setId] = useState('')
@@ -8,7 +9,15 @@ function LoginForm() {
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    // 여기서 로그인 API 호출하면 됨
+
+    // 유효성 검사 
+    if (isEmpty(id) || isEmpty(password)) {
+      alert('회원정보를 모두 입력해주세요.');
+      return;
+    } 
+
+
+    // 로그인 API 호출
     console.log('로그인 시도!', id, password)
   }
 
