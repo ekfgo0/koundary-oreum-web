@@ -10,7 +10,7 @@ const SignUp = () => {
         alignItems: 'center',
         width: '100vw',
         height: '100vh',
-        margin: 0,            
+        margin: 0,
         backgroundColor: '#ffffff',
       }}
     >
@@ -20,7 +20,8 @@ const SignUp = () => {
           backgroundColor: '#fff',
           padding: '2rem',
           borderRadius: '10px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          boxShadow: 'none',
+          border: 'none',
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
