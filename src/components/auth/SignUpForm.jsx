@@ -1,4 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  checkNickname,
+  checkUsername,
+  sendVerificationEmail,
+  verifyCode,
+  signUp,
+  getUniversities
+} from '../../api/auth';
 
 const labelStyle = {
   display: 'block',
@@ -18,7 +27,6 @@ const rowStyle = {
   marginBottom: '1.5rem',
 };
 
-// Select 박스 너비를 input과 동일하게 조정
 const selectStyle = {
   width: '300px',
   height: '40px',
@@ -27,7 +35,6 @@ const selectStyle = {
   padding: '0 10px',
 };
 
-// inputStyle에 flexShrink 추가하여 축소 방지
 const inputStyle = {
   width: '280px',
   height: '40px',
@@ -67,16 +74,84 @@ const SignUpForm = () => {
     email: '',
     verificationCode: '',
   });
+  const [universityList, setUniversityList] = useState([]);
+  const navigate = useNavigate();
+
+useEffect(() => {
+  // 처음 마운트될 때 한 번만 호출
+  getUniversities()
+    .then(res => setUniversityList(res.data))
+    .catch(err => {
+      console.error(err);
+      setUniversityList([]);
+    });
+}, []);  // 빈 배열: 마운트 시 1회 실행
+
 
   const handleChange = e => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleNicknameCheck = async () => {
+    try {
+      const res = await checkNickname(form.nickname);
+      alert(res.data.available ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.');
+    } catch (err) {
+      console.error(err);
+      alert('닉네임 확인 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleIDCheck = async () => {
+    try {
+      const res = await checkUsername(form.ID);
+      alert(res.data.available ? '사용 가능한 아이디입니다.' : '이미 사용 중인 아이디입니다.');
+    } catch (err) {
+      console.error(err);
+      alert('아이디 확인 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleSendEmail = async () => {
+    try {
+      await sendVerificationEmail(form.email);
+      alert('인증 메일이 전송되었습니다.');
+    } catch (err) {
+      console.error(err);
+      alert('이메일 전송에 실패했습니다.');
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    try {
+      const res = await verifyCode(form.email, form.verificationCode);
+      alert(res.data.verified ? '인증에 성공했습니다.' : '인증번호가 틀렸습니다.');
+    } catch (err) {
+      console.error(err);
+      alert('인증 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    if (form.password !== form.confirmPassword) {
+      return alert('비밀번호가 서로 일치하지 않습니다.');
+    }
+    try {
+      await signUp(form);
+      alert('회원가입이 완료되었습니다!');
+      navigate('/login');
+    } catch (err) {
+      console.error(err);
+      alert('회원가입에 실패했습니다.');
+    }
+  };
+
   const isMatching = form.confirmPassword && form.password === form.confirmPassword;
 
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       {/* 국적 */}
       <div style={fieldWrapper}>
         <label htmlFor="country" style={labelStyle}>국적 선택</label>
@@ -106,8 +181,14 @@ const SignUpForm = () => {
           style={selectStyle}
         >
           <option value="">선택하세요</option>
+          {universityList.map(uni => (
+            <option key={uni.id} value={uni.name}>
+              {uni.name}
+            </option>
+          ))}
         </select>
       </div>
+
 
       {/* 닉네임 + 버튼 */}
       <div style={rowStyle}>
@@ -121,18 +202,7 @@ const SignUpForm = () => {
             style={inputStyle}
           />
         </div>
-        <button
-          type="button"
-          style={buttonStyle}
-          onMouseEnter={e => {
-            e.target.style.backgroundColor = "#2e8ada";
-            e.target.style.color = "#fff";
-          }}
-          onMouseLeave={e => {
-            e.target.style.backgroundColor = "transparent";
-            e.target.style.color = "#2e8ada";
-          }}
-        >
+        <button type="button" style={buttonStyle} onClick={handleNicknameCheck}>
           중복확인
         </button>
       </div>
@@ -149,18 +219,7 @@ const SignUpForm = () => {
             style={inputStyle}
           />
         </div>
-        <button
-          type="button"
-          style={buttonStyle}
-          onMouseEnter={e => {
-            e.target.style.backgroundColor = "#2e8ada";
-            e.target.style.color = "#fff";
-          }}
-          onMouseLeave={e => {
-            e.target.style.backgroundColor = "transparent";
-            e.target.style.color = "#2e8ada";
-          }}
-        >
+        <button type="button" style={buttonStyle} onClick={handleIDCheck}>
           중복확인
         </button>
       </div>
@@ -216,18 +275,7 @@ const SignUpForm = () => {
             style={inputStyle}
           />
         </div>
-        <button
-          type="button"
-          style={buttonStyle}
-          onMouseEnter={e => {
-            e.target.style.backgroundColor = "#2e8ada";
-            e.target.style.color = "#fff";
-          }}
-          onMouseLeave={e => {
-            e.target.style.backgroundColor = "transparent";
-            e.target.style.color = "#2e8ada";
-          }}
-        >
+        <button type="button" style={buttonStyle} onClick={handleSendEmail}>
           전송
         </button>
       </div>
@@ -244,18 +292,7 @@ const SignUpForm = () => {
             style={inputStyle}
           />
         </div>
-        <button
-          type="button"
-          style={buttonStyle}
-          onMouseEnter={e => {
-            e.target.style.backgroundColor = "#2e8ada";
-            e.target.style.color = "#fff";
-          }}
-          onMouseLeave={e => {
-            e.target.style.backgroundColor = "transparent";
-            e.target.style.color = "#2e8ada";
-          }}
-        >
+        <button type="button" style={buttonStyle} onClick={handleVerifyCode}>
           확인
         </button>
       </div>
@@ -265,12 +302,6 @@ const SignUpForm = () => {
         <button
           type="submit"
           style={SignUpButtonStyle}
-          onMouseEnter={e => {
-            e.target.style.backgroundColor = "#086cc3";
-          }}
-          onMouseLeave={e => {
-            e.target.style.backgroundColor = "#2e8ada";
-          }}
         >
           회원가입
         </button>
