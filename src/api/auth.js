@@ -13,10 +13,10 @@ export const login = async (id, password) => {
 }
 
 export const checkNickname = (nickname) =>
-  axiosInstance.post('/users/check-nickname', { nickname });
+  axiosInstance.post('users/check-nickname', { nickname : '' });
 
-export const checkUsername = (ID) =>
-  axiosInstance.post('/users/check-loginId', { ID });
+export const checkUsername = (loginId) =>
+  axiosInstance.post('users/check-loginId', { loginId : '' });
 
 export const sendVerificationEmail = (email) =>
   axiosInstance.post('/email/send-code', { email });
