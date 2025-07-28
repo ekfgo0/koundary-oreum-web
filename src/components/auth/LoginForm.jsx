@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { isEmpty } from '../../utils/validator' 
 import { login } from '../../api/auth'
+import { Link } from 'react-router-dom';
 
 
 function LoginForm() {
@@ -79,7 +80,7 @@ function LoginForm() {
     <div className="flex justify-between w-[316px] ml-[85px] text-sm text-black">
       <a href="#" className="underline">아이디 찾기</a>
       <a href="#" className="underline">비밀번호 찾기</a>
-      <a href="#" className="underline">회원가입</a>
+      <Link to="/signup" className="underline">회원가입</Link>
     </div>
   </div>
 </form>

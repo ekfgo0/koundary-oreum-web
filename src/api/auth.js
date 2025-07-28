@@ -1,37 +1,31 @@
-<<<<<<< HEAD
-import axios from 'axios'
-
-const BASE_URL = 'https://your-backend-url.com/api'  // 백엔드 주소로 변경
+import axiosInstance from './axiosInstance';  // axiosInstance.js 파일에서 axios 인스턴스를 import
 
 export const login = async (id, password) => {
   try {
-    const response = await axios.post(`${BASE_URL}/login`, {
+    const response = await axiosInstance.post('/login', {
       id,
       password
-    })
-    return response.data
+    });
+    return response.data;  // 서버에서 받은 데이터 반환
   } catch (error) {
-    throw error.response?.data || error
+    throw error.response?.data || error;  // 에러 처리
   }
 }
-=======
-import axios from './axiosInstance';
 
 export const checkNickname = (nickname) =>
-  axios.post('/check-nickname', { nickname });
+  axiosInstance.post('/check-nickname', { nickname });
 
 export const checkUsername = (ID) =>
-  axios.post('/check-username', { ID });
+  axiosInstance.post('/check-username', { ID });
 
 export const sendVerificationEmail = (email) =>
-  axios.post('/send-verification-email', { email });
+  axiosInstance.post('/send-verification-email', { email });
 
 export const verifyCode = (email, code) =>
-  axios.post('/verify-code', { email, code });
+  axiosInstance.post('/verify-code', { email, code });
 
 export const signUp = (formData) =>
-  axios.post('/signup', formData);
+  axiosInstance.post('/signup', formData);  // 회원가입 요청 처리
 
 export const getUniversities = () =>
-  axios.get('/universities');
->>>>>>> 07e4f7c01e20a6a79dbe811ab2d87369d84ab4d0
+  axiosInstance.get('/universities');
