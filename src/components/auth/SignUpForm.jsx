@@ -95,12 +95,20 @@ useEffect(() => {
 
   const handleNicknameCheck = async () => {
     try {
-      const res = await checkNickname(form.nickname);
-      alert(res.data.available ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.');
-    } catch (err) {
-      console.error(err);
-      alert('닉네임 확인 중 오류가 발생했습니다.');
-    }
+        const response = await axios.post(
+          'http://localhost:8080/users/check-nickname',
+          { nickname }, // JSON body
+          {
+            headers: {
+              'Content-Type': 'application/json' // 꼭 지정!
+            }
+          }
+    );
+    alert(res.data.available ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.');
+    console.log(response.data); // true or false + message
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+  }
   };
 
   const handleIDCheck = async () => {

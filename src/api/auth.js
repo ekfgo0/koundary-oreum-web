@@ -2,8 +2,8 @@ import axiosInstance from './axiosInstance';  // axiosInstance.js 파일에서 a
 
 export const login = async (id, password) => {
   try {
-    const response = await axiosInstance.post('/login', {
-      id,
+    const response = await axiosInstance.post('/auth/login', {
+      loginId,
       password
     });
     return response.data;  // 서버에서 받은 데이터 반환
