@@ -1,6 +1,6 @@
 import axiosInstance from './axiosInstance';  // axiosInstance.js 파일에서 axios 인스턴스를 import
 
-export const login = async (id, password) => {
+export const login = async (loginId, password) => {
   try {
     const response = await axiosInstance.post('/auth/login', {
       loginId,
