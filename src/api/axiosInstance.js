@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://your-backend-api.com/api', // ← 여기에 실제 백엔드 주소 입력
+  baseURL: 'http://192.168.174.46:8080', 
   headers: {
     'Content-Type': 'application/json',
   },

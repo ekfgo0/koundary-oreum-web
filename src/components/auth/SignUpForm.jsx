@@ -22,26 +22,25 @@ const fieldWrapper = {
 
 const rowStyle = {
   display: 'flex',
-  alignItems: 'flex-end',
+  alignItems: 'center',
   gap: '10px',
   marginBottom: '1.5rem',
 };
 
-const selectStyle = {
-  width: '300px',
+const inputStyle = {
+  width: '100%',
   height: '40px',
   backgroundColor: '#f0f0f0',
   border: 'none',
   padding: '0 10px',
 };
 
-const inputStyle = {
-  width: '280px',
+const selectStyle = {
+  width: '100%',
   height: '40px',
   backgroundColor: '#f0f0f0',
   border: 'none',
   padding: '0 10px',
-  flexShrink: 0,
 };
 
 const buttonStyle = {
@@ -74,29 +73,42 @@ const SignUpForm = () => {
     email: '',
     verificationCode: '',
   });
+
   const [universityList, setUniversityList] = useState([]);
+  const [isNicknameAvailable, setIsNicknameAvailable] = useState(false);
+  const [isIDAvailable, setIsIDAvailable] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+
   const navigate = useNavigate();
 
-useEffect(() => {
-  // 처음 마운트될 때 한 번만 호출
-  getUniversities()
-    .then(res => setUniversityList(res.data))
-    .catch(err => {
-      console.error(err);
-      setUniversityList([]);
-    });
-}, []);  // 빈 배열: 마운트 시 1회 실행
-
+  useEffect(() => {
+    getUniversities()
+      .then(res => setUniversityList(res.data))
+      .catch(err => {
+        console.error(err);
+        setUniversityList([]);
+      });
+  }, []);
 
   const handleChange = e => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+    // 입력 시 해당 검증 플래그 초기화
+    if (name === 'nickname') setIsNicknameAvailable(false);
+    if (name === 'ID') setIsIDAvailable(false);
+    if (name === 'verificationCode') setIsEmailVerified(false);
   };
 
   const handleNicknameCheck = async () => {
     try {
       const res = await checkNickname(form.nickname);
-      alert(res.data.available ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.');
+      if (res.data.available) {
+        setIsNicknameAvailable(true);
+        alert('사용 가능한 닉네임입니다.');
+      } else {
+        setIsNicknameAvailable(false);
+        alert('이미 사용 중인 닉네임입니다.');
+      }
     } catch (err) {
       console.error(err);
       alert('닉네임 확인 중 오류가 발생했습니다.');
@@ -106,7 +118,13 @@ useEffect(() => {
   const handleIDCheck = async () => {
     try {
       const res = await checkUsername(form.ID);
-      alert(res.data.available ? '사용 가능한 아이디입니다.' : '이미 사용 중인 아이디입니다.');
+      if (res.data.available) {
+        setIsIDAvailable(true);
+        alert('사용 가능한 아이디입니다.');
+      } else {
+        setIsIDAvailable(false);
+        alert('이미 사용 중인 아이디입니다.');
+      }
     } catch (err) {
       console.error(err);
       alert('아이디 확인 중 오류가 발생했습니다.');
@@ -125,19 +143,30 @@ useEffect(() => {
 
   const handleVerifyCode = async () => {
     try {
-      const res = await verifyCode(form.email, form.verificationCode);
-      alert(res.data.verified ? '인증에 성공했습니다.' : '인증번호가 틀렸습니다.');
+      await verifyCode(form.email.trim(), form.verificationCode.trim());
+      setIsEmailVerified(true);
+      alert('인증에 성공했습니다.');
     } catch (err) {
-      console.error(err);
-      alert('인증 중 오류가 발생했습니다.');
+      setIsEmailVerified(false);
+      if (err.response?.data?.message?.includes('만료')) alert('인증번호가 만료되었습니다.');
+      else if (err.response?.data?.message?.includes('틀')) alert('인증번호가 틀렸습니다.');
+      else alert('인증 중 오류가 발생했습니다.');
     }
   };
 
+  const isMatching = form.confirmPassword && form.password === form.confirmPassword;
+  const isFormValid =
+    form.country &&
+    form.university &&
+    isNicknameAvailable &&
+    isIDAvailable &&
+    form.password &&
+    isMatching &&
+    isEmailVerified;
+
   const handleSubmit = async e => {
     e.preventDefault();
-    if (form.password !== form.confirmPassword) {
-      return alert('비밀번호가 서로 일치하지 않습니다.');
-    }
+    if (!isFormValid) return alert('모든 항목을 올바르게 채워주세요.');
     try {
       await signUp(form);
       alert('회원가입이 완료되었습니다!');
@@ -148,16 +177,14 @@ useEffect(() => {
     }
   };
 
-  const isMatching = form.confirmPassword && form.password === form.confirmPassword;
-
   return (
-    <form onSubmit={handleSubmit}>
-      {/* 국적 */}
+    <form onSubmit={handleSubmit} style={{ maxWidth: '400px', margin: '0 auto' }}>
+      {/* 국적 선택 */}
       <div style={fieldWrapper}>
         <label htmlFor="country" style={labelStyle}>국적 선택</label>
         <select
-          name="country"
           id="country"
+          name="country"
           value={form.country}
           onChange={handleChange}
           style={selectStyle}
@@ -170,64 +197,59 @@ useEffect(() => {
         </select>
       </div>
 
-      {/* 소속대학 */}
+      {/* 대학 선택 */}
       <div style={fieldWrapper}>
         <label htmlFor="university" style={labelStyle}>소속대학 선택</label>
         <select
-          name="university"
           id="university"
+          name="university"
           value={form.university}
           onChange={handleChange}
           style={selectStyle}
         >
           <option value="">선택하세요</option>
-          {universityList.map(uni => (
-            <option key={uni.id} value={uni.name}>
-              {uni.name}
-            </option>
-          ))}
+          <option value="홍익대학교">홍익대학교</option>
+          <option value="연세대학교">연세대학교</option>
+          <option value="서강대학교">서강대학교</option>
+          <option value="이화여자대학교">이화여자대학교</option>
         </select>
       </div>
 
-
-      {/* 닉네임 + 버튼 */}
+      {/* 닉네임 */}
       <div style={rowStyle}>
         <div style={{ flex: 1 }}>
           <label htmlFor="nickname" style={labelStyle}>닉네임</label>
           <input
-            type="text"
+            id="nickname"
             name="nickname"
             value={form.nickname}
             onChange={handleChange}
             style={inputStyle}
           />
         </div>
-        <button type="button" style={buttonStyle} onClick={handleNicknameCheck}>
-          중복확인
-        </button>
+        <button type="button" style={buttonStyle} onClick={handleNicknameCheck}>중복확인</button>
       </div>
 
-      {/* 아이디 + 버튼 */}
+      {/* 아이디 */}
       <div style={rowStyle}>
         <div style={{ flex: 1 }}>
           <label htmlFor="ID" style={labelStyle}>아이디</label>
           <input
-            type="text"
+            id="ID"
             name="ID"
             value={form.ID}
             onChange={handleChange}
             style={inputStyle}
           />
         </div>
-        <button type="button" style={buttonStyle} onClick={handleIDCheck}>
-          중복확인
-        </button>
+        <button type="button" style={buttonStyle} onClick={handleIDCheck}>중복확인</button>
       </div>
 
       {/* 비밀번호 */}
       <div style={fieldWrapper}>
         <label htmlFor="password" style={labelStyle}>비밀번호</label>
         <input
+          id="password"
           type="password"
           name="password"
           value={form.password}
@@ -239,35 +261,27 @@ useEffect(() => {
       {/* 비밀번호 확인 */}
       <div style={fieldWrapper}>
         <label htmlFor="confirmPassword" style={labelStyle}>비밀번호 확인</label>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={rowStyle}>
           <input
+            id="confirmPassword"
             type="password"
             name="confirmPassword"
             value={form.confirmPassword}
             onChange={handleChange}
             style={inputStyle}
           />
-          <span
-            style={{
-              minWidth: '200px',
-              color: isMatching ? '#2e8ada' : 'red',
-              fontSize: isMatching ? '14px' : '12px',
-            }}
-          >
-            {form.confirmPassword
-              ? isMatching
-                ? '사용가능!'
-                : '비밀번호가 서로 일치하지 않습니다.'
-              : ''}
+          <span style={{ minWidth: '100px', color: isMatching ? '#2e8ada' : 'red', fontSize: isMatching ? '14px' : '12px' }}>
+            {form.confirmPassword ? (isMatching ? '사용가능!' : '불일치') : ''}
           </span>
         </div>
       </div>
 
-      {/* 이메일 + 전송 */}
+      {/* 이메일 */}
       <div style={rowStyle}>
         <div style={{ flex: 1 }}>
           <label htmlFor="email" style={labelStyle}>본인대학 이메일</label>
           <input
+            id="email"
             type="email"
             name="email"
             value={form.email}
@@ -275,9 +289,7 @@ useEffect(() => {
             style={inputStyle}
           />
         </div>
-        <button type="button" style={buttonStyle} onClick={handleSendEmail}>
-          전송
-        </button>
+        <button type="button" style={buttonStyle} onClick={handleSendEmail}>전송</button>
       </div>
 
       {/* 인증번호 + 확인 */}
@@ -299,10 +311,7 @@ useEffect(() => {
 
       {/* 최종 가입 버튼 */}
       <div style={{ marginTop: '2rem' }}>
-        <button
-          type="submit"
-          style={SignUpButtonStyle}
-        >
+        <button type="submit" style={SignUpButtonStyle} disabled={!isFormValid}>
           회원가입
         </button>
       </div>

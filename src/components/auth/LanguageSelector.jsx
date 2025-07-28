@@ -1,3 +1,4 @@
+import React from 'react';
 import { FaGlobe } from 'react-icons/fa'
 
 function LanguageSelector() {
@@ -23,4 +24,4 @@ function LanguageSelector() {
   );
 }
 
-export default LanguageSelector
+export default LanguageSelector;
