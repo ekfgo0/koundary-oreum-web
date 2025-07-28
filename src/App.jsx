@@ -8,10 +8,8 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/myprofile" element={<MyProfile />} />
+      <AppRoutes />;
     </Routes>
   )
 }
 
-
-
-export default App
