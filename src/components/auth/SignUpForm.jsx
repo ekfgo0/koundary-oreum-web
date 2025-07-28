@@ -125,11 +125,16 @@ useEffect(() => {
 
   const handleVerifyCode = async () => {
     try {
-      const res = await verifyCode(form.email, form.verificationCode);
-      alert(res.data.verified ? '인증에 성공했습니다.' : '인증번호가 틀렸습니다.');
+      const res = await verifyCode(form.email.trim(), form.verificationCode.trim());
+      alert('인증에 성공했습니다.');
     } catch (err) {
-      console.error(err);
-      alert('인증 중 오류가 발생했습니다.');
+      if (err.response?.data?.message?.includes('만료')) {
+        alert('인증번호가 만료되었습니다.');
+      } else if (err.response?.data?.message?.includes('틀')) {
+        alert('인증번호가 틀렸습니다.');
+      } else {
+        alert('인증 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -181,11 +186,10 @@ useEffect(() => {
           style={selectStyle}
         >
           <option value="">선택하세요</option>
-          {universityList.map(uni => (
-            <option key={uni.id} value={uni.name}>
-              {uni.name}
-            </option>
-          ))}
+          <option value="홍익대학교">홍익대학교</option>
+          <option value="연세대학교">연세대학교</option>
+          <option value="서강대학교">서강대학교</option>
+          <option value="이화여자대학교">이화여자대학교</option>
         </select>
       </div>
 
