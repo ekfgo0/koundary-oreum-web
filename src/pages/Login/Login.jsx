@@ -6,9 +6,9 @@ import LanguageSelector from '../../components/auth/LanguageSelector';
 
 
 function Login() {
- return (
-    <div className="min-h-screen flex flex-col items-center justify-between">
-      <div className="flex flex-col items-center pt-[8vh]">
+  return (
+    <div className="min-h-screen flex flex-col justify-between items-center">
+      <div className="flex flex-col items-center justify-center grow">
         <LoginLogo />
         <Koundarylogo />
         <div className="mt-6 w-[340px]">
@@ -16,12 +16,10 @@ function Login() {
         </div>
       </div>
 
-      {/* 언어 선택 드롭다운을 하단에 배치 */}
       <div className="mb-10">
         <LanguageSelector />
       </div>
     </div>
   );
 }
-
 export default Login;
