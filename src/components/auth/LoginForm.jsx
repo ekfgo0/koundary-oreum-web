@@ -1,13 +1,8 @@
-<<<<<<< HEAD
+
 import React from 'react';
 import { useState } from 'react'
 import { isEmpty } from '../../utils/validator' 
 import { login } from '../../api/auth'
-=======
-import { useState } from 'react';
-import { isEmpty } from '../../utils/validator'; 
-import { login } from '../../api/auth';
->>>>>>> 0d0356183b6b87cb7418fae171d96c64e9dbe01d
 import { Link } from 'react-router-dom';
 
 function LoginForm() {

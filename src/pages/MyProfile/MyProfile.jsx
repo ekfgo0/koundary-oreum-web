@@ -1,36 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import ProfileHeader from '../../components/profile/ProfileHeader';
-import ProfileImageBox from '../../components/profile/ProfileImageBox';
+import React from 'react';
+import Header from '../../components/profile/Header';
+import ProfileCard from '../../components/profile/ProfileCard';
 import AccountInfoCard from '../../components/profile/AccountInfoCard';
+import ActivityCard from '../../components/profile/ActivityCard';
 
-function MyProfile() {
-     const [user, setUser] = useState(null);
+const MyProfile = () => {
+  const handleEditPassword = () => alert('비밀번호 수정 예정!');
+  const handleDeleteAccount = () => alert('탈퇴 기능 연결 예정!');
 
-  useEffect(() => {
-    // 임시 더미 유저 (백엔드 API 없을 경우)
-    const mockUser = {
-      name: '이혁',
-      country: 'Korea',
-      university: '홍익대학교',
-      id: 'hhhkdev',
-      profileImage: null, // 없으면 기본 이미지 사용됨
-    };
-    setUser(mockUser);
-  }, []);
+  return (
+    <div>
+      <Header />
+      <main className="max-w-screen-lg mx-auto px-4 py-4 space-y-6">
+        <ProfileCard nickname="홍길동" country="Korea" school="홍익대학교" />
 
-
-return (
-  <>
-    <ProfileHeader />
-    {user && (
-      <div className="p-8 flex justify-center gap-8">
-        <ProfileImageBox user={user} />
-        <AccountInfoCard user={user} />
-        {/* 👉 여기 다음 카드(활동정보)도 나란히 붙이면 됨 */}
-      </div>
-    )}
-  </>
-);
-}
+        <div className="flex gap-6">
+          <AccountInfoCard
+            userId="abcd123"
+            onEditPassword={handleEditPassword}
+            onDeleteAccount={handleDeleteAccount}
+          />
+          <ActivityCard />
+        </div>
+      </main>
+    </div>
+  );
+};
 
 export default MyProfile;

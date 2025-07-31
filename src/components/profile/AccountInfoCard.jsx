@@ -1,46 +1,33 @@
 import React from 'react';
 
-function AccountInfoCard({ user }) {
-  const handleEditPassword = () => {
-    alert('비밀번호 수정 모달 뜨게 연결하면 됨!');
-  };
-
-  const handleDeleteAccount = () => {
-    const confirm = window.confirm('정말 탈퇴하시겠습니까?');
-    if (confirm) {
-      alert('회원 탈퇴 처리!');
-    }
-  };
-
+const AccountInfoCard = ({ userId = 'abcd123', onEditPassword, onDeleteAccount }) => {
   return (
-    <div className="w-[250px] p-4 border rounded-md flex flex-col gap-3">
-      <h3 className="font-semibold text-base">계정 정보</h3>
+    <div className="border p-6 w-full max-w-md">
+      <h3 className="text-xl font-bold mb-4">계정 정보</h3>
 
-      <div className="text-sm flex flex-col gap-1">
-        <p>
-          <span className="font-medium">아이디 </span>
-          {user?.id || '없음'}
-        </p>
+      <div className="mb-3">
+        <span className="font-semibold">아이디 </span>
+        <span className="ml-4 text-gray-600">{userId}</span>
+      </div>
 
-        <div className="flex items-center gap-2">
-          <span className="font-medium">비밀번호</span>
-          <button
-            onClick={handleEditPassword}
-            className="px-2 py-0.5 text-xs border rounded hover:bg-gray-100"
-          >
-            수정
-          </button>
-        </div>
+      <div className="mb-3">
+        <span className="font-semibold">비밀번호 </span>
+        <button
+          onClick={onEditPassword}
+          className="ml-4 bg-black text-white text-sm px-2 py-1 rounded"
+        >
+          수정
+        </button>
       </div>
 
       <button
-        onClick={handleDeleteAccount}
-        className="text-red-500 text-sm underline mt-4 self-start"
+        onClick={onDeleteAccount}
+        className="mt-4 underline text-red-600 text-sm"
       >
-        삭제
+        회원 탈퇴
       </button>
     </div>
   );
-}
+};
 
-export default AccountInfoCard;
+export default AccountInfoCard; 
