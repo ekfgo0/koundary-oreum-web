@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import koundaryLogo from '../../components/common/Koundarylogo.png';
 
-const Header = () => {
+const Header =  ({ title = '내 프로필' }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -16,7 +16,7 @@ const Header = () => {
         {/* 로고 + 텍스트 */}
         <div className="flex items-center gap-2">
           <img src={koundaryLogo} alt="Koundary Logo" className="h-8 object-contain" />
-          <span className="text-xl font-semibold">내 프로필</span>
+          <span className="text-xl font-semibold">{title}</span>
         </div>
 
         {/* 로그아웃 버튼 */}

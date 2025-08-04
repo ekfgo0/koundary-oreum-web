@@ -1,6 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 const AccountInfoCard = ({ userId = 'abcd123', onEditPassword, onDeleteAccount }) => {
+   const navigate = useNavigate();
+
   return (
     <div className="border p-6 w-full max-w-md">
       <h3 className="text-xl font-bold mb-4">계정 정보</h3>
@@ -13,7 +17,7 @@ const AccountInfoCard = ({ userId = 'abcd123', onEditPassword, onDeleteAccount }
       <div className="mb-3">
         <span className="font-semibold">비밀번호 </span>
         <button
-          onClick={onEditPassword}
+          onClick={() => navigate('/changepassword')}
           className="ml-4 bg-black text-white text-sm px-2 py-1 rounded"
         >
           수정
