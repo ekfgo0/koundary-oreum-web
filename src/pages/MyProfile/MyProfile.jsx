@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import ProfileHeader from '../../components/profile/ProfileHeader';
-import ProfileImageBox from '../../components/profile/ProfileImageBox';
-import AccountInfoCard from '../../components/profile/AccountInfoCard';
+// import ProfileHeader from '../../components/profile/ProfileHeader';
+// import ProfileImageBox from '../../components/profile/ProfileImageBox';
+// import AccountInfoCard from '../../components/profile/AccountInfoCard';
 
 function MyProfile() {
      const [user, setUser] = useState(null);

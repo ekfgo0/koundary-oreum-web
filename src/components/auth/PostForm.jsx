@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import KoundaryLogoImg from '../../components/common/Koundarylogo.png';
 
 const PostForm = () => {
@@ -18,34 +19,49 @@ const PostForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between items-center">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex flex-col items-center justify-center grow">
-        <div className="flex flex-col items-center justify-center">
-          <img 
-            src={KoundaryLogoImg} 
-            alt="Koundary"
-            className="h-20 mb-8"
-          />
+      <header className="bg-white shadow-sm border-b py-4">
+        <div className="max-w-screen-lg mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Link to="/main" className="hover:opacity-80 transition-opacity">
+              <img 
+                src={KoundaryLogoImg} 
+                alt="Koundary Logo" 
+                className="h-8 object-contain cursor-pointer"
+              />
+            </Link>
+          </div>
+          
+          <div className="flex gap-2">
+            <button className="px-4 py-2 border-2 border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all">
+              내 프로필
+            </button>
+            <button className="px-4 py-2 bg-blue-500 text-white border-2 border-blue-500 rounded hover:bg-blue-600 transition-all">
+              로그아웃
+            </button>
+          </div>
         </div>
-        
+      </header>
+      
+      {/* Main Content */}
+      <div className="flex flex-col items-center justify-center pt-8">
         <div className="w-[400px] bg-white p-8 rounded-lg border border-gray-200">
           {/* Navigation Tabs */}
           <div className="mb-6">
             <div className="flex gap-0">
-              {tabs.map((tab, index) => (
+              {tabs.map((category) => (
                 <button
-                  key={tab}
-                  onClick={() => handleTabClick(tab)}
-                  className={`flex-1 py-2 px-3 text-xs border-2 border-blue-500 transition-all ${
-                    index !== 0 ? '-ml-0.5' : ''
-                  } ${
-                    activeTab === tab
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-white text-blue-500 hover:bg-blue-50'
+                  key={category}
+                  type="button"
+                  onClick={() => handleTabClick(category)}
+                  className={`flex-1 py-2 px-3 text-xs border-2 border-blue-500 transition-all rounded-none ${
+                    activeTab === category
+                      ? 'bg-blue-500 text-white z-10'
+                      : 'bg-white text-blue-500 hover:bg-blue-50 z-0'
                   }`}
                 >
-                  {tab}
+                  {category}
                 </button>
               ))}
             </div>
@@ -80,22 +96,7 @@ const PostForm = () => {
               </button>
             </div>
           </div>
-
-          {/* User Controls */}
-          <div className="flex justify-between mt-6">
-            <button className="px-4 py-2 border-2 border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all text-sm">
-              Profile
-            </button>
-            <button className="px-4 py-2 bg-blue-500 text-white border-2 border-blue-500 rounded hover:bg-blue-600 transition-all text-sm">
-              Log Out
-            </button>
-          </div>
         </div>
-      </div>
-
-      {/* Frame label */}
-      <div className="mb-4 text-gray-400 text-sm">
-        Frame
       </div>
     </div>
   );

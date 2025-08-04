@@ -10,6 +10,7 @@ const Post = () => {
     category: '소속국가'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInfoPost, setIsInfoPost] = useState(false);
 
   const categories = [
     '소속국가',
@@ -45,22 +46,37 @@ const Post = () => {
     setIsSubmitting(true);
 
     try {
-      // 실제로는 API 호출
-      // const response = await fetch('/api/posts', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify(formData)
-      // });
+      const response = await fetch('/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...formData,
+          isInfoPost: isInfoPost,
+          categories: isInfoPost ? [formData.category, '정보게시판'] : [formData.category]
+        })
+      });
 
-      console.log('글 작성 데이터:', formData);
+      const submitData = {
+        ...formData,
+        isInfoPost: isInfoPost,
+        categories: isInfoPost && formData.category !== '정보게시판' 
+          ? [formData.category, '정보게시판'] 
+          : [formData.category]
+      };
+
+      console.log('글 작성 데이터:', submitData);
       
       // 임시 지연 (실제 API 호출 시뮬레이션)
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      alert('글이 성공적으로 작성되었습니다!');
+      const message = isInfoPost && formData.category !== '정보게시판'
+        ? `글이 ${formData.category}과 정보게시판에 동시에 작성되었습니다!`
+        : '글이 성공적으로 작성되었습니다!';
+      
+      alert(message);
       navigate('/main'); // 메인 페이지로 이동
       
     } catch (error) {
@@ -84,24 +100,28 @@ const Post = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="py-5">
-          <div className="max-w-6xl mx-auto px-5 flex justify-between items-center">
-            <Link to="/main" className="flex items-center">
+      <header className="bg-white shadow-sm border-b py-4">
+        <div className="max-w-screen-lg mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Link to="/main" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <img 
                 src={KoundaryLogoImg} 
-                alt="Koundary"
-                className="h-16"
+                alt="Koundary Logo" 
+                className="h-8 object-contain cursor-pointer"
               />
             </Link>
-            <div className="flex gap-2">
-              <button className="px-4 py-2 border-2 border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all">
-                Profile
-              </button>
-              <button className="px-4 py-2 bg-blue-500 text-white border-2 border-blue-500 rounded hover:bg-blue-600 transition-all">
-                Log Out
-              </button>
-            </div>
+            <span className="text-xl font-semibold">새 글 작성</span>
+          </div>
+          
+          <div className="flex gap-2">
+            <button className="px-4 py-2 border-2 border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all">
+              내 프로필
+            </button>
+            <button 
+              className="px-4 py-2 bg-blue-500 text-white border-2 border-blue-500 rounded hover:bg-blue-600 transition-all"
+            >
+              로그아웃
+            </button>
           </div>
         </div>
       </header>
@@ -127,7 +147,13 @@ const Post = () => {
                     <button
                       key={category}
                       type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, category }))}
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, category }));
+                        // 정보게시판을 선택하면 정보글 체크박스를 해제하고 숨김
+                        if (category === '정보게시판') {
+                          setIsInfoPost(false);
+                        }
+                      }}
                       className={`flex-1 py-3 px-4 text-sm transition-all rounded-none border border-blue-500 relative ${
                         index !== 0 ? '-ml-px' : ''
                       } ${
@@ -185,38 +211,56 @@ const Post = () => {
               {/* File Upload (Optional) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  첨부파일 (선택사항)
+                  이미지 첨부 (선택사항)
                 </label>
                 <input
                   type="file"
                   multiple
-                  accept="image/*,.pdf,.doc,.docx"
+                  accept="image/*"
                   className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                 />
                 <div className="text-sm text-gray-500 mt-1">
-                  이미지, PDF, Word 파일만 업로드 가능 (최대 5MB)
+                  이미지 파일만 업로드 가능 (JPG, PNG, GIF 등, 최대 5MB)
                 </div>
               </div>
             </div>
 
             {/* Form Actions */}
             <div className="border-t border-gray-200 p-4">
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-all"
-                  disabled={isSubmitting}
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? '작성 중...' : '글 작성'}
-                </button>
+              <div className="flex justify-between items-center">
+                {/* 정보글 체크박스 - 정보게시판이 선택되지 않았을 때만 표시 */}
+                {formData.category !== '정보게시판' && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="infoPost"
+                      checked={isInfoPost}
+                      onChange={(e) => setIsInfoPost(e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="infoPost" className="text-sm text-gray-700">
+                      정보글 (선택한 게시판과 정보게시판에 동시 게시)
+                    </label>
+                  </div>
+                )}
+                
+                <div className="flex gap-3 ml-auto">
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-all"
+                    disabled={isSubmitting}
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? '작성 중...' : '글 작성'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
