@@ -12,7 +12,6 @@ export const login = async (loginId, password) => {
   }
 }
 
-<<<<<<< HEAD
 export const checkNickname = async (nickname) => {
   try {
     const response = await axiosInstance.post('users/check-nickname', { nickname });
@@ -57,22 +56,3 @@ export const signUp = async (formData) => {
     throw error.response?.data || error;
   }
 }
-=======
-export const checkNickname = (nickname) =>
-  axiosInstance.post('users/check-nickname', { nickname : '' });
-
-export const checkUsername = (loginId) =>
-  axiosInstance.post('users/check-loginId', { loginId : '' });
-
-export const sendVerificationEmail = (email) =>
-  axiosInstance.post('/email/send-code', { email });
-
-export const verifyCode = (email, code) =>
-  axiosInstance.post('/email/verify-code', { email, code });
-
-export const signUp = (formData) =>
-  axiosInstance.post('/users/signup', formData);  // 회원가입 요청 처리
-
-export const getUniversities = () =>
-  axiosInstance.get('/universities');
->>>>>>> 0d0356183b6b87cb7418fae171d96c64e9dbe01d

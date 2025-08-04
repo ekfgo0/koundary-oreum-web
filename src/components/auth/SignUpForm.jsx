@@ -154,7 +154,6 @@ const SignUpForm = () => {
     }
 
     try {
-<<<<<<< HEAD
       const response = await checkNickname(form.nickname);
       console.log('닉네임 확인 응답:', response);
       
@@ -171,22 +170,6 @@ const SignUpForm = () => {
       setValidStatus(prev => ({ ...prev, nickname: false }));
       alert(errorMessage);
     }
-=======
-        const response = await axios.post(
-          'http://localhost:8080/users/check-nickname',
-          { nickname }, // JSON body
-          {
-            headers: {
-              'Content-Type': 'application/json' // 꼭 지정!
-            }
-          }
-    );
-    alert(res.data.available ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.');
-    console.log(response.data); // true or false + message
-  } catch (err) {
-    console.error(err.response?.data || err.message);
-  }
->>>>>>> 0d0356183b6b87cb7418fae171d96c64e9dbe01d
   };
 
   // 아이디 중복 확인 처리
@@ -231,17 +214,11 @@ const SignUpForm = () => {
   // 이메일 인증번호 확인
   const handleVerifyCode = async () => {
     try {
-<<<<<<< HEAD
       const response = await verifyCode(form.email.trim(), form.verificationCode.trim());
       console.log('인증번호 확인 응답:', response);
       alert('인증에 성공했습니다.');
     } catch (err) {
       console.error(err);
-=======
-      const res = await verifyCode(form.email.trim(), form.verificationCode.trim());
-      alert('인증에 성공했습니다.');
-    } catch (err) {
->>>>>>> 0d0356183b6b87cb7418fae171d96c64e9dbe01d
       if (err.response?.data?.message?.includes('만료')) {
         alert('인증번호가 만료되었습니다.');
       } else if (err.response?.data?.message?.includes('틀')) {
