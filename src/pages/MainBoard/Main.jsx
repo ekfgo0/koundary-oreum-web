@@ -1,60 +1,69 @@
+// src/pages/Main/Main.jsx
 import React from 'react';
 import Header from '../../components/profile/Header';
 
-const dummyBoardTitles = [
-  '자유게시판이 최고의 듯...',
-  'GDG가 역시 최고인듯...',
-  '카운더리 팀 프로젝트 트랙 화이팅',
-  '와이프레임 좋아요',
-  '내용 채우기 귀찮아요',
+// ====== 설정값 ======
+const BRAND = '#2e8ada';   // 팀 컬러
+const MAX_WIDTH = 960;      // 헤더의 컨테이너 폭과 동일하게 맞춰주세요 (예: 960, 1024 등)
+
+// ====== 예시 데이터 (API로 대체 가능) ======
+const boards = [
+  { id: 'country', name: '소속 국가', posts: ['자유에 첫 글…', 'GDG 진행…', '프로젝트 회의…', 'UI 고도화…', '내일 일정…'] },
+  { id: 'school',  name: '소속 학교', posts: ['정보 모음…', '도구 추천…', '세팅 가이드…', '강의 링크…', '문서 템플릿…'] },
+  { id: 'free',    name: '자유 게시판', posts: ['키보드 팝니다', '모니터 나눔', '의자 판매', '교재 교환', 'SSD 판매'] },
+  { id: 'info',    name: '정보 게시판', posts: ['이번 주 모임', '스터디 모집', '점심 번개', '오프라인 회의', '온라인 밋업'] },
+  { id: 'qna',     name: '중고거래/나눔 게시판', posts: ['axios 질문', '라우터 이슈', '빌드 에러', 'CORS 설정', '성능 튜닝'] },
+  { id: 'meetup',  name: '모임 게시판', posts: ['포트폴리오 피드백', '이력서 템플릿', '면접 후기', '코테 팁', '인턴 모집'] },
 ];
 
-const boardNames = [
-  '소속 국가',
-  '소속 학교',
-  '자유게시판',
-  '정보게시판',
-  '중고/나눔 게시판',
-  '모임게시판'
-];
+// ====== 카드 컴포넌트 ======
+const BoardCard = ({ title, posts }) => (
+  <div className="rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-100 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_22px_rgba(0,0,0,0.08)] overflow-hidden">
+    {/* 상단 헤더(팀컬러) */}
+    <div className="h-12 px-5 flex items-center" style={{ backgroundColor: BRAND }}>
+      <h3 className="text-white md:text-large font-semibold leading-none">{title}</h3>
+    </div>
 
-const Main = () => {
+    {/* 본문 */}
+    <div className="p-4 md:p-5">
+      <ul className="divide-y divide-gray-100 mb-4">
+        {posts.slice(0, 5).map((p, i) => (
+          <li key={i} className="py-2">
+            <a href="#" className="block truncate text-[15px] text-gray-700 hover:text-gray-900" title={p}>
+              {p}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        onClick={() => window.location.href = `/board/${encodeURIComponent(title)}`}
+        className="w-full rounded-xl px-4 py-2 text-sm font-medium border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+        aria-label={`${title} 더보기`}
+      >
+        더보기
+      </button>
+    </div>
+  </div>
+);
+
+// ====== 페이지 ======
+export default function Main() {
   return (
-    <div className="min-h-screen bg-white">
-      <Header title=""/>
+    <div className="min-h-screen bg-[#f5f9fc]">
+      <Header title=""/> {/* ✅ Header.jsx 재사용 */}
 
-      <div className="max-w-[1024px] mx-auto px-4 py-8">
-        {/* 글 작성 버튼 - 우측 정렬 + 작고 깔끔하게 */}
-        <div className="flex justify-end mb-6">
-          <button className="text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition">
-            글 작성 ✏️
-          </button>
-        </div>
-
-        {/* 게시판 카드들 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {boardNames.map((boardTitle, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-md shadow-sm border border-gray-200 p-4"
-            >
-              <h2 className="text-md font-semibold mb-3">{boardTitle}</h2>
-              <ul className="space-y-1">
-                {dummyBoardTitles.map((title, idx) => (
-                  <li
-                    key={idx}
-                    className="border px-2 py-1 text-sm text-gray-800 hover:bg-gray-100 rounded cursor-pointer"
-                  >
-                    {title}
-                  </li>
-                ))}
-              </ul>
-            </div>
+      <main
+        className="mx-auto px-4 md:px-6 py-8 md:py-12"
+        style={{ maxWidth: `${MAX_WIDTH}px` }} // ✅ 헤더 컨테이너 폭과 동일하게
+      >
+        {/* 3×2 그리드 (모바일 1열, 태블릿 2열, 데스크톱 3열) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {boards.map((b) => (
+            <BoardCard key={b.id} title={b.name} posts={b.posts} />
           ))}
         </div>
-      </div>
+      </main>
     </div>
   );
-};
-
-export default Main;
+}
