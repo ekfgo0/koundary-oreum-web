@@ -1,10 +1,16 @@
+// src/components/auth/PostForm.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import KoundaryLogoImg from '../../components/common/Koundarylogo.png';
+import koundaryLogo from '../common/Koundarylogo.png';
 
 const PostForm = () => {
+  // 상태변수를 선언하고 초기값을 소속국가로 가져오기
   const [activeTab, setActiveTab] = useState('소속국가');
+  
+  // title 변수 정의
+  const title = "Koundary";
 
+  // 탭 메뉴에 표시될 카테고리 목록을 배열로 정의
   const tabs = [
     '소속국가',
     '소속학교', 
@@ -14,25 +20,39 @@ const PostForm = () => {
     '모임게시판'
   ];
 
+  // 탭을 클릭 했을 때 실행되는 함수 (클릭된 탭을 activeTab 상태로 업데이트)
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
 
   return (
+    // 컴포넌트의 최상위 컨테이너를 반환 (최소 높이를 전체로 설정하고 연한 회색 배경 적용)
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b py-4">
+      {/* 헤더부분 */}
+      <header className="border-b py-4">
         <div className="max-w-screen-lg mx-auto px-4 flex justify-between items-center">
+          {/* 로고 + 텍스트 */}
           <div className="flex items-center gap-2">
-            <Link to="/main" className="hover:opacity-80 transition-opacity">
-              <img 
-                src={KoundaryLogoImg} 
-                alt="Koundary Logo" 
-                className="h-8 object-contain cursor-pointer"
-              />
-            </Link>
+            <img 
+              src={koundaryLogo} 
+              alt="Koundary Logo" 
+              className="h-8 object-contain"
+              onError={(e) => {
+                console.error('이미지 로드 실패:', e.target.src);
+                // 기본 이미지나 텍스트로 대체
+                e.target.style.display = 'none';
+                e.target.nextElementSibling.style.display = 'flex';
+              }}
+            />
+            <div 
+              className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white font-bold" 
+              style={{ display: 'none' }}
+            >
+              K
+            </div>
+            <span className="text-xl font-semibold">{title}</span>
           </div>
-          
+           
           <div className="flex gap-2">
             <button className="px-4 py-2 border-2 border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all">
               내 프로필
@@ -88,11 +108,11 @@ const PostForm = () => {
                   className="w-3 h-3"
                 />
                 <label htmlFor="bookmark" className="text-xs text-gray-600">
-                  장보기
+                  스크랩
                 </label>
               </div>
               <button className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition-all">
-                ✏️
+                편집
               </button>
             </div>
           </div>
