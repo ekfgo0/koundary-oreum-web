@@ -1,10 +1,17 @@
 // src/pages/Posts/Post.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import koundaryLogo from '../../components/common/Koundarylogo.png';
 
 const Post = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  
+  // 수정 모드 확인
+  const editPostId = searchParams.get('edit');
+  const isEditMode = Boolean(editPostId);
+  const editData = location.state?.postData;
 
   const [formData, setFormData] = useState({
     title: '',
@@ -14,6 +21,17 @@ const Post = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInfoPost, setIsInfoPost] = useState(false);
+
+  // 수정 모드일 때 기존 데이터로 폼 초기화
+  useEffect(() => {
+    if (isEditMode && editData) {
+      setFormData({
+        title: editData.title,
+        content: editData.content,
+        category: editData.category
+      });
+    }
+  }, [isEditMode, editData]);
 
   const categories = [
     '소속국가',
@@ -78,6 +96,12 @@ const Post = () => {
       submitFormData.append('category', formData.category);
       submitFormData.append('isInfoPost', isInfoPost);
       
+      // 수정 모드일 때는 수정 API, 새 글일 때는 작성 API
+      if (isEditMode) {
+        submitFormData.append('postId', editPostId);
+        submitFormData.append('keepOriginalDate', true); // 작성시간 유지
+      }
+      
       // 카테고리 배열 처리
       const categories = isInfoPost && formData.category !== '정보게시판' 
         ? [formData.category, '정보게시판'] 
@@ -89,8 +113,11 @@ const Post = () => {
         submitFormData.append(`images`, file);
       });
 
-      const response = await fetch('/api/posts', {
-        method: 'POST',
+      const apiUrl = isEditMode ? `/api/posts/${editPostId}` : '/api/posts';
+      const method = isEditMode ? 'PUT' : 'POST';
+
+      const response = await fetch(apiUrl, {
+        method: method,
         headers: {
           'Authorization': `Bearer ${token}`
         },
@@ -99,22 +126,30 @@ const Post = () => {
 
       if (response.ok) {
         const result = await response.json();
-        console.log('글 작성 성공:', result);
+        console.log(isEditMode ? '글 수정 성공:' : '글 작성 성공:', result);
         
-        const message = isInfoPost && formData.category !== '정보게시판'
-          ? `글이 ${formData.category}과 정보게시판에 동시에 작성되었습니다!`
-          : '글이 성공적으로 작성되었습니다!';
+        const message = isEditMode 
+          ? '글이 성공적으로 수정되었습니다!'
+          : isInfoPost && formData.category !== '정보게시판'
+            ? `글이 ${formData.category}과 정보게시판에 동시에 작성되었습니다!`
+            : '글이 성공적으로 작성되었습니다!';
         
         alert(message);
-        navigate('/main');
+        
+        // 수정 모드였다면 해당 글로, 새 글이었다면 메인으로
+        if (isEditMode) {
+          navigate(`/mypost/${editPostId}`);
+        } else {
+          navigate('/main');
+        }
       } else {
         const error = await response.json();
         throw new Error(error.message || '서버 오류가 발생했습니다.');
       }
       
     } catch (error) {
-      console.error('글 작성 실패:', error);
-      alert(error.message || '글 작성에 실패했습니다. 다시 시도해주세요.');
+      console.error(isEditMode ? '글 수정 실패:' : '글 작성 실패:', error);
+      alert(error.message || (isEditMode ? '글 수정에 실패했습니다.' : '글 작성에 실패했습니다.') + ' 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -154,7 +189,7 @@ const Post = () => {
                 K
               </div>
             </div>
-            <span className="text-xl font-semibold">새 글 작성</span>
+            <span className="text-xl font-semibold">{isEditMode ? '글 수정' : '새 글 작성'}</span>
           </div>
           
           <div className="flex gap-2">

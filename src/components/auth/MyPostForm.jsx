@@ -1,12 +1,25 @@
 // src/components/auth/MyPostForm.jsx
 import React, { useState } from 'react';
-import { MessageCircle, Bookmark, User, Reply, Send } from 'lucide-react';
+import { MessageCircle, Bookmark, User, Reply, Send, Edit } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const MyPostForm = ({ postData, comments, setComments }) => {
+  const navigate = useNavigate();
   const [newComment, setNewComment] = useState('');
   const [replyText, setReplyText] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [showReplies, setShowReplies] = useState({});
+
+  // 글 수정 버튼 클릭
+  const handleEditPost = () => {
+    // 수정 모드로 Posts 페이지로 이동
+    navigate(`/posts?edit=${postData.id}`, {
+      state: {
+        editMode: true,
+        postData: postData
+      }
+    });
+  };
 
   // 댓글 추가
   const handleAddComment = () => {
@@ -64,23 +77,36 @@ const MyPostForm = ({ postData, comments, setComments }) => {
     <div className="bg-white rounded-lg shadow-sm border">
       {/* 게시글 내용 */}
       <div className="p-6">
-        {/* 작성자 정보 */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-            {postData.author.profileImage ? (
-              <img 
-                src={postData.author.profileImage} 
-                alt="프로필" 
-                className="w-12 h-12 rounded-full object-cover"
-              />
-            ) : (
-              <User className="w-6 h-6 text-white" />
-            )}
+        {/* 작성자 정보와 수정 버튼 */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+              {postData.author.profileImage ? (
+                <img 
+                  src={postData.author.profileImage} 
+                  alt="프로필" 
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <User className="w-6 h-6 text-white" />
+              )}
+            </div>
+            <div>
+              <div className="font-semibold text-gray-900">{postData.author.nickname}</div>
+              <div className="text-sm text-gray-500">{postData.createdAt}</div>
+            </div>
           </div>
-          <div>
-            <div className="font-semibold text-gray-900">{postData.author.nickname}</div>
-            <div className="text-sm text-gray-500">{postData.createdAt}</div>
-          </div>
+          
+          {/* 수정 버튼 */}
+          {postData.isMyPost && (
+            <button
+              onClick={handleEditPost}
+              className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+            >
+              <Edit className="w-4 h-4" />
+              수정
+            </button>
+          )}
         </div>
 
         {/* 게시글 제목 */}
