@@ -1,131 +1,25 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  checkNickname,
-  checkUsername,
-  sendVerificationEmail,
-  verifyCode,
-  signUp
-} from '../../api/auth';
+// src/components/auth/PostForm.jsx (기존 PostForm.jsx 수정)
+import React from 'react';
 
-const labelStyle = {
-  display: 'block',
-  marginBottom: '4px',
-  fontSize: '14px',
-  color: '#333',
-};
+const PostForm = ({
+  formData,
+  setFormData,
+  categories,
+  selectedFiles,
+  isSubmitting,
+  isInfoPost,
+  setIsInfoPost,
+  handleInputChange,
+  handleFileChange,
+  removeFile,
+  handleSubmit,
+  handleCancel
+}) => {
 
-// 각 입력 필드를 감싸는 컨테이너의 하단 여백
-const fieldWrapper = {
-  marginBottom: '1.5rem',
-};
-
-// 입력 필드와 버튼이 한 줄에 배치되는 행의 스타일 (닉네임, 아이디, 이메일, 인증번호)
-const rowStyle = {
-  display: 'flex',
-  alignItems: 'flex-end',
-  gap: '10px',
-  marginBottom: '1.5rem',
-};
-
-// 선택 박스 요소들의 스타일 (국적, 소속대학)
-const selectStyle = {
-  width: '100%',
-  height: '40px',
-  backgroundColor: '#f0f0f0',
-  border: 'none',
-  padding: '0 10px',
-};
-
-// 모든 입력 필드의 공통 스타일
-const inputStyle = {
-  width: '100%',
-  height: '40px',
-  backgroundColor: '#f0f0f0',
-  border: 'none',
-  padding: '0 10px',
-  flexShrink: 0,
-};
-
-// 중복확인, 전송, 확인 버튼의 기본 스타일
-const buttonStyle = {
-  width: '100px',
-  height: '40px',
-  padding: '8px 12px',
-  border: '1px solid #2e8ada',
-  color: '#2e8ada',
-  backgroundColor: 'transparent',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease-in-out',
-  flexShrink: 0,
-};
-
-// 회원가입 버튼의 스타일
-const SignUpButtonStyle = {
-  width: '100%',
-  height: '40px',
-  backgroundColor: '#2e8ada',
-  color: '#fff',
-  cursor: 'pointer',
-};
-
-// 입력 필드를 감싸는 컨테이너 (버튼과 함께 배치될 때 사용)
-const inputContainerStyle = {
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-};
-
-// 응답 메시지 스타일
-const messageStyle = {
-  fontSize: '12px',
-  marginTop: '4px',
-  minHeight: '16px',
-};
-
-// 모든 폼 입력값을 저장하는 상태 객체
-const SignUpForm = () => {
-  const [form, setForm] = useState({
-    nationality: '',
-    university: '',
-    nickname: '',
-    userId: '',
-    password: '',
-    confirmPassword: '',
-    email: '',
-    verificationCode: '',
-  });
-
-  // 중복확인 결과 메세지를 저장하는 상태 객체
-  const [messages, setMessages] = useState({
-    nickname: '',
-    userId: '',
-  });
-
-  // 중복확인 성공 여부를 저장하는 상태 객체
-  const [validStatus, setValidStatus] = useState({
-    nickname: false,
-    userId: false,
-  });
-
-  // React Router의 페이지 이동 함수 (회원가입 완료 후 로그인 페이지로 이동)
-  const navigate = useNavigate();
-  
-  // 모든 입력 필드의 값 변경을 처리하는 공통 함수
-  // 매개변수: e - 이벤트 객체
-  // 동작: 입력값 업데이트 + 닉네임/아이디 필드 변경 시 검증 상태 초기화
-  // (이 함수가 없으면 한 번 닉네임, 아이디를 입력하고 나면 그 다음부턴 계속 중복된 정보라고 뜰 것임)
-  const handleChange = e => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-    
-    // 입력값이 변경되면 해당 필드의 메시지와 상태 초기화
-    if (name === 'nickname') {
-      setMessages(prev => ({ ...prev, nickname: '' }));
-      setValidStatus(prev => ({ ...prev, nickname: false }));
-    } else if (name === 'userId') {
-      setMessages(prev => ({ ...prev, userId: '' }));
-      setValidStatus(prev => ({ ...prev, userId: false }));
+  const handleCategoryChange = (category) => {
+    setFormData(prev => ({ ...prev, category }));
+    if (category === '정보게시판') {
+      setIsInfoPost(false);
     }
   };
 
@@ -263,191 +157,157 @@ const SignUpForm = () => {
   const isMatching = form.confirmPassword && form.password === form.confirmPassword;
 
   return (
-    <form onSubmit={handleSubmit}>
-      {/* 국적 */}
-      <div style={fieldWrapper}>
-        <label htmlFor="nationality" style={labelStyle}>국적 선택</label>
-        <select
-          name="nationality"
-          id="nationality"
-          value={form.nationality}
-          onChange={handleChange}
-          style={selectStyle}
-        >
-          <option value="">선택하세요</option>
-          <option value="대한민국">대한민국</option>
-          <option value="미국">미국</option>
-          <option value="영국">영국</option>
-          <option value="캐나다">캐나다</option>
-        </select>
+    <div className="bg-white border-2 border-blue-500 rounded">
+      {/* Form Header */}
+      <div className="bg-blue-500 text-white py-3 px-5">
+        <h1 className="font-bold text-lg text-center">새 글 작성</h1>
       </div>
+      
+      {/* Form Body */}
+      <div className="p-6 space-y-6">
+        {/* Category Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            게시판 선택
+          </label>
+          <div className="flex">
+            {categories.map((category, index) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => handleCategoryChange(category)}
+                className={`flex-1 py-3 px-4 text-sm transition-all rounded-none border border-blue-500 relative ${
+                  index !== 0 ? '-ml-px' : ''
+                } ${
+                  formData.category === category
+                    ? 'bg-blue-500 text-white z-10'
+                    : 'bg-white text-blue-500 hover:bg-blue-50 z-0'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
 
-      {/* 소속대학 */}
-      <div style={fieldWrapper}>
-        <label htmlFor="university" style={labelStyle}>소속대학 선택</label>
-        <select
-          name="university"
-          id="university"
-          value={form.university}
-          onChange={handleChange}
-          style={selectStyle}
-        >
-          <option value="">선택하세요</option>
-          <option value="홍익대학교">홍익대학교</option>
-          <option value="연세대학교">연세대학교</option>
-          <option value="서강대학교">서강대학교</option>
-          <option value="이화여자대학교">이화여자대학교</option>
-        </select>
-      </div>
-
-      {/* 닉네임 + 버튼 */}
-      <div style={rowStyle}>
-        <div style={inputContainerStyle}>
-          <label htmlFor="nickname" style={labelStyle}>닉네임</label>
+        {/* Title Input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            제목 <span className="text-red-500">*</span>
+          </label>
           <input
             type="text"
-            name="nickname"
-            value={form.nickname}
-            onChange={handleChange}
-            style={inputStyle}
+            name="title"
+            value={formData.title}
+            onChange={handleInputChange}
+            placeholder="제목을 입력하세요"
+            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+            maxLength="100"
+            required
           />
+          <div className="text-right text-sm text-gray-500 mt-1">
+            {formData.title.length}/100
+          </div>
         </div>
-        <button 
-          type="button" 
-          style={buttonStyle} 
-          onClick={handleNicknameCheck}
-          onMouseEnter={handleButtonHover}
-          onMouseLeave={handleButtonLeave}
-        >
-          중복확인
-        </button>
-      </div>
 
-      {/* 아이디 + 버튼 */}
-      <div style={rowStyle}>
-        <div style={inputContainerStyle}>
-          <label htmlFor="userId" style={labelStyle}>아이디</label>
+        {/* Content Textarea */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            내용 <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            name="content"
+            value={formData.content}
+            onChange={handleInputChange}
+            placeholder="내용을 입력하세요"
+            rows="15"
+            className="w-full p-3 border border-gray-300 rounded resize-none focus:outline-none focus:border-blue-500"
+            maxLength="2000"
+            required
+          />
+          <div className="text-right text-sm text-gray-500 mt-1">
+            {formData.content.length}/2000
+          </div>
+        </div>
+
+        {/* File Upload */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            이미지 첨부 (선택사항)
+          </label>
           <input
-            type="text"
-            name="userId"
-            value={form.userId}
-            onChange={handleChange}
-            style={inputStyle}
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           />
-        </div>
-        <button 
-          type="button" 
-          style={buttonStyle} 
-          onClick={handleIDCheck}
-          onMouseEnter={handleButtonHover}
-          onMouseLeave={handleButtonLeave}
-        >
-          중복확인
-        </button>
-      </div>
-
-      {/* 비밀번호 */}
-      <div style={fieldWrapper}>
-        <label htmlFor="password" style={labelStyle}>비밀번호</label>
-        <input
-          type="password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          style={inputStyle}
-        />
-      </div>
-
-      {/* 비밀번호 확인 */}
-      <div style={fieldWrapper}>
-        <label htmlFor="confirmPassword" style={labelStyle}>비밀번호 확인</label>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <input
-            type="password"
-            name="confirmPassword"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            style={inputStyle}
-          />
-          <span
-            style={{
-              minWidth: '200px',
-              color: isMatching ? '#2e8ada' : 'red',
-              fontSize: isMatching ? '14px' : '12px',
-            }}
-          >
-            {form.confirmPassword
-              ? isMatching
-                ? '사용가능!'
-                : '비밀번호가 서로 일치하지 않습니다.'
-              : ''}
-          </span>
+          <div className="text-sm text-gray-500 mt-1">
+            이미지 파일만 업로드 가능 (JPG, PNG, GIF 등, 최대 5MB)
+          </div>
+          
+          {/* 선택된 파일 목록 */}
+          {selectedFiles.length > 0 && (
+            <div className="mt-3 space-y-2">
+              <p className="text-sm font-medium text-gray-700">선택된 파일:</p>
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-600">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="text-red-500 hover:text-red-700 text-sm px-2 py-1 rounded"
+                  >
+                    삭제
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* 이메일 + 전송 */}
-      <div style={rowStyle}>
-        <div style={inputContainerStyle}>
-          <label htmlFor="email" style={labelStyle}>본인대학 이메일</label>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            style={inputStyle}
-          />
+      {/* Form Actions */}
+      <div className="border-t border-gray-200 p-4">
+        <div className="flex justify-between items-center">
+          {/* 정보글 체크박스 */}
+          {formData.category !== '정보게시판' && (
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="infoPost"
+                checked={isInfoPost}
+                onChange={(e) => setIsInfoPost(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <label htmlFor="infoPost" className="text-sm text-gray-700">
+                정보글 (선택한 게시판과 정보게시판에 동시 게시)
+              </label>
+            </div>
+          )}
+          
+          <div className="flex gap-3 ml-auto">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-all"
+              disabled={isSubmitting}
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? '작성 중...' : '글 작성'}
+            </button>
+          </div>
         </div>
-        <button 
-          type="button" 
-          style={buttonStyle} 
-          onClick={handleSendEmail}
-          onMouseEnter={handleButtonHover}
-          onMouseLeave={handleButtonLeave}
-        >
-          전송
-        </button>
       </div>
-
-      {/* 인증번호 + 확인 */}
-      <div style={rowStyle}>
-        <div style={inputContainerStyle}>
-          <label htmlFor="verificationCode" style={labelStyle}>인증번호</label>
-          <input
-            type="text"
-            name="verificationCode"
-            value={form.verificationCode}
-            onChange={handleChange}
-            style={inputStyle}
-          />
-        </div>
-        <button 
-          type="button" 
-          style={buttonStyle} 
-          onClick={handleVerifyCode}
-          onMouseEnter={handleButtonHover}
-          onMouseLeave={handleButtonLeave}
-        >
-          확인
-        </button>
-      </div>
-
-      {/* 회원가입 버튼 */}
-      <div style={{ marginTop: '2rem' }}>
-        <button
-          type="submit"
-          style={SignUpButtonStyle}
-          onMouseEnter={ e => {
-            e.target.style.backgroundColor = "#086cc3";
-          }}
-          onMouseLeave={ e => {
-            e.target.style.backgroundColor = "#2e8ada";
-          }}
-        >
-          회원가입
-        </button>
-      </div>
-    </form>
+    </div>
   );
 };
 
-export default SignUpForm;
+export default PostForm;
