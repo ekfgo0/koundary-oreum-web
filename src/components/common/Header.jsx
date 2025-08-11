@@ -1,4 +1,3 @@
-// src/components/common/Header.jsx
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import koundaryLogo from '../../components/common/Koundarylogo.png';

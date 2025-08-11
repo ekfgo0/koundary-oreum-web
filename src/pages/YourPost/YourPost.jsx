@@ -1,3 +1,4 @@
+// src/pages/YourPost/YourPost.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/common/Header';
@@ -100,9 +101,7 @@ const YourPost = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          title=" " 
-          showLogo={true}
-          onLogoClick={() => navigate('/main')}
+          showActions={true}
         />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
@@ -119,13 +118,11 @@ const YourPost = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          title=" " 
-          showLogo={true}
-          onLogoClick={() => navigate('/main')}
+          showActions={true}
         />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <div className="text-red-500 text-lg mb-4">오류가 발생했습니다</div>
+            <div className="text-red-500 text-lg mb-4">⚠️ 오류가 발생했습니다</div>
             <div className="text-gray-600 mb-4">{error}</div>
             <button 
               onClick={() => window.location.reload()}
@@ -144,9 +141,7 @@ const YourPost = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          title=" " 
-          showLogo={true}
-          onLogoClick={() => navigate('/main')}
+          showActions={true}
         />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
@@ -166,9 +161,7 @@ const YourPost = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
-        title=" " 
-        showLogo={true}
-        onLogoClick={() => navigate('/main')}
+        showActions={true}
       />
       
       {/* 카테고리 네비게이션 */}
