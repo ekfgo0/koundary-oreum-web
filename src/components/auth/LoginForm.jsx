@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { isEmpty } from '../../utils/validator'; 
-import { login } from '../../api/auth';
+import React from 'react';
+import { useState } from 'react'
+import { isEmpty } from '../../utils/validator' 
+import { login } from '../../api/auth'
 import { Link } from 'react-router-dom';
-import React from 'react'
 
 function LoginForm() {
   // `loginId`와 `setLoginId` 선언
@@ -81,9 +81,9 @@ function LoginForm() {
 
         {/* 하단 링크 (폭 316px 맞춤) */}
         <div className="flex justify-between w-[316px] ml-[85px] text-sm text-black">
-          <a href="#" className="underline">아이디 찾기</a>
-          <a href="#" className="underline">비밀번호 찾기</a>
-          <Link to="/signup" className="underline">회원가입</Link>
+          <a href="#" className="underline text-black">아이디 찾기</a>
+          <a href="#" className="underline text-black	">비밀번호 찾기</a>
+          <Link to="/signup" className="underline text-black">회원가입</Link>
         </div>
       </div>
     </form>
