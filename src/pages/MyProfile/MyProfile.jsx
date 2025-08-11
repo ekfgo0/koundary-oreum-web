@@ -1,8 +1,11 @@
-import React from 'react';
 import Header from '../../components/profile/Header';
 import ProfileCard from '../../components/profile/ProfileCard';
 import AccountInfoCard from '../../components/profile/AccountInfoCard';
 import ActivityCard from '../../components/profile/ActivityCard';
+import React, { useEffect, useState } from 'react';
+// import ProfileHeader from '../../components/profile/ProfileHeader';
+// import ProfileImageBox from '../../components/profile/ProfileImageBox';
+// import AccountInfoCard from '../../components/profile/AccountInfoCard';
 
 const MyProfile = () => {
   const handleEditPassword = () => alert('비밀번호 수정 예정!');
