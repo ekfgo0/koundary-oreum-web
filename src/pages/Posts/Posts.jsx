@@ -189,7 +189,7 @@ const Post = () => {
                 K
               </div>
             </div>
-            <span className="text-xl font-semibold">{isEditMode ? '글 수정' : '새 글 작성'}</span>
+            {/* <span className="text-xl font-semibold">{isEditMode ? '글 수정' : '새 글 작성'}</span> */}
           </div>
           
           <div className="flex gap-2">
@@ -208,7 +208,9 @@ const Post = () => {
         <div className="bg-white border-2 border-blue-500 rounded">
           {/* Form Header */}
           <div className="bg-blue-500 text-white py-3 px-5">
-            <h1 className="font-bold text-lg text-center">새 글 작성</h1>
+            <h1 className="font-bold text-lg text-center">
+              {isEditMode ? '글 수정' : '새 글 작성'}
+            </h1>
           </div>
           
           {/* Form Body */}
