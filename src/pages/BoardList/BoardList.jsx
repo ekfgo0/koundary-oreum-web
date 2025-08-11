@@ -1,4 +1,3 @@
-// src/pages/BoardList/BoardList.jsx
 import React, { useEffect, useState } from 'react';
 import Header from '../../components/profile/Header';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
@@ -30,9 +29,13 @@ export default function BoardList() {
       try {
         setLoading(true);
         const data = await getBoardList({ category: meta.backendKey, page, size });
-        const items = data?.items ?? data?.content ?? [];
+
+        // 다양한 응답 포맷 방어
+        const items = data?.items ?? data?.content ?? data?.list ?? [];
+        const totalCount = data?.total ?? data?.totalElements ?? data?.count ?? items.length;
+
         setRows(items);
-        setTotal(data?.total ?? data?.totalElements ?? items.length);
+        setTotal(totalCount);
       } catch (e) {
         console.error('board list error:', e);
         setRows([]);
@@ -47,7 +50,8 @@ export default function BoardList() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header title="게시글 목록" />
+      <Header title="" />
+
       <div className="max-w-[1024px] mx-auto px-4 py-8">
         <h1 className="text-xl font-semibold mb-4">{meta.label}</h1>
 
@@ -63,26 +67,35 @@ export default function BoardList() {
             {loading && (
               <tr><td className="py-10 text-center text-gray-400" colSpan={3}>불러오는 중…</td></tr>
             )}
+
             {!loading && rows.map(item => (
-              <tr key={item.id} className="border-t hover:bg-gray-50 cursor-pointer">
+              <tr
+                key={item.id}
+                className="border-t hover:bg-gray-50 cursor-pointer"
+                // 상세 페이지 라우트 연결 시: onClick={() => navigate(`/post/${item.id}`)}
+              >
                 <td className="py-3 pr-4">{item.title}</td>
                 <td className="py-3">{item.author}</td>
                 <td className="py-3">{item.createdAt}</td>
               </tr>
             ))}
+
             {!loading && rows.length === 0 && (
               <tr><td className="py-12 text-center text-gray-400" colSpan={3}>게시글이 없습니다</td></tr>
             )}
           </tbody>
         </table>
 
+        {/* 페이지네이션 */}
         <div className="flex justify-center gap-2 mt-6">
           <button
             className="px-3 py-1 border rounded disabled:opacity-40"
             onClick={() => setSearchParams({ page: String(Math.max(1, page - 1)) })}
             disabled={page <= 1}
           >이전</button>
+
           <span className="px-2 py-1">{page} / {totalPages}</span>
+
           <button
             className="px-3 py-1 border rounded disabled:opacity-40"
             onClick={() => setSearchParams({ page: String(Math.min(totalPages, page + 1)) })}
