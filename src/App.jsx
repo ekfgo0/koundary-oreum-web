@@ -6,6 +6,7 @@ import SignUp from "./pages/SignUp/SignUp";
 import Main from "./pages/MainBoard/Main";
 import Posts from "./pages/Posts/Posts";
 import MyPost from "./pages/MyPost/MyPost";
+import YourPost from "./pages/YourPost/YourPost";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route path="/main" element={<Main />} />
       <Route path="/posts" element={<Posts />} />
       <Route path="/mypost/:postId" element={<MyPost />} />
+      <Route path="/yourpost/:postId" element={<YourPost />} />
     </Routes>
   );
 }

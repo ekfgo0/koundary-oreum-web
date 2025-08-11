@@ -86,7 +86,7 @@ const MyPost = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
-        title="내 글 보기" 
+        title=" " 
         showLogo={true}
         onLogoClick={() => navigate('/main')}
       />

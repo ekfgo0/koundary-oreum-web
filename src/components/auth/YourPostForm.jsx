@@ -1,40 +1,26 @@
-// src/components/auth/MyPostForm.jsx
+// src/components/auth/YourPostForm.jsx
 import React, { useState } from 'react';
-import { MessageCircle, Bookmark, User, Reply, Send, Edit, Trash2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { MessageCircle, Bookmark, BookmarkCheck, User, Reply, Send } from 'lucide-react';
 
-const MyPostForm = ({ postData, comments, setComments }) => {
-  const navigate = useNavigate();
+const YourPostForm = ({ postData, setPostData, comments, setComments }) => {
   const [newComment, setNewComment] = useState('');
   const [replyText, setReplyText] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [showReplies, setShowReplies] = useState({});
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isBookmarking, setIsBookmarking] = useState(false);
 
-  // 글 수정 버튼 클릭
-  const handleEditPost = () => {
-    // 수정 모드로 Posts 페이지로 이동
-    navigate(`/posts?edit=${postData.id}`, {
-      state: {
-        editMode: true,
-        postData: postData
-      }
-    });
-  };
-
-  // 글 삭제 버튼 클릭
-  const handleDeletePost = async () => {
-    const isConfirmed = window.confirm('정말로 이 글을 삭제하시겠습니까? 삭제된 글은 복구할 수 없습니다.');
+  // 스크랩 토글 함수
+  const handleBookmarkToggle = async () => {
+    if (isBookmarking) return;
     
-    if (!isConfirmed) return;
-
-    setIsDeleting(true);
-
+    setIsBookmarking(true);
+    
     try {
       const token = localStorage.getItem('authToken') || '';
+      const method = postData.isBookmarked ? 'DELETE' : 'POST';
       
-      const response = await fetch(`/api/posts/${postData.id}`, {
-        method: 'DELETE',
+      const response = await fetch(`/api/posts/${postData.id}/bookmark`, {
+        method: method,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -42,55 +28,104 @@ const MyPostForm = ({ postData, comments, setComments }) => {
       });
 
       if (response.ok) {
-        alert('글이 성공적으로 삭제되었습니다.');
-        navigate('/main'); // 메인 페이지로 이동
+        // 스크랩 상태 토글
+        setPostData(prev => ({
+          ...prev,
+          isBookmarked: !prev.isBookmarked,
+          scrapCount: prev.isBookmarked ? prev.scrapCount - 1 : prev.scrapCount + 1
+        }));
       } else {
-        const error = await response.json();
-        throw new Error(error.message || '글 삭제에 실패했습니다.');
+        throw new Error('스크랩 처리에 실패했습니다.');
       }
     } catch (error) {
-      console.error('글 삭제 실패:', error);
-      alert(error.message || '글 삭제에 실패했습니다. 다시 시도해주세요.');
+      console.error('스크랩 실패:', error);
+      alert(error.message || '스크랩 처리에 실패했습니다.');
     } finally {
-      setIsDeleting(false);
+      setIsBookmarking(false);
     }
   };
 
   // 댓글 추가
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
-    const comment = {
-      id: Date.now(),
-      author: "현재사용자", // 실제로는 로그인된 사용자 정보
-      content: newComment,
-      createdAt: new Date().toLocaleString('ko-KR'),
-      replies: []
-    };
+    try {
+      const token = localStorage.getItem('authToken') || '';
+      
+      const response = await fetch(`/api/posts/${postData.id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: newComment,
+          parentId: null
+        })
+      });
 
-    setComments(prev => [...prev, comment]);
-    setNewComment('');
+      if (response.ok) {
+        const newCommentData = await response.json();
+        setComments(prev => [...prev, newCommentData]);
+        setNewComment('');
+        
+        // 댓글 수 업데이트
+        setPostData(prev => ({
+          ...prev,
+          commentCount: prev.commentCount + 1
+        }));
+      } else {
+        throw new Error('댓글 작성에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('댓글 작성 실패:', error);
+      alert(error.message || '댓글 작성에 실패했습니다.');
+    }
   };
 
   // 대댓글 추가
-  const handleAddReply = (parentId) => {
+  const handleAddReply = async (parentId) => {
     if (!replyText.trim()) return;
 
-    const reply = {
-      id: Date.now(),
-      author: "현재사용자",
-      content: replyText,
-      createdAt: new Date().toLocaleString('ko-KR')
-    };
+    try {
+      const token = localStorage.getItem('authToken') || '';
+      
+      const response = await fetch(`/api/posts/${postData.id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: replyText,
+          parentId: parentId
+        })
+      });
 
-    setComments(prev => prev.map(comment => 
-      comment.id === parentId 
-        ? { ...comment, replies: [...comment.replies, reply] }
-        : comment
-    ));
+      if (response.ok) {
+        const newReply = await response.json();
+        
+        setComments(prev => prev.map(comment => 
+          comment.id === parentId 
+            ? { ...comment, replies: [...comment.replies, newReply] }
+            : comment
+        ));
 
-    setReplyText('');
-    setReplyingTo(null);
+        setReplyText('');
+        setReplyingTo(null);
+        
+        // 댓글 수 업데이트 (대댓글도 포함)
+        setPostData(prev => ({
+          ...prev,
+          commentCount: prev.commentCount + 1
+        }));
+      } else {
+        throw new Error('답글 작성에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('답글 작성 실패:', error);
+      alert(error.message || '답글 작성에 실패했습니다.');
+    }
   };
 
   // 대댓글 토글
@@ -112,48 +147,23 @@ const MyPostForm = ({ postData, comments, setComments }) => {
     <div className="bg-white rounded-lg shadow-sm border">
       {/* 게시글 내용 */}
       <div className="p-6">
-        {/* 작성자 정보와 수정/삭제 버튼 */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-              {postData.author.profileImage ? (
-                <img 
-                  src={postData.author.profileImage} 
-                  alt="프로필" 
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              ) : (
-                <User className="w-6 h-6 text-white" />
-              )}
-            </div>
-            <div>
-              <div className="font-semibold text-gray-900">{postData.author.nickname}</div>
-              <div className="text-sm text-gray-500">{postData.createdAt}</div>
-            </div>
+        {/* 작성자 정보 */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+            {postData.author.profileImage ? (
+              <img 
+                src={postData.author.profileImage} 
+                alt="프로필" 
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <User className="w-6 h-6 text-white" />
+            )}
           </div>
-          
-          {/* 수정/삭제 버튼 */}
-          {postData.isMyPost && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleEditPost}
-                className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-              >
-                <Edit className="w-4 h-4" />
-                수정
-              </button>
-              <button
-                onClick={handleDeletePost}
-                disabled={isDeleting}
-                className={`flex items-center gap-1 px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors ${
-                  isDeleting ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                <Trash2 className="w-4 h-4" />
-                {isDeleting ? '삭제 중...' : '삭제'}
-              </button>
-            </div>
-          )}
+          <div>
+            <div className="font-semibold text-gray-900">{postData.author.nickname}</div>
+            <div className="text-sm text-gray-500">{postData.createdAt}</div>
+          </div>
         </div>
 
         {/* 게시글 제목 */}
@@ -171,12 +181,23 @@ const MyPostForm = ({ postData, comments, setComments }) => {
             <span>{getTotalCommentCount()}</span>
           </div>
           
-          {!postData.isMyPost && (
-            <button className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors">
+          {/* 스크랩 버튼 */}
+          <button 
+            onClick={handleBookmarkToggle}
+            disabled={isBookmarking}
+            className={`flex items-center gap-2 transition-colors ${
+              postData.isBookmarked 
+                ? 'text-blue-500 hover:text-blue-600' 
+                : 'text-gray-600 hover:text-blue-500'
+            } ${isBookmarking ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {postData.isBookmarked ? (
+              <BookmarkCheck className="w-5 h-5" />
+            ) : (
               <Bookmark className="w-5 h-5" />
-              <span>{postData.scrapCount}</span>
-            </button>
-          )}
+            )}
+            <span>{postData.scrapCount}</span>
+          </button>
         </div>
       </div>
 
@@ -292,4 +313,4 @@ const MyPostForm = ({ postData, comments, setComments }) => {
   );
 };
 
-export default MyPostForm;
+export default YourPostForm;
