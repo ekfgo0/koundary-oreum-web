@@ -5,7 +5,7 @@ import koundaryLogo from '../../components/common/Koundarylogo.png';
 
 const BRAND = '#2e8ada';
 // 버튼을 노출할 경로 prefix 목록 (필요에 맞게 수정)
-const SHOW_BUTTONS_PATHS = ['/main', '/boardlist'];
+const SHOW_BUTTONS_PATHS = ['/main', '/board'];
 
 const Header = ({ title = '' /* 필요 없으면 '' */ , showActions /* 강제 표시/숨김용 선택 프롭 */ }) => {
   const navigate = useNavigate();
