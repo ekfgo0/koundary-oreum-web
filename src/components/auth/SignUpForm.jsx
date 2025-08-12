@@ -1,11 +1,87 @@
-// src/components/auth/SignUpForm.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signUp, checkNickname, checkUsername, sendVerificationEmail, verifyCode } from '../../api/auth';
 
+const labelStyle = {
+  display: 'block',
+  marginBottom: '4px',
+  fontSize: '14px',
+  color: '#333',
+};
+
+// 각 입력 필드를 감싸는 컨테이너의 하단 여백
+const fieldWrapper = {
+  marginBottom: '1.5rem',
+};
+
+// 입력 필드와 버튼이 한 줄에 배치되는 행의 스타일 (닉네임, 아이디, 이메일, 인증번호)
+const rowStyle = {
+  display: 'flex',
+  alignItems: 'flex-end',
+  gap: '10px',
+  marginBottom: '1.5rem',
+};
+
+// 선택 박스 요소들의 스타일 (국적, 소속대학)
+const selectStyle = {
+  width: '100%',
+  height: '40px',
+  backgroundColor: '#f0f0f0',
+  border: 'none',
+  padding: '0 10px',
+};
+
+// 모든 입력 필드의 공통 스타일
+const inputStyle = {
+  width: '100%',
+  height: '40px',
+  backgroundColor: '#f0f0f0',
+  border: 'none',
+  padding: '0 10px',
+  flexShrink: 0,
+};
+
+// 중복확인, 전송, 확인 버튼의 기본 스타일
+const buttonStyle = {
+  width: '100px',
+  height: '40px',
+  padding: '8px 12px',
+  border: '1px solid #2e8ada',
+  color: '#2e8ada',
+  backgroundColor: 'transparent',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease-in-out',
+  flexShrink: 0,
+};
+
+// 회원가입 버튼의 스타일
+const SignUpButtonStyle = {
+  width: '100%',
+  height: '40px',
+  backgroundColor: '#2e8ada',
+  color: '#fff',
+  cursor: 'pointer',
+};
+
+// 입력 필드를 감싸는 컨테이너 (버튼과 함께 배치될 때 사용)
+const inputContainerStyle = {
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+// 응답 메시지 스타일
+const messageStyle = {
+  fontSize: '12px',
+  marginTop: '4px',
+  minHeight: '16px',
+};
+
 const SignUpForm = () => {
+  // React Router의 페이지 이동 함수 (회원가입 완료 후 로그인 페이지로 이동)
   const navigate = useNavigate();
   
+  // 모든 폼 입력값을 저장하는 상태 객체
   const [form, setForm] = useState({
     userId: '',
     password: '',
@@ -17,6 +93,7 @@ const SignUpForm = () => {
     nationality: ''
   });
 
+  // 중복확인 결과 메세지를 저장하는 상태 객체
   const [messages, setMessages] = useState({
     userId: '',
     nickname: '',
@@ -24,6 +101,7 @@ const SignUpForm = () => {
     confirmPassword: ''
   });
 
+  // 중복확인 성공 여부를 저장하는 상태 객체
   const [validStatus, setValidStatus] = useState({
     userId: false,
     nickname: false,
@@ -33,7 +111,10 @@ const SignUpForm = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 입력값 변경 처리
+  // 모든 입력 필드의 값 변경을 처리하는 공통 함수
+  // 매개변수: e - 이벤트 객체
+  // 동작: 입력값 업데이트 + 닉네임/아이디 필드 변경 시 검증 상태 초기화
+  // (이 함수가 없으면 한 번 닉네임, 아이디를 입력하고 나면 그 다음부턴 계속 중복된 정보라고 뜰 것임)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({
@@ -55,6 +136,10 @@ const SignUpForm = () => {
   };
 
   // 닉네임 중복확인 처리
+  // 1. 빈 값 체크
+  // 2. API 호출 (checkNickname)
+  // 3. 성공/실패에 따른 메시지 처리
+  // 4. alert 표시
   const handleNicknameCheck = async () => {
     if (!form.nickname.trim()) {
       setMessages(prev => ({ ...prev, nickname: '닉네임을 입력해주세요.' }));
@@ -146,7 +231,7 @@ const SignUpForm = () => {
   };
 
   // 최종 회원가입 처리 - 함수명 변경으로 중복 해결
-  const handleSignUpSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // 기본 유효성 검사
@@ -206,209 +291,191 @@ const SignUpForm = () => {
   const isPasswordMatching = form.confirmPassword && form.password === form.confirmPassword;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            회원가입
-          </h2>
-        </div>
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSignUpSubmit}>
-          <div className="space-y-4">
-            {/* 아이디 입력 */}
-            <div>
-              <label htmlFor="userId" className="block text-sm font-medium text-gray-700">
-                아이디 <span className="text-red-500">*</span>
-              </label>
-              <div className="flex gap-2 mt-1">
-                <input
-                  id="userId"
-                  name="userId"
-                  type="text"
-                  value={form.userId}
-                  onChange={handleInputChange}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                  placeholder="아이디를 입력하세요"
-                />
-                <button
-                  type="button"
-                  onClick={handleIDCheck}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  중복확인
-                </button>
-              </div>
-              {messages.userId && (
-                <p className={`mt-1 text-sm ${validStatus.userId ? 'text-green-600' : 'text-red-600'}`}>
-                  {messages.userId}
-                </p>
-              )}
-            </div>
-
-            {/* 비밀번호 입력 */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                비밀번호 <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleInputChange}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                placeholder="비밀번호를 입력하세요"
-              />
-            </div>
-
-            {/* 비밀번호 확인 */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                비밀번호 확인 <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={form.confirmPassword}
-                onChange={handleInputChange}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                placeholder="비밀번호를 다시 입력하세요"
-              />
-              {form.confirmPassword && (
-                <p className={`mt-1 text-sm ${isPasswordMatching ? 'text-green-600' : 'text-red-600'}`}>
-                  {isPasswordMatching ? '비밀번호가 일치합니다' : '비밀번호가 일치하지 않습니다'}
-                </p>
-              )}
-            </div>
-
-            {/* 닉네임 입력 */}
-            <div>
-              <label htmlFor="nickname" className="block text-sm font-medium text-gray-700">
-                닉네임 <span className="text-red-500">*</span>
-              </label>
-              <div className="flex gap-2 mt-1">
-                <input
-                  id="nickname"
-                  name="nickname"
-                  type="text"
-                  value={form.nickname}
-                  onChange={handleInputChange}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                  placeholder="닉네임을 입력하세요"
-                />
-                <button
-                  type="button"
-                  onClick={handleNicknameCheck}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  중복확인
-                </button>
-              </div>
-              {messages.nickname && (
-                <p className={`mt-1 text-sm ${validStatus.nickname ? 'text-green-600' : 'text-red-600'}`}>
-                  {messages.nickname}
-                </p>
-              )}
-            </div>
-
-            {/* 이메일 입력 */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                대학교 이메일 <span className="text-red-500">*</span>
-              </label>
-              <div className="flex gap-2 mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleInputChange}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                  placeholder="university@example.ac.kr"
-                />
-                <button
-                  type="button"
-                  onClick={handleSendEmail}
-                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-                >
-                  인증메일
-                </button>
-              </div>
-            </div>
-
-            {/* 인증번호 입력 */}
-            <div>
-              <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700">
-                인증번호
-              </label>
-              <div className="flex gap-2 mt-1">
-                <input
-                  id="verificationCode"
-                  name="verificationCode"
-                  type="text"
-                  value={form.verificationCode}
-                  onChange={handleInputChange}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                  placeholder="인증번호를 입력하세요"
-                />
-                <button
-                  type="button"
-                  onClick={handleVerifyCode}
-                  className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors"
-                >
-                  인증확인
-                </button>
-              </div>
-            </div>
-
-            {/* 대학교 입력 */}
-            <div>
-              <label htmlFor="university" className="block text-sm font-medium text-gray-700">
-                대학교
-              </label>
-              <input
-                id="university"
-                name="university"
-                type="text"
-                value={form.university}
-                onChange={handleInputChange}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                placeholder="대학교명을 입력하세요"
-              />
-            </div>
-
-            {/* 국적 입력 */}
-            <div>
-              <label htmlFor="nationality" className="block text-sm font-medium text-gray-700">
-                국적
-              </label>
-              <input
-                id="nationality"
-                name="nationality"
-                type="text"
-                value={form.nationality}
-                onChange={handleInputChange}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                placeholder="국적을 입력하세요"
-              />
-            </div>
-          </div>
-
-          {/* 회원가입 버튼 */}
-          <div>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? '가입 중...' : '회원가입'}
-            </button>
-          </div>
-        </form>
+    <form onSubmit={handleSubmit}>
+      {/* 국적 */}
+      <div style={fieldWrapper}>
+        <label htmlFor="nationality" style={labelStyle}>국적 선택</label>
+        <select
+          name="nationality"
+          id="nationality"
+          value={form.nationality}
+          onChange={handleInputChange}
+          style={selectStyle}
+        >
+          <option value="">선택하세요</option>
+          <option value="대한민국">대한민국</option>
+          <option value="미국">미국</option>
+          <option value="영국">영국</option>
+          <option value="캐나다">캐나다</option>
+        </select>
       </div>
-    </div>
+
+      {/* 소속대학 */}
+      <div style={fieldWrapper}>
+        <label htmlFor="university" style={labelStyle}>소속대학 선택</label>
+        <select
+          name="university"
+          id="university"
+          value={form.university}
+          onChange={handleInputChange}
+          style={selectStyle}
+        >
+          <option value="">선택하세요</option>
+          <option value="홍익대학교">홍익대학교</option>
+          <option value="연세대학교">연세대학교</option>
+          <option value="서강대학교">서강대학교</option>
+          <option value="이화여자대학교">이화여자대학교</option>
+        </select>
+      </div>
+
+      {/* 닉네임 + 버튼 */}
+      <div style={rowStyle}>
+        <div style={inputContainerStyle}>
+          <label htmlFor="nickname" style={labelStyle}>닉네임</label>
+          <input
+            type="text"
+            name="nickname"
+            value={form.nickname}
+            onChange={handleInputChange}
+            style={inputStyle}
+          />
+        </div>
+        <button 
+          type="button" 
+          style={buttonStyle} 
+          onClick={handleNicknameCheck}
+          onMouseEnter={handleButtonHover}
+          onMouseLeave={handleButtonLeave}
+        >
+          중복확인
+        </button>
+      </div>
+
+      {/* 아이디 + 버튼 */}
+      <div style={rowStyle}>
+        <div style={inputContainerStyle}>
+          <label htmlFor="userId" style={labelStyle}>아이디</label>
+          <input
+            type="text"
+            name="userId"
+            value={form.userId}
+            onChange={handleInputChange}
+            style={inputStyle}
+          />
+        </div>
+        <button 
+          type="button" 
+          style={buttonStyle} 
+          onClick={handleIDCheck}
+          onMouseEnter={handleButtonHover}
+          onMouseLeave={handleButtonLeave}
+        >
+          중복확인
+        </button>
+      </div>
+
+      {/* 비밀번호 */}
+      <div style={fieldWrapper}>
+        <label htmlFor="password" style={labelStyle}>비밀번호</label>
+        <input
+          type="password"
+          name="password"
+          value={form.password}
+          onChange={handleInputChange}
+          style={inputStyle}
+        />
+      </div>
+
+      {/* 비밀번호 확인 */}
+      <div style={fieldWrapper}>
+        <label htmlFor="confirmPassword" style={labelStyle}>비밀번호 확인</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <input
+            type="password"
+            name="confirmPassword"
+            value={form.confirmPassword}
+            onChange={handleInputChange}
+            style={inputStyle}
+          />
+          <span
+            style={{
+              minWidth: '200px',
+              color: isPasswordMatching ? '#2e8ada' : 'red',
+              fontSize: isPasswordMatching ? '14px' : '12px',
+            }}
+          >
+            {form.confirmPassword
+              ? isPasswordMatching
+                ? '사용가능!'
+                : '비밀번호가 서로 일치하지 않습니다.'
+              : ''}
+          </span>
+        </div>
+      </div>
+
+      {/* 이메일 + 전송 */}
+      <div style={rowStyle}>
+        <div style={inputContainerStyle}>
+          <label htmlFor="email" style={labelStyle}>본인대학 이메일</label>
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleInputChange}
+            style={inputStyle}
+          />
+        </div>
+        <button 
+          type="button" 
+          style={buttonStyle} 
+          onClick={handleSendEmail}
+          onMouseEnter={handleButtonHover}
+          onMouseLeave={handleButtonLeave}
+        >
+          전송
+        </button>
+      </div>
+
+      {/* 인증번호 + 확인 */}
+      <div style={rowStyle}>
+        <div style={inputContainerStyle}>
+          <label htmlFor="verificationCode" style={labelStyle}>인증번호</label>
+          <input
+            type="text"
+            name="verificationCode"
+            value={form.verificationCode}
+            onChange={handleInputChange}
+            style={inputStyle}
+          />
+        </div>
+        <button 
+          type="button" 
+          style={buttonStyle} 
+          onClick={handleVerifyCode}
+          onMouseEnter={handleButtonHover}
+          onMouseLeave={handleButtonLeave}
+        >
+          확인
+        </button>
+      </div>
+
+      {/* 회원가입 버튼 */}
+      <div style={{ marginTop: '2rem' }}>
+        <button
+          type="submit"
+          style={SignUpButtonStyle}
+          disabled={isSubmitting}
+          onMouseEnter={ e => {
+            e.target.style.backgroundColor = "#086cc3";
+          }}
+          onMouseLeave={ e => {
+            e.target.style.backgroundColor = "#2e8ada";
+          }}
+        >
+          {isSubmitting ? '회원가입 중...' : '회원가입'}
+        </button>
+      </div>
+    </form>
   );
 };
 
