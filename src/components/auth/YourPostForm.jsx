@@ -7,17 +7,17 @@ const YourPostForm = ({ postData, setPostData, comments, setComments }) => {
   const [replyText, setReplyText] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
   const [showReplies, setShowReplies] = useState({});
-  const [isBookmarking, setIsBookmarking] = useState(false);
+  const [scrap, setscrap] = useState(false);
 
   // 스크랩 토글 함수
   const handleBookmarkToggle = async () => {
-    if (isBookmarking) return;
+    if (scrap) return;
     
-    setIsBookmarking(true);
+    setscrap(true);
     
     try {
       const token = localStorage.getItem('authToken') || '';
-      const method = postData.isBookmarked ? 'DELETE' : 'POST';
+      const method = postData.scrap ? 'DELETE' : 'POST';
       
       const response = await fetch(`/api/posts/${postData.id}/bookmark`, {
         method: method,
@@ -31,8 +31,8 @@ const YourPostForm = ({ postData, setPostData, comments, setComments }) => {
         // 스크랩 상태 토글
         setPostData(prev => ({
           ...prev,
-          isBookmarked: !prev.isBookmarked,
-          scrapCount: prev.isBookmarked ? prev.scrapCount - 1 : prev.scrapCount + 1
+          scrap: !prev.scrap,
+          scrapCount: prev.scrap ? prev.scrapCount - 1 : prev.scrapCount + 1
         }));
       } else {
         throw new Error('스크랩 처리에 실패했습니다.');
@@ -41,7 +41,7 @@ const YourPostForm = ({ postData, setPostData, comments, setComments }) => {
       console.error('스크랩 실패:', error);
       alert(error.message || '스크랩 처리에 실패했습니다.');
     } finally {
-      setIsBookmarking(false);
+      setscrap(false);
     }
   };
 
@@ -184,14 +184,14 @@ const YourPostForm = ({ postData, setPostData, comments, setComments }) => {
           {/* 스크랩 버튼 */}
           <button 
             onClick={handleBookmarkToggle}
-            disabled={isBookmarking}
+            disabled={scrap}
             className={`flex items-center gap-2 transition-colors ${
-              postData.isBookmarked 
+              postData.scrap 
                 ? 'text-blue-500 hover:text-blue-600' 
                 : 'text-gray-600 hover:text-blue-500'
-            } ${isBookmarking ? 'opacity-50 cursor-not-allowed' : ''}`}
+            } ${scrap ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {postData.isBookmarked ? (
+            {postData.scrap ? (
               <BookmarkCheck className="w-5 h-5" />
             ) : (
               <Bookmark className="w-5 h-5" />

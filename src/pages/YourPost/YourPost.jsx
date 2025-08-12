@@ -41,7 +41,7 @@ const YourPost = () => {
       scrapCount: 24,
       commentCount: 12,
       isMyPost: false,
-      isBookmarked: false // 내가 스크랩했는지 여부
+      scrap: false // 내가 스크랩했는지 여부
     };
 
     const mockComments = [
@@ -125,12 +125,12 @@ const YourPost = () => {
         
         if (useMockData) {
           // Mock 데이터 사용
-          console.log('🔧 Mock 데이터 모드 - YourPost');
+          console.log('Mock 데이터 모드 - YourPost');
           await new Promise(resolve => setTimeout(resolve, 500)); // 로딩 시뮬레이션
           data = getMockData();
         } else {
           // 실제 API 호출
-          console.log('🌐 실제 API 호출 - YourPost');
+          console.log('실제 API 호출 - YourPost');
           data = await fetchRealData();
         }
 
@@ -164,7 +164,6 @@ const YourPost = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          title="글 보기" 
           showActions={true}
         />
         <div className="flex items-center justify-center py-20">
@@ -184,8 +183,7 @@ const YourPost = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header 
-          title="글 보기" 
+        <Header  
           showActions={true}
         />
         <div className="flex items-center justify-center py-20">
@@ -215,7 +213,6 @@ const YourPost = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header 
-          title="글 보기" 
           showActions={true}
         />
         <div className="flex items-center justify-center py-20">
@@ -236,7 +233,6 @@ const YourPost = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
-        title="글 보기" 
         showActions={true}
       />
       
@@ -265,7 +261,7 @@ const YourPost = () => {
         {/* Mock 모드 표시 */}
         {useMockData && (
           <div className="mb-4 p-2 bg-blue-100 border border-blue-300 rounded text-blue-800 text-sm">
-            🔧 Mock 데이터 모드가 활성화되어 있습니다. .env에서 VITE_USE_MOCK=false로 변경하면 실제 API를 사용합니다.
+            Mock 데이터 모드가 활성화되어 있습니다. .env에서 VITE_USE_MOCK=false로 변경하면 실제 API를 사용합니다.
           </div>
         )}
         
