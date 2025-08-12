@@ -1,8 +1,14 @@
 // src/components/auth/YourPostForm.jsx
 import React, { useState } from 'react';
-import { MessageCircle, Bookmark, BookmarkCheck, User, Reply, Send } from 'lucide-react';
+import { MessageCircle, Bookmark, BookmarkCheck, User, Reply, Send, Flag } from 'lucide-react';
 
-const YourPostForm = ({ postData, setPostData, comments, setComments }) => {
+const YourPostForm = ({ 
+  postData, 
+  setPostData, 
+  comments, 
+  setComments, 
+  onReportPost
+}) => {
   const [newComment, setNewComment] = useState('');
   const [replyText, setReplyText] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
@@ -147,23 +153,37 @@ const YourPostForm = ({ postData, setPostData, comments, setComments }) => {
     <div className="bg-white rounded-lg shadow-sm border">
       {/* 게시글 내용 */}
       <div className="p-6">
-        {/* 작성자 정보 */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-            {postData.author.profileImage ? (
-              <img 
-                src={postData.author.profileImage} 
-                alt="프로필" 
-                className="w-12 h-12 rounded-full object-cover"
-              />
-            ) : (
-              <User className="w-6 h-6 text-white" />
-            )}
+        {/* 작성자 정보와 신고 버튼 */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+              {postData.author.profileImage ? (
+                <img 
+                  src={postData.author.profileImage} 
+                  alt="프로필" 
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <User className="w-6 h-6 text-white" />
+              )}
+            </div>
+            <div>
+              <div className="font-semibold text-gray-900">{postData.author.nickname}</div>
+              <div className="text-sm text-gray-500">{postData.createdAt}</div>
+            </div>
           </div>
-          <div>
-            <div className="font-semibold text-gray-900">{postData.author.nickname}</div>
-            <div className="text-sm text-gray-500">{postData.createdAt}</div>
-          </div>
+          
+          {/* 게시글 신고 버튼 */}
+          {!postData.isMyPost && onReportPost && (
+            <button
+              onClick={onReportPost}
+              className="flex items-center gap-1 px-3 py-1 text-sm text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              title="게시글 신고"
+            >
+              <Flag className="w-4 h-4" />
+              신고
+            </button>
+          )}
         </div>
 
         {/* 게시글 제목 */}
@@ -217,10 +237,13 @@ const YourPostForm = ({ postData, setPostData, comments, setComments }) => {
                   <User className="w-4 h-4 text-gray-600" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-sm text-gray-900">{comment.author}</span>
-                    <span className="text-xs text-gray-500">{comment.createdAt}</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm text-gray-900">{comment.author}</span>
+                      <span className="text-xs text-gray-500">{comment.createdAt}</span>
+                    </div>
                   </div>
+                  
                   <p className="text-gray-700 text-sm mb-2">{comment.content}</p>
                   
                   <div className="flex items-center gap-3">
@@ -269,9 +292,11 @@ const YourPostForm = ({ postData, setPostData, comments, setComments }) => {
                         <User className="w-3 h-3 text-gray-600" />
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm text-gray-900">{reply.author}</span>
-                          <span className="text-xs text-gray-500">{reply.createdAt}</span>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm text-gray-900">{reply.author}</span>
+                            <span className="text-xs text-gray-500">{reply.createdAt}</span>
+                          </div>
                         </div>
                         <p className="text-gray-700 text-sm">{reply.content}</p>
                       </div>

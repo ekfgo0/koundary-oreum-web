@@ -1,8 +1,106 @@
-// src/pages/YourPost/YourPost.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import YourPostForm from '../../components/auth/YourPostForm';
+
+// 신고 모달 컴포넌트
+const ReportModal = ({ isOpen, onClose, onSubmit }) => {
+  const [reportReason, setReportReason] = useState('');
+  const [customReason, setCustomReason] = useState('');
+
+  const reportReasons = [
+    '스팸/광고',
+    '욕설/비방',
+    '음란/선정적 내용',
+    '허위정보',
+    '저작권 침해',
+    '개인정보 노출',
+    '기타'
+  ];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!reportReason) {
+      alert('신고 사유를 선택해주세요.');
+      return;
+    }
+    
+    const finalReason = reportReason === '기타' ? customReason : reportReason;
+    if (reportReason === '기타' && !customReason.trim()) {
+      alert('기타 사유를 입력해주세요.');
+      return;
+    }
+
+    onSubmit(finalReason);
+    setReportReason('');
+    setCustomReason('');
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 className="text-lg font-semibold mb-4">게시글 신고</h3>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">신고 사유</label>
+            <div className="space-y-2">
+              {reportReasons.map((reason) => (
+                <label key={reason} className="flex items-center">
+                  <input
+                    type="radio"
+                    name="reportReason"
+                    value={reason}
+                    checked={reportReason === reason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm">{reason}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {reportReason === '기타' && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">상세 내용</label>
+              <textarea
+                value={customReason}
+                onChange={(e) => setCustomReason(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md resize-none"
+                rows="3"
+                placeholder="신고 사유를 자세히 입력해주세요."
+                maxLength="500"
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {customReason.length}/500
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              신고하기
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const YourPost = () => {
   const navigate = useNavigate();
@@ -13,6 +111,13 @@ const YourPost = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentCategory, setCurrentCategory] = useState('');
+  
+  // 신고 관련 상태
+  const [reportModal, setReportModal] = useState({
+    isOpen: false,
+    type: 'post',
+    targetId: null
+  });
 
   const categories = [
     '소속국가',
@@ -113,6 +218,66 @@ const YourPost = () => {
     const comments = await commentsResponse.json();
     
     return { post, comments };
+  };
+
+  // 신고 기능
+  const handleReport = async (reason) => {
+    const token = localStorage.getItem('authToken') || '';
+    
+    try {
+      if (useMockData) {
+        // Mock 모드에서는 시뮬레이션
+        console.log('Mock 신고 요청:', {
+          type: 'post',
+          targetId: reportModal.targetId,
+          reason: reason
+        });
+        
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 로딩 시뮬레이션
+        alert('게시글 신고가 접수되었습니다.');
+        return;
+      }
+
+      // 실제 API 호출
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${reportModal.targetId}/report`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason: reason
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('신고 처리 중 오류가 발생했습니다.');
+      }
+
+      alert('게시글 신고가 접수되었습니다.');
+      
+    } catch (error) {
+      console.error('신고 실패:', error);
+      alert('신고 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+  };
+
+  // 신고 모달 열기
+  const openReportModal = (targetId) => {
+    setReportModal({
+      isOpen: true,
+      type: 'post',
+      targetId: targetId
+    });
+  };
+
+  // 신고 모달 닫기
+  const closeReportModal = () => {
+    setReportModal({
+      isOpen: false,
+      type: 'post',
+      targetId: null
+    });
   };
 
   useEffect(() => {
@@ -270,8 +435,16 @@ const YourPost = () => {
           setPostData={setPostData}
           comments={comments}
           setComments={setComments}
+          onReportPost={() => openReportModal(postData.id)}
         />
       </div>
+
+      {/* 신고 모달 */}
+      <ReportModal
+        isOpen={reportModal.isOpen}
+        onClose={closeReportModal}
+        onSubmit={handleReport}
+      />
     </div>
   );
 };
