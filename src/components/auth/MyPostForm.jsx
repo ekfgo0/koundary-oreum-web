@@ -1,4 +1,3 @@
-// src/components/auth/MyPostForm.jsx
 import React, { useState } from 'react';
 import { MessageCircle, Bookmark, User, Reply, Send, Edit, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -91,6 +90,20 @@ const MyPostForm = ({ postData, comments, setComments }) => {
 
     setReplyText('');
     setReplyingTo(null);
+  };
+
+  // 답글 모드 토글
+  const toggleReplyMode = (commentId) => {
+    setReplyingTo(replyingTo === commentId ? null : commentId);
+    setReplyText(''); // 답글 텍스트 초기화
+    
+    // 답글을 작성하려 할 때 대댓글 목록이 닫혀있다면 자동으로 열기
+    if (replyingTo !== commentId) {
+      setShowReplies(prev => ({
+        ...prev,
+        [commentId]: true
+      }));
+    }
   };
 
   // 대댓글 토글
@@ -221,9 +234,25 @@ const MyPostForm = ({ postData, comments, setComments }) => {
                     )}
                   </div>
 
+                  {/* 대댓글 목록 */}
+                  {showReplies[comment.id] && comment.replies.map((reply) => (
+                    <div key={reply.id} className="mt-3 ml-6 flex gap-3">
+                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-3 h-3 text-gray-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-sm text-gray-900">{reply.author}</span>
+                          <span className="text-xs text-gray-500">{reply.createdAt}</span>
+                        </div>
+                        <p className="text-gray-700 text-sm">{reply.content}</p>
+                      </div>
+                    </div>
+                  ))}
+
                   {/* 답글 입력 */}
                   {replyingTo === comment.id && (
-                    <div className="mt-3 flex gap-2">
+                    <div className="mt-3 ml-6 flex gap-2">
                       <input
                         type="text"
                         value={replyText}
@@ -240,22 +269,6 @@ const MyPostForm = ({ postData, comments, setComments }) => {
                       </button>
                     </div>
                   )}
-
-                  {/* 대댓글 목록 */}
-                  {showReplies[comment.id] && comment.replies.map((reply) => (
-                    <div key={reply.id} className="mt-3 ml-6 flex gap-3">
-                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-3 h-3 text-gray-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm text-gray-900">{reply.author}</span>
-                          <span className="text-xs text-gray-500">{reply.createdAt}</span>
-                        </div>
-                        <p className="text-gray-700 text-sm">{reply.content}</p>
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>

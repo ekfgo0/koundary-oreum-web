@@ -17,7 +17,7 @@ const CategoryNavigation = ({ currentCategory = '', onCategoryChange }) => {
     // 해당 카테고리 게시판으로 이동
     navigate(`/board/${category}`);
     
-    // 부모 컴포넌트에 카테고리 변경 알림 (선택사항)
+    // 부모 컴포넌트에 카테고리 변경 알림
     if (onCategoryChange) {
       onCategoryChange(category);
     }

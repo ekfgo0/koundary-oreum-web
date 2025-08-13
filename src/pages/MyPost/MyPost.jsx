@@ -1,4 +1,3 @@
-// src/pages/MyPost/MyPost.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/common/Header';
@@ -20,6 +19,7 @@ const MyPost = () => {
 
   // Mock 데이터
   const getMockData = () => {
+    // 게시글 내용
     const mockPost = {
       id: parseInt(postId) || 1,
       title: "해외 유학생활 꿀팁 공유",
@@ -34,7 +34,7 @@ const MyPost = () => {
       commentCount: 8,
       isMyPost: true
     };
-
+    // 댓글 내용
     const mockComments = [
       {
         id: 1,
@@ -110,7 +110,8 @@ const MyPost = () => {
         if (useMockData) {
           // Mock 데이터 사용
           console.log('Mock 데이터 모드 - MyPost');
-          await new Promise(resolve => setTimeout(resolve, 500)); // 로딩 시뮬레이션
+          // 로딩 시뮬레이션
+          await new Promise(resolve => setTimeout(resolve, 500));
           data = getMockData();
         } else {
           // 실제 API 호출
@@ -138,7 +139,7 @@ const MyPost = () => {
     }
   }, [postId, useMockData]);
 
-  // 카테고리 변경 핸들러 (선택사항)
+  // 카테고리 변경 핸들러
   const handleCategoryChange = (category) => {
     setCurrentCategory(category);
   };
@@ -154,7 +155,7 @@ const MyPost = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
             <div className="text-lg text-gray-600">글을 불러오는 중...</div>
             {useMockData && (
-              <div className="text-sm text-blue-500 mt-2">🔧 Mock 데이터 모드</div>
+              <div className="text-sm text-blue-500 mt-2">Mock 데이터 모드</div>
             )}
           </div>
         </div>
@@ -170,7 +171,7 @@ const MyPost = () => {
         <CategoryNavigation currentCategory={currentCategory} />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <div className="text-red-500 text-lg mb-4">⚠️ 오류가 발생했습니다</div>
+            <div className="text-red-500 text-lg mb-4">오류가 발생했습니다</div>
             <div className="text-gray-600 mb-4">{error}</div>
             <button 
               onClick={() => window.location.reload()}
@@ -225,7 +226,7 @@ const MyPost = () => {
         {/* Mock 모드 표시 */}
         {useMockData && (
           <div className="mb-4 p-2 bg-blue-100 border border-blue-300 rounded text-blue-800 text-sm">
-            Mock 데이터 모드가 활성화되어 있습니다. .env에서 VITE_USE_MOCK=false로 변경하면 실제 API를 사용합니다.
+            Mock 데이터 모드가 활성화되어 있습니다.
           </div>
         )}
         

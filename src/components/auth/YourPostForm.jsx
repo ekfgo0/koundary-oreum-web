@@ -1,6 +1,5 @@
-// src/components/auth/YourPostForm.jsx
 import React, { useState } from 'react';
-import { MessageCircle, Bookmark, BookmarkCheck, User, Reply, Send, Flag } from 'lucide-react';
+import { MessageCircle, Bookmark, BookmarkCheck, User, Reply, Send, Flag, X } from 'lucide-react';
 
 const YourPostForm = ({ 
   postData, 
@@ -134,6 +133,26 @@ const YourPostForm = ({
     }
   };
 
+  // 답글 모드 토글
+  const toggleReplyMode = (commentId) => {
+    setReplyingTo(replyingTo === commentId ? null : commentId);
+    setReplyText(''); // 답글 텍스트 초기화
+    
+    // 답글을 작성하려 할 때 대댓글 목록이 닫혀있다면 자동으로 열기
+    if (replyingTo !== commentId) {
+      setShowReplies(prev => ({
+        ...prev,
+        [commentId]: true
+      }));
+    }
+  };
+
+  // 답글 모드 취소
+  const cancelReply = () => {
+    setReplyingTo(null);
+    setReplyText('');
+  };
+
   // 대댓글 토글
   const toggleReplies = (commentId) => {
     setShowReplies(prev => ({
@@ -265,26 +284,6 @@ const YourPostForm = ({
                     )}
                   </div>
 
-                  {/* 답글 입력 */}
-                  {replyingTo === comment.id && (
-                    <div className="mt-3 flex gap-2">
-                      <input
-                        type="text"
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        placeholder="답글을 입력하세요..."
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddReply(comment.id)}
-                      />
-                      <button
-                        onClick={() => handleAddReply(comment.id)}
-                        className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                      >
-                        <Send className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-
                   {/* 대댓글 목록 */}
                   {showReplies[comment.id] && comment.replies.map((reply) => (
                     <div key={reply.id} className="mt-3 ml-6 flex gap-3">
@@ -302,6 +301,26 @@ const YourPostForm = ({
                       </div>
                     </div>
                   ))}
+
+                  {/* 답글 입력 */}
+                  {replyingTo === comment.id && (
+                    <div className="mt-3 ml-6 flex gap-2">
+                      <input
+                        type="text"
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        placeholder="답글을 입력하세요..."
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                        onKeyPress={(e) => e.key === 'Enter' && handleAddReply(comment.id)}
+                      />
+                      <button
+                        onClick={() => handleAddReply(comment.id)}
+                        className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -320,12 +339,13 @@ const YourPostForm = ({
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="댓글을 입력하세요..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
               />
               <button
                 onClick={handleAddComment}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+                disabled={!newComment.trim()}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" />
                 등록
