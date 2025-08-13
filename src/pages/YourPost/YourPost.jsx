@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/common/Header';
+import CategoryNavigation from '../../components/common/CategoryNavigation';
 import YourPostForm from '../../components/auth/YourPostForm';
 
 // 신고 모달 컴포넌트
@@ -118,15 +119,6 @@ const YourPost = () => {
     type: 'post',
     targetId: null
   });
-
-  const categories = [
-    '소속국가',
-    '소속학교', 
-    '자유게시판',
-    '정보게시판',
-    '중고거래 게시판',
-    '모임게시판'
-  ];
 
   // Mock 모드 확인
   const useMockData = import.meta.env.VITE_USE_MOCK === 'true';
@@ -280,6 +272,11 @@ const YourPost = () => {
     });
   };
 
+  // 카테고리 변경 핸들러 (선택사항)
+  const handleCategoryChange = (category) => {
+    setCurrentCategory(category);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -319,18 +316,12 @@ const YourPost = () => {
     }
   }, [postId, useMockData]);
 
-  const handleCategoryClick = (category) => {
-    // 해당 카테고리 게시판으로 이동
-    navigate(`/board/${category}`);
-  };
-
   // 로딩 상태
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header 
-          showActions={true}
-        />
+        <Header showActions={true} />
+        <CategoryNavigation currentCategory={currentCategory} />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
@@ -348,9 +339,8 @@ const YourPost = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header  
-          showActions={true}
-        />
+        <Header showActions={true} />
+        <CategoryNavigation currentCategory={currentCategory} />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="text-red-500 text-lg mb-4">⚠️ 오류가 발생했습니다</div>
@@ -377,9 +367,8 @@ const YourPost = () => {
   if (!postData) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header 
-          showActions={true}
-        />
+        <Header showActions={true} />
+        <CategoryNavigation currentCategory={currentCategory} />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="text-gray-600 text-lg">게시글을 찾을 수 없습니다</div>
@@ -397,30 +386,13 @@ const YourPost = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header 
-        showActions={true}
-      />
+      <Header showActions={true} />
       
-      {/* 카테고리 네비게이션 */}
-      <div className="bg-blue-500 py-2">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="flex justify-between">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => handleCategoryClick(category)}
-                className={`flex-1 px-3 py-1 font-medium transition-all bg-blue-500 border-none outline-none ${
-                  currentCategory === category
-                    ? 'text-blue-900'
-                    : 'text-white hover:text-blue-100'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* 카테고리 네비게이션 - 재사용 가능한 컴포넌트로 분리 */}
+      <CategoryNavigation 
+        currentCategory={currentCategory}
+        onCategoryChange={handleCategoryChange}
+      />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Mock 모드 표시 */}
