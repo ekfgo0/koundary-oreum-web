@@ -5,12 +5,12 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { getBoardList } from '../../api/board';
 
 const CATEGORY_MAP = {
-  free:   { label: '자유게시판',  backendKey: 'FREE' },
-  info:   { label: '정보게시판',    backendKey: 'INFO' },
-  market: { label: '중고거래 게시판',      backendKey: 'MARKET' },
-  meetup: { label: '모임게시판',   backendKey: 'MEETUP' },
-  country:{ label: '소속국가',     backendKey: 'COUNTRY' },
-  school: { label: '소속학교',     backendKey: 'SCHOOL' },
+  free:   { label: '자유 게시판',  backendKey: 'FREE' },
+  info:   { label: '정보 게시판',    backendKey: 'INFO' },
+  market: { label: '중고거래/나눔 게시판',      backendKey: 'MARKET' },
+  meetup: { label: '모임 게시판',   backendKey: 'MEETUP' },
+  country:{ label: '소속 국가',     backendKey: 'COUNTRY' },
+  school: { label: '소속 학교',     backendKey: 'SCHOOL' },
 };
 
 export default function BoardList() {
