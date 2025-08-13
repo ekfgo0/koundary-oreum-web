@@ -1,21 +1,21 @@
-// src/pages/BoardList/BoardList.jsx
 import React, { useEffect, useState } from 'react';
 import Header from '../../components/profile/Header';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom'; // ✅ useNavigate 추가
+import CategoryNavigation from '../../components/common/CategoryNavigation';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { getBoardList } from '../../api/board';
 
 const CATEGORY_MAP = {
-  free:   { label: '자유 게시판', backendKey: 'FREE' },
-  info:   { label: '정보게시판',   backendKey: 'INFO' },
-  market: { label: '중고거래',     backendKey: 'MARKET' },
-  meetup: { label: '모임 게시판',  backendKey: 'MEETUP' },
-  country:{ label: '소속 국가',    backendKey: 'COUNTRY' },
-  school: { label: '소속 학교',    backendKey: 'SCHOOL' },
+  free:   { label: '자유게시판',  backendKey: 'FREE' },
+  info:   { label: '정보게시판',    backendKey: 'INFO' },
+  market: { label: '중고거래 게시판',      backendKey: 'MARKET' },
+  meetup: { label: '모임게시판',   backendKey: 'MEETUP' },
+  country:{ label: '소속국가',     backendKey: 'COUNTRY' },
+  school: { label: '소속학교',     backendKey: 'SCHOOL' },
 };
 
 export default function BoardList() {
-  const { category: slug } = useParams();
-  const meta = CATEGORY_MAP[slug] ?? CATEGORY_MAP.free;
+  const { category: slug } = useParams();                 // URL의 :category
+  const meta = CATEGORY_MAP[slug] ?? CATEGORY_MAP.free;   // 매핑 실패 시 free
 
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get('page') || 1);
@@ -25,8 +25,19 @@ export default function BoardList() {
   const [total, setTotal] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
 
-  const navigate = useNavigate(); // ✅ 추가
+  const navigate = useNavigate();
 
+  // 카테고리 바뀌면 page=1로 리셋 (선택 사항이지만 UX 좋음)
+  useEffect(() => {
+    const sp = new URLSearchParams(searchParams);
+    if ((sp.get('page') || '1') !== '1') {
+      sp.set('page', '1');
+      setSearchParams(sp);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
+  // 목록 불러오기
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -34,8 +45,10 @@ export default function BoardList() {
         setIsFetching(true);
         const data = await getBoardList({ category: meta.backendKey, page, size });
 
-        const items = data?.items ?? data?.content ?? data?.list ?? [];
-        const totalCount = data?.total ?? data?.totalElements ?? data?.count ?? items.length;
+        const items =
+          data?.items ?? data?.content ?? data?.list ?? [];
+        const totalCount =
+          data?.total ?? data?.totalElements ?? data?.count ?? items.length;
 
         if (mounted) {
           setRows(items);
@@ -51,8 +64,9 @@ export default function BoardList() {
         mounted && setIsFetching(false);
       }
     })();
+
     return () => { mounted = false; };
-  }, [meta.backendKey, page]);
+  }, [meta.backendKey, page, size]);
 
   const totalPages = Math.max(1, Math.ceil(total / size));
 
@@ -66,13 +80,16 @@ export default function BoardList() {
     <div className="min-h-screen bg-white">
       <Header title="" />
 
+      {/* 현재 카테고리(slug) 전달해서 활성 탭 표시 */}
+      <CategoryNavigation currentCategory={slug} />
+
       <div className="max-w-[1024px] mx-auto px-4 py-8">
         {/* 제목 + 글 작성 버튼 + 로딩 표시 */}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-semibold">{meta.label}</h1>
 
           <div className="flex items-center gap-3">
-            {/* 🔄 로딩 스피너 */}
+            {/* 로딩 스피너 */}
             {isFetching && (
               <div className="flex items-center gap-2 bg-white/80 border rounded px-3 py-1 text-sm">
                 <svg
@@ -99,14 +116,13 @@ export default function BoardList() {
               </div>
             )}
 
-            {/* ✏️ 글 작성 버튼 */}
-           <button
+            {/* 글 작성 버튼 */}
+            <button
               onClick={() => navigate('/posts')}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition outline-none focus:outline-none"
             >
               글 작성
             </button>
-
           </div>
         </div>
 
@@ -120,7 +136,7 @@ export default function BoardList() {
             </tr>
           </thead>
           <tbody>
-            {rows.map(item => (
+            {rows.map((item) => (
               <tr key={item.id} className="border-t hover:bg-gray-50 cursor-pointer">
                 <td className="py-3 pr-4">{item.title}</td>
                 <td className="py-3">{item.author}</td>
@@ -129,7 +145,11 @@ export default function BoardList() {
             ))}
 
             {!isFetching && rows.length === 0 && (
-              <tr><td className="py-12 text-center text-gray-400" colSpan={3}>게시글이 없습니다</td></tr>
+              <tr>
+                <td className="py-12 text-center text-gray-400" colSpan={3}>
+                  게시글이 없습니다
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
