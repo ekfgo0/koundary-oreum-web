@@ -9,7 +9,7 @@ const CategoryNavigation = ({ currentCategory = '', onCategoryChange }) => {
     '소속학교', 
     '자유게시판',
     '정보게시판',
-    '중고거래 게시판',
+    '중고거래/나눔 게시판',
     '모임게시판'
   ];
 

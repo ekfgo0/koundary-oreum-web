@@ -9,7 +9,7 @@ const MyPostForm = ({ postData, comments, setComments }) => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [showReplies, setShowReplies] = useState({});
   const [isDeleting, setIsDeleting] = useState(false);
-
+  
   // 글 수정 버튼 클릭
   const handleEditPost = () => {
     // 수정 모드로 Posts 페이지로 이동
