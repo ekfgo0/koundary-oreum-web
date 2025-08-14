@@ -2,6 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import koundaryLogo from '../../components/common/Koundarylogo.png';
+import { postAPI } from '../../api/post'; // 새로 만든 API import
+import { getCategoryBoardId, getLanguageId } from '../../utils/categoryUtils'; // 유틸리티 import
+
+// API 기본 URL 설정 - 실제 백엔드 서버 주소로 수정
+const API_BASE_URL = 'http://192.168.174.75:8080';
 
 const Post = () => {
   const navigate = useNavigate();
@@ -21,6 +26,7 @@ const Post = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInfoPost, setIsInfoPost] = useState(false);
+  const [error, setError] = useState(null);
 
   // 수정 모드일 때 기존 데이터로 폼 초기화
   useEffect(() => {
@@ -48,6 +54,8 @@ const Post = () => {
       ...prev,
       [name]: value
     }));
+    // 에러 메시지 초기화
+    if (error) setError(null);
   };
 
   const handleFileChange = (e) => {
@@ -72,84 +80,59 @@ const Post = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
     
     // 유효성 검사
     if (!formData.title.trim()) {
-      alert('제목을 입력해주세요.');
+      setError('제목을 입력해주세요.');
       return;
     }
     
     if (!formData.content.trim()) {
-      alert('내용을 입력해주세요.');
+      setError('내용을 입력해주세요.');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem('authToken') || '';
-      
-      // FormData 생성 (파일 업로드 포함)
-      const submitFormData = new FormData();
-      submitFormData.append('title', formData.title);
-      submitFormData.append('content', formData.content);
-      submitFormData.append('category', formData.category);
-      submitFormData.append('isInfoPost', isInfoPost);
-      
-      // 수정 모드일 때는 수정 API, 새 글일 때는 작성 API
+      // API 데이터 준비 - 백엔드 명세에 맞게 수정
+      const apiData = {
+        title: formData.title,
+        content: formData.content,
+        user_id: localStorage.getItem('user_id'), // 사용자 ID 필요
+        board_id: getCategoryBoardId(formData.category), // 카테고리를 board_id로 변환
+        language_id: getLanguageId('ko'), // 언어 ID (기본: 한국어)
+        files: selectedFiles
+      };
+
+      let result;
       if (isEditMode) {
-        submitFormData.append('postId', editPostId);
-        submitFormData.append('keepOriginalDate', true); // 작성시간 유지
+        result = await postAPI.updatePost(editPostId, apiData);
+        console.log('글 수정 성공:', result);
+      } else {
+        result = await postAPI.createPost(apiData);
+        console.log('글 작성 성공:', result);
       }
       
-      // 카테고리 배열 처리
-      const categories = isInfoPost && formData.category !== '정보게시판' 
-        ? [formData.category, '정보게시판'] 
-        : [formData.category];
-      submitFormData.append('categories', JSON.stringify(categories));
+      const message = isEditMode 
+        ? '글이 성공적으로 수정되었습니다!'
+        : isInfoPost && formData.category !== '정보게시판'
+          ? `글이 ${formData.category}과 정보게시판에 동시에 작성되었습니다!`
+          : '글이 성공적으로 작성되었습니다!';
       
-      // 파일 첨부
-      selectedFiles.forEach((file) => {
-        submitFormData.append(`images`, file);
-      });
-
-      const apiUrl = isEditMode ? `/api/posts/${editPostId}` : '/api/posts';
-      const method = isEditMode ? 'PUT' : 'POST';
-
-      const response = await fetch(apiUrl, {
-        method: method,
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: submitFormData
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log(isEditMode ? '글 수정 성공:' : '글 작성 성공:', result);
-        
-        const message = isEditMode 
-          ? '글이 성공적으로 수정되었습니다!'
-          : isInfoPost && formData.category !== '정보게시판'
-            ? `글이 ${formData.category}과 정보게시판에 동시에 작성되었습니다!`
-            : '글이 성공적으로 작성되었습니다!';
-        
-        alert(message);
-        
-        // 수정 모드였다면 해당 글로, 새 글이었다면 메인으로
-        if (isEditMode) {
-          navigate(`/mypost/${editPostId}`);
-        } else {
-          navigate('/main');
-        }
+      alert(message);
+      
+      // 수정 모드였다면 해당 글로, 새 글이었다면 메인으로
+      if (isEditMode) {
+        navigate(`/mypost/${editPostId}`);
       } else {
-        const error = await response.json();
-        throw new Error(error.message || '서버 오류가 발생했습니다.');
+        navigate('/main');
       }
       
     } catch (error) {
       console.error(isEditMode ? '글 수정 실패:' : '글 작성 실패:', error);
-      alert(error.message || (isEditMode ? '글 수정에 실패했습니다.' : '글 작성에 실패했습니다.') + ' 다시 시도해주세요.');
+      setError(error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -189,7 +172,6 @@ const Post = () => {
                 K
               </div>
             </div>
-            {/* <span className="text-xl font-semibold">{isEditMode ? '글 수정' : '새 글 작성'}</span> */}
           </div>
           
           <div className="flex gap-2">
@@ -205,6 +187,13 @@ const Post = () => {
 
       {/* Post Writing Form */}
       <div className="max-w-6xl mx-auto px-5 mt-5">
+        {/* 에러 메시지 표시 */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
+
         <div className="bg-white border-2 border-blue-500 rounded">
           {/* Form Header */}
           <div className="bg-blue-500 text-white py-3 px-5">
@@ -356,7 +345,7 @@ const Post = () => {
                   disabled={isSubmitting}
                   className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? '작성 중...' : '글 작성'}
+                  {isSubmitting ? (isEditMode ? '수정 중...' : '작성 중...') : (isEditMode ? '글 수정' : '글 작성')}
                 </button>
               </div>
             </div>

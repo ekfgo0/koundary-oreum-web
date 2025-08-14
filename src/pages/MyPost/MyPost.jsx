@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import CategoryNavigation from '../../components/common/CategoryNavigation';
 import MyPostForm from '../../components/auth/MyPostForm';
+import { postAPI } from '../../api/post'; // 통합된 API 사용
 
 const MyPost = () => {
   const navigate = useNavigate();
@@ -14,12 +15,11 @@ const MyPost = () => {
   const [error, setError] = useState(null);
   const [currentCategory, setCurrentCategory] = useState('');
 
-  // Mock 모드 확인
-  const useMockData = import.meta.env.VITE_USE_MOCK === 'true';
+  // Mock 모드 확인 (환경변수 또는 개발 모드)
+  const useMockData = import.meta.env.VITE_USE_MOCK === 'true' || import.meta.env.DEV;
 
   // Mock 데이터
   const getMockData = () => {
-    // 게시글 내용
     const mockPost = {
       id: parseInt(postId) || 1,
       title: "해외 유학생활 꿀팁 공유",
@@ -34,7 +34,7 @@ const MyPost = () => {
       commentCount: 8,
       isMyPost: true
     };
-    // 댓글 내용
+
     const mockComments = [
       {
         id: 1,
@@ -62,41 +62,20 @@ const MyPost = () => {
     return { post: mockPost, comments: mockComments };
   };
 
-  // 실제 API 호출
+  // 실제 API 호출 (통합된 API 사용)
   const fetchRealData = async () => {
-    const token = localStorage.getItem('authToken') || '';
-    
-    // 게시글 데이터 가져오기
-    const postResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`, {
-      method: 'GET',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!postResponse.ok) {
-      throw new Error('게시글을 불러올 수 없습니다.');
+    try {
+      // 게시글과 댓글을 병렬로 가져오기
+      const [post, comments] = await Promise.all([
+        postAPI.getPost(postId),
+        postAPI.getComments(postId)
+      ]);
+
+      return { post, comments };
+    } catch (error) {
+      console.error('API 호출 실패:', error);
+      throw error;
     }
-    
-    const post = await postResponse.json();
-    
-    // 댓글 데이터 가져오기
-    const commentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`, {
-      method: 'GET',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!commentsResponse.ok) {
-      throw new Error('댓글을 불러올 수 없습니다.');
-    }
-    
-    const comments = await commentsResponse.json();
-    
-    return { post, comments };
   };
 
   useEffect(() => {
@@ -138,6 +117,75 @@ const MyPost = () => {
       setLoading(false);
     }
   }, [postId, useMockData]);
+
+  // 댓글 작성 핸들러
+  const handleCreateComment = async (commentData) => {
+    try {
+      if (useMockData) {
+        // Mock 모드에서는 로컬 상태만 업데이트
+        const newComment = {
+          id: Date.now(),
+          ...commentData,
+          createdAt: new Date().toLocaleString(),
+          replies: []
+        };
+        setComments(prev => [...prev, newComment]);
+        return newComment;
+      } else {
+        // 실제 API 호출
+        const newComment = await postAPI.createComment(postId, commentData);
+        setComments(prev => [...prev, newComment]);
+        return newComment;
+      }
+    } catch (error) {
+      console.error('댓글 작성 실패:', error);
+      throw error;
+    }
+  };
+
+  // 댓글 수정 핸들러
+  const handleUpdateComment = async (commentId, commentData) => {
+    try {
+      if (useMockData) {
+        // Mock 모드에서는 로컬 상태만 업데이트
+        setComments(prev => 
+          prev.map(comment => 
+            comment.id === commentId 
+              ? { ...comment, ...commentData, updatedAt: new Date().toLocaleString() }
+              : comment
+          )
+        );
+      } else {
+        // 실제 API 호출
+        const updatedComment = await postAPI.updateComment(postId, commentId, commentData);
+        setComments(prev => 
+          prev.map(comment => 
+            comment.id === commentId ? updatedComment : comment
+          )
+        );
+      }
+    } catch (error) {
+      console.error('댓글 수정 실패:', error);
+      throw error;
+    }
+  };
+
+  // 댓글 삭제 핸들러
+  const handleDeleteComment = async (commentId) => {
+    try {
+      if (useMockData) {
+        // Mock 모드에서는 로컬 상태만 업데이트
+        setComments(prev => prev.filter(comment => comment.id !== commentId));
+      } else {
+        // 실제 API 호출
+        await postAPI.deleteComment(postId, commentId);
+        setComments(prev => prev.filter(comment => comment.id !== commentId));
+      }
+    } catch (error) {
+      console.error('댓글 삭제 실패:', error);
+      throw error;
+    }
+  };
 
   // 카테고리 변경 핸들러
   const handleCategoryChange = (category) => {
@@ -216,7 +264,7 @@ const MyPost = () => {
     <div className="min-h-screen bg-gray-50">
       <Header showActions={true} />
       
-      {/* 카테고리 네비게이션 - 재사용 가능한 컴포넌트로 분리 */}
+      {/* 카테고리 네비게이션 */}
       <CategoryNavigation 
         currentCategory={currentCategory}
         onCategoryChange={handleCategoryChange}
@@ -226,7 +274,7 @@ const MyPost = () => {
         {/* Mock 모드 표시 */}
         {useMockData && (
           <div className="mb-4 p-2 bg-blue-100 border border-blue-300 rounded text-blue-800 text-sm">
-            Mock 데이터 모드가 활성화되어 있습니다.
+            Mock 데이터 모드가 활성화되어 있습니다. (실제 API 연결 전까지 사용)
           </div>
         )}
         
@@ -234,6 +282,9 @@ const MyPost = () => {
           postData={postData}
           comments={comments}
           setComments={setComments}
+          onCreateComment={handleCreateComment}
+          onUpdateComment={handleUpdateComment}
+          onDeleteComment={handleDeleteComment}
         />
       </div>
     </div>

@@ -3,9 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import CategoryNavigation from '../../components/common/CategoryNavigation';
 import YourPostForm from '../../components/auth/YourPostForm';
+import { postAPI } from '../../api/post'; // 통합된 API 사용
 
 // 신고 컴포넌트
-const ReportModal = ({ isOpen, onClose, onSubmit }) => {
+const ReportModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
   const [reportReason, setReportReason] = useState('');
 
   const handleSubmit = (e) => {
@@ -17,8 +18,14 @@ const ReportModal = ({ isOpen, onClose, onSubmit }) => {
 
     onSubmit(reportReason.trim());
     setReportReason('');
-    onClose();
   };
+
+  // 모달이 닫힐 때 폼 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      setReportReason('');
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -37,6 +44,7 @@ const ReportModal = ({ isOpen, onClose, onSubmit }) => {
               rows="4"
               placeholder="신고 사유를 자세히 입력해주세요."
               maxLength="500"
+              disabled={loading}
             />
             <div className="text-xs text-gray-500 mt-1">
               {reportReason.length}/500
@@ -47,15 +55,17 @@ const ReportModal = ({ isOpen, onClose, onSubmit }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+              disabled={loading}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
             >
               취소
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              disabled={loading || !reportReason.trim()}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              신고하기
+              {loading ? '신고 중...' : '신고하기'}
             </button>
           </div>
         </form>
@@ -78,11 +88,12 @@ const YourPost = () => {
   const [reportModal, setReportModal] = useState({
     isOpen: false,
     type: 'post',
-    targetId: null
+    targetId: null,
+    loading: false
   });
 
-  // Mock 모드 확인
-  const useMockData = import.meta.env.VITE_USE_MOCK === 'true';
+  // Mock 모드 확인 (환경변수 또는 개발 모드)
+  const useMockData = import.meta.env.VITE_USE_MOCK === 'true' || import.meta.env.DEV;
 
   // Mock 데이터
   const getMockData = () => {
@@ -99,7 +110,7 @@ const YourPost = () => {
       scrapCount: 24,
       commentCount: 12,
       isMyPost: false,
-      scrap: false // 내가 스크랩했는지 여부
+      isScraped: false // 내가 스크랩했는지 여부
     };
 
     const mockComments = [
@@ -136,92 +147,116 @@ const YourPost = () => {
     return { post: mockPost, comments: mockComments };
   };
 
-  // 실제 API 호출
+  // 실제 API 호출 (통합된 API 사용)
   const fetchRealData = async () => {
-    const token = localStorage.getItem('authToken') || '';
-    
-    // 게시글 데이터 가져오기
-    const postResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`, {
-      method: 'GET',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!postResponse.ok) {
-      throw new Error('게시글을 불러올 수 없습니다.');
+    try {
+      // 게시글과 댓글을 병렬로 가져오기
+      const [post, comments] = await Promise.all([
+        postAPI.getPost(postId),
+        postAPI.getComments(postId)
+      ]);
+
+      return { post, comments };
+    } catch (error) {
+      console.error('API 호출 실패:', error);
+      throw error;
     }
-    
-    const post = await postResponse.json();
-    
-    // 댓글 데이터 가져오기
-    const commentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`, {
-      method: 'GET',
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!commentsResponse.ok) {
-      throw new Error('댓글을 불러올 수 없습니다.');
-    }
-    
-    const comments = await commentsResponse.json();
-    
-    return { post, comments };
   };
 
   // 신고 기능
   const handleReport = async (reason) => {
-    const token = localStorage.getItem('authToken') || '';
-    
     try {
+      setReportModal(prev => ({ ...prev, loading: true }));
+
       if (useMockData) {
         // Mock 모드에서는 시뮬레이션
         console.log('Mock 신고 요청:', {
-          type: 'post',
+          type: reportModal.type,
           targetId: reportModal.targetId,
           reason: reason
         });
         
-         // 로딩 시뮬레이션
+        // 로딩 시뮬레이션
         await new Promise(resolve => setTimeout(resolve, 1000));
         alert('게시글 신고가 접수되었습니다.');
-        return;
+      } else {
+        // 실제 API 호출
+        if (reportModal.type === 'post') {
+          await postAPI.reportPost(reportModal.targetId, reason);
+        } else if (reportModal.type === 'comment') {
+          await postAPI.reportComment(postId, reportModal.targetId, reason);
+        }
+        
+        alert('신고가 접수되었습니다.');
       }
 
-      // 실제 API 호출
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${reportModal.targetId}/report`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          reason: reason
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('신고 처리 중 오류가 발생했습니다.');
-      }
-
-      alert('게시글 신고가 접수되었습니다.');
+      closeReportModal();
       
     } catch (error) {
       console.error('신고 실패:', error);
-      alert('신고 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      alert(error.message || '신고 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setReportModal(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  // 스크랩 토글 기능
+  const handleToggleScrap = async () => {
+    try {
+      if (useMockData) {
+        // Mock 모드에서는 로컬 상태만 업데이트
+        setPostData(prev => ({
+          ...prev,
+          isScraped: !prev.isScraped,
+          scrapCount: prev.isScraped ? prev.scrapCount - 1 : prev.scrapCount + 1
+        }));
+      } else {
+        // 실제 API 호출
+        const result = await postAPI.toggleScrap(postId);
+        setPostData(prev => ({
+          ...prev,
+          isScraped: result.isScraped,
+          scrapCount: result.scrapCount
+        }));
+      }
+    } catch (error) {
+      console.error('스크랩 처리 실패:', error);
+      alert(error.message || '스크랩 처리에 실패했습니다.');
+    }
+  };
+
+  // 댓글 작성 핸들러
+  const handleCreateComment = async (commentData) => {
+    try {
+      if (useMockData) {
+        // Mock 모드에서는 로컬 상태만 업데이트
+        const newComment = {
+          id: Date.now(),
+          ...commentData,
+          createdAt: new Date().toLocaleString(),
+          replies: []
+        };
+        setComments(prev => [...prev, newComment]);
+        return newComment;
+      } else {
+        // 실제 API 호출
+        const newComment = await postAPI.createComment(postId, commentData);
+        setComments(prev => [...prev, newComment]);
+        return newComment;
+      }
+    } catch (error) {
+      console.error('댓글 작성 실패:', error);
+      throw error;
     }
   };
 
   // 신고 창 열기
-  const openReportModal = (targetId) => {
+  const openReportModal = (type, targetId) => {
     setReportModal({
       isOpen: true,
-      type: 'post',
-      targetId: targetId
+      type: type, // 'post' 또는 'comment'
+      targetId: targetId,
+      loading: false
     });
   };
 
@@ -230,7 +265,8 @@ const YourPost = () => {
     setReportModal({
       isOpen: false,
       type: 'post',
-      targetId: null
+      targetId: null,
+      loading: false
     });
   };
 
@@ -360,7 +396,7 @@ const YourPost = () => {
         {/* Mock 모드 표시 */}
         {useMockData && (
           <div className="mb-4 p-2 bg-blue-100 border border-blue-300 rounded text-blue-800 text-sm">
-            Mock 데이터 모드가 활성화되어 있습니다.
+            📝 Mock 데이터 모드가 활성화되어 있습니다. (실제 API 연결 전까지 사용)
           </div>
         )}
         
@@ -369,7 +405,10 @@ const YourPost = () => {
           setPostData={setPostData}
           comments={comments}
           setComments={setComments}
-          onReportPost={() => openReportModal(postData.id)}
+          onReportPost={() => openReportModal('post', postData.id)}
+          onReportComment={(commentId) => openReportModal('comment', commentId)}
+          onToggleScrap={handleToggleScrap}
+          onCreateComment={handleCreateComment}
         />
       </div>
 
@@ -378,6 +417,7 @@ const YourPost = () => {
         isOpen={reportModal.isOpen}
         onClose={closeReportModal}
         onSubmit={handleReport}
+        loading={reportModal.loading}
       />
     </div>
   );

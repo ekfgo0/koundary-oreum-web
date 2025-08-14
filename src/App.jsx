@@ -24,19 +24,9 @@ function App() {
       <Route path="/changepassword" element={<ChangePassword />} />
       <Route path="/posts" element={<Posts />} />
       <Route path="/main" element={<Main />} />
-
-      {/* 게시판 목록 (카테고리 라우트) */}
       <Route path="/board/:category" element={<BoardList />} />
-      {/* /board 단독 접근 시 기본 카테고리로 */}
       <Route path="/board" element={<Navigate to="/board/free" replace />} />
-      {/* 예전 경로 호환 */}
       <Route path="/boardlist" element={<Navigate to="/board/free" replace />} />
-
-      {/* (선택) 게시글 상세 */}
-      {/* <Route path="/post/:id" element={<PostDetail />} /> */}
-
-      {/* 그 외 전부 기본으로 */}
-      <Route path="*" element={<Navigate to="/board/free" replace />} />
       <Route path="/mypost/:postId" element={<MyPost />} />
       <Route path="/yourpost/:postId" element={<YourPost />} />
     </Routes>
