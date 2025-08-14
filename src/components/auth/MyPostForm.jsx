@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageCircle, Bookmark, User, Reply, Send, Edit, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,8 +9,49 @@ const MyPostForm = ({ postData, comments, setComments }) => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [showReplies, setShowReplies] = useState({});
   const [isDeleting, setIsDeleting] = useState(false);
-  
-  // 글 수정 버튼 클릭
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState({
+    comment: false,
+    reply: false,
+    scrap: false
+  });
+  const [error, setError] = useState('');
+
+  // Mock 모드 확인
+  const useMockData = import.meta.env.VITE_USE_MOCK === 'true';
+  // 현재 사용자 정보 가져오기
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (useMockData) {
+        // Mock 사용자 데이터
+        setCurrentUser({
+          id: 1,
+          nickname: "현재사용자",
+          profileImage: null
+        });
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('authToken') || '';
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/profile`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          setCurrentUser(userData);
+        }
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+      }
+    };
+
+    fetchCurrentUser();
+  }, [useMockData]);
   const handleEditPost = () => {
     // 수정 모드로 Posts 페이지로 이동
     navigate(`/posts?edit=${postData.id}`, {
@@ -55,49 +96,179 @@ const MyPostForm = ({ postData, comments, setComments }) => {
     }
   };
 
-  // 스크랩 버튼 클릭 (내 글이 아닐 때만)
-  const handleScrap = () => {
-    if (postData.isMyPost) return; // 내 글이면 아무것도 하지 않음
+  // 스크랩 버튼 클릭
+  const handleScrap = async () => {
+    if (postData.isMyPost || loading.scrap) return;
     
-    // 여기에 스크랩 API 호출 로직 추가
-    console.log('스크랩 처리');
+    setLoading(prev => ({ ...prev, scrap: true }));
+    setError('');
+
+    try {
+      if (useMockData) {
+        // Mock 데이터 처리
+        await new Promise(resolve => setTimeout(resolve, 500));
+        console.log('Mock: 스크랩 처리됨');
+        return;
+      }
+
+      const token = localStorage.getItem('authToken') || '';
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${postData.id}/scrap`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '스크랩 처리에 실패했습니다.');
+      }
+
+      const result = await response.json();
+      console.log('스크랩 처리 완료:', result);
+      
+      // 스크랩 수 업데이트 (필요한 경우)
+      // postData.scrapCount 업데이트 로직 추가 가능
+      
+    } catch (error) {
+      console.error('스크랩 처리 실패:', error);
+      setError(error.message || '스크랩 처리에 실패했습니다.');
+    } finally {
+      setLoading(prev => ({ ...prev, scrap: false }));
+    }
   };
 
   // 댓글 추가
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
+  const handleAddComment = async () => {
+    if (!newComment.trim() || loading.comment) return;
+    
+    // 입력값 검증
+    if (newComment.length > 500) {
+      setError('댓글은 500자 이내로 작성해주세요.');
+      return;
+    }
 
-    const comment = {
-      id: Date.now(),
-      author: "현재사용자", // 실제로는 로그인된 사용자 정보
-      content: newComment,
-      createdAt: new Date().toLocaleString('ko-KR'),
-      replies: []
-    };
+    setLoading(prev => ({ ...prev, comment: true }));
+    setError('');
 
-    setComments(prev => [...prev, comment]);
-    setNewComment('');
+    try {
+      if (useMockData) {
+        // Mock 데이터 처리
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const comment = {
+          id: Date.now(),
+          author: currentUser?.nickname || "현재사용자",
+          content: newComment,
+          createdAt: new Date().toLocaleString('ko-KR'),
+          replies: []
+        };
+        
+        setComments(prev => [...prev, comment]);
+        setNewComment('');
+        return;
+      }
+
+      const token = localStorage.getItem('authToken') || '';
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/posts/${postData.id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: newComment.trim()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '댓글 작성에 실패했습니다.');
+      }
+
+      const newCommentData = await response.json();
+      setComments(prev => [...prev, newCommentData]);
+      setNewComment('');
+      
+    } catch (error) {
+      console.error('댓글 작성 실패:', error);
+      setError(error.message || '댓글 작성에 실패했습니다.');
+    } finally {
+      setLoading(prev => ({ ...prev, comment: false }));
+    }
   };
 
   // 대댓글 추가
-  const handleAddReply = (parentId) => {
-    if (!replyText.trim()) return;
+  const handleAddReply = async (parentId) => {
+    if (!replyText.trim() || loading.reply) return;
+    
+    // 입력값 검증
+    if (replyText.length > 500) {
+      setError('답글은 500자 이내로 작성해주세요.');
+      return;
+    }
 
-    const reply = {
-      id: Date.now(),
-      author: "현재사용자",
-      content: replyText,
-      createdAt: new Date().toLocaleString('ko-KR')
-    };
+    setLoading(prev => ({ ...prev, reply: true }));
+    setError('');
 
-    setComments(prev => prev.map(comment => 
-      comment.id === parentId 
-        ? { ...comment, replies: [...comment.replies, reply] }
-        : comment
-    ));
+    try {
+      if (useMockData) {
+        // Mock 데이터 처리
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const reply = {
+          id: Date.now(),
+          author: currentUser?.nickname || "현재사용자",
+          content: replyText,
+          createdAt: new Date().toLocaleString('ko-KR')
+        };
 
-    setReplyText('');
-    setReplyingTo(null);
+        setComments(prev => prev.map(comment => 
+          comment.id === parentId 
+            ? { ...comment, replies: [...comment.replies, reply] }
+            : comment
+        ));
+
+        setReplyText('');
+        setReplyingTo(null);
+        return;
+      }
+
+      const token = localStorage.getItem('authToken') || '';
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/comments/${parentId}/replies`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: replyText.trim()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '답글 작성에 실패했습니다.');
+      }
+
+      const newReplyData = await response.json();
+      
+      setComments(prev => prev.map(comment => 
+        comment.id === parentId 
+          ? { ...comment, replies: [...comment.replies, newReplyData] }
+          : comment
+      ));
+
+      setReplyText('');
+      setReplyingTo(null);
+      
+    } catch (error) {
+      console.error('답글 작성 실패:', error);
+      setError(error.message || '답글 작성에 실패했습니다.');
+    } finally {
+      setLoading(prev => ({ ...prev, reply: false }));
+    }
   };
 
   // 답글 모드 토글
@@ -185,6 +356,13 @@ const MyPostForm = ({ postData, comments, setComments }) => {
           {postData.content}
         </div>
 
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
         {/* 액션 버튼들 */}
         <div className="flex items-center gap-6 py-4 border-t border-gray-100">
           <div className="flex items-center gap-2 text-gray-600">
@@ -195,15 +373,18 @@ const MyPostForm = ({ postData, comments, setComments }) => {
           {/* 스크랩 버튼/수 - 항상 표시하되, 내 글일 때는 클릭 불가능하게 */}
           <button 
             onClick={handleScrap}
-            disabled={postData.isMyPost}
+            disabled={postData.isMyPost || loading.scrap}
             className={`flex items-center gap-2 transition-colors ${
               postData.isMyPost 
                 ? 'text-gray-400 cursor-not-allowed' 
-                : 'text-gray-600 hover:text-blue-500'
+                : loading.scrap
+                  ? 'text-gray-400 cursor-wait'
+                  : 'text-gray-600 hover:text-blue-500'
             }`}
           >
             <Bookmark className="w-5 h-5" />
             <span>{postData.scrapCount}</span>
+            {loading.scrap && <span className="text-xs">(처리중...)</span>}
           </button>
         </div>
       </div>
@@ -273,14 +454,21 @@ const MyPostForm = ({ postData, comments, setComments }) => {
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder="답글을 입력하세요..."
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddReply(comment.id)}
+                        disabled={loading.reply}
+                        maxLength={500}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        onKeyPress={(e) => e.key === 'Enter' && !loading.reply && handleAddReply(comment.id)}
                       />
                       <button
                         onClick={() => handleAddReply(comment.id)}
-                        className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        disabled={loading.reply || !replyText.trim()}
+                        className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                       >
-                        <Send className="w-4 h-4" />
+                        {loading.reply ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   )}
@@ -294,7 +482,15 @@ const MyPostForm = ({ postData, comments, setComments }) => {
         <div className="border-t border-gray-200 p-4">
           <div className="flex gap-3">
             <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <User className="w-4 h-4 text-white" />
+              {currentUser?.profileImage ? (
+                <img 
+                  src={currentUser.profileImage} 
+                  alt="프로필" 
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <User className="w-4 h-4 text-white" />
+              )}
             </div>
             <div className="flex-1 flex gap-2">
               <input
@@ -302,15 +498,18 @@ const MyPostForm = ({ postData, comments, setComments }) => {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="댓글을 입력하세요..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                disabled={loading.comment}
+                maxLength={500}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                onKeyPress={(e) => e.key === 'Enter' && !loading.comment && handleAddComment()}
               />
               <button
                 onClick={handleAddComment}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+                disabled={loading.comment || !newComment.trim()}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" />
-                등록
+                {loading.comment ? '등록중...' : '등록'}
               </button>
             </div>
           </div>
