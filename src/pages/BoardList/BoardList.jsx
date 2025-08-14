@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Header from '../../components/profile/Header';
+import Header from '../../components/common/Header';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { getBoardList } from '../../api/board';
 

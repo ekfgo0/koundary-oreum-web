@@ -1,6 +1,6 @@
 // src/pages/Main/Main.jsx
 import React from 'react';
-import Header from '../../components/profile/Header';
+import Header from '../../components/common/Header';
 
 // ====== 설정값 ======
 const BRAND = '#2e8ada';   // 팀 컬러
