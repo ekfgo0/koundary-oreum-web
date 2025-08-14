@@ -55,6 +55,14 @@ const MyPostForm = ({ postData, comments, setComments }) => {
     }
   };
 
+  // 스크랩 버튼 클릭 (내 글이 아닐 때만)
+  const handleScrap = () => {
+    if (postData.isMyPost) return; // 내 글이면 아무것도 하지 않음
+    
+    // 여기에 스크랩 API 호출 로직 추가
+    console.log('스크랩 처리');
+  };
+
   // 댓글 추가
   const handleAddComment = () => {
     if (!newComment.trim()) return;
@@ -184,12 +192,19 @@ const MyPostForm = ({ postData, comments, setComments }) => {
             <span>{getTotalCommentCount()}</span>
           </div>
           
-          {!postData.isMyPost && (
-            <button className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors">
-              <Bookmark className="w-5 h-5" />
-              <span>{postData.scrapCount}</span>
-            </button>
-          )}
+          {/* 스크랩 버튼/수 - 항상 표시하되, 내 글일 때는 클릭 불가능하게 */}
+          <button 
+            onClick={handleScrap}
+            disabled={postData.isMyPost}
+            className={`flex items-center gap-2 transition-colors ${
+              postData.isMyPost 
+                ? 'text-gray-400 cursor-not-allowed' 
+                : 'text-gray-600 hover:text-blue-500'
+            }`}
+          >
+            <Bookmark className="w-5 h-5" />
+            <span>{postData.scrapCount}</span>
+          </button>
         </div>
       </div>
 
