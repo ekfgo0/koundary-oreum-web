@@ -5,68 +5,81 @@ import axios from './axiosInstance'; // 기존 axios 인스턴스 사용
 
 // 게시글 관련 API 함수들
 export const postAPI = {
-  // 새 글 작성
+  // 새 글 작성 (이미지 업로드 없이 JSON만)
   createPost: async (postData) => {
     try {
-      const formData = new FormData();
-      
-      // 백엔드 명세에 맞는 필드명 사용
-      formData.append('title', postData.title);
-      formData.append('content', postData.content);
-      formData.append('user_id', postData.user_id || localStorage.getItem('user_id'));
-      formData.append('board_id', postData.board_id || 1); // 카테고리에 따른 board_id 매핑 필요
-      formData.append('language_id', postData.language_id || 1); // 기본값 설정
-      
-      // 이미지 파일들 추가
-      if (postData.files && postData.files.length > 0) {
-        postData.files.forEach((file) => {
-          formData.append('images[]', file);
-        });
-      }
+      // 사용자 ID 확인 및 설정
+      const userId = localStorage.getItem('user_id') || 
+                    localStorage.getItem('userId') || 
+                    localStorage.getItem('authToken') || 
+                    'test_user_001'; // 더 구체적인 임시값
 
-      // 백엔드 명세에 따른 엔드포인트: POST /posts
-      const response = await axios.post('/posts', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      console.log('전송할 데이터:', {
+        title: postData.title,
+        content: postData.content,
+        user_id: userId,
+        board_id: postData.board_id || 1,
+        language_id: postData.language_id || 1
       });
 
+      // 백엔드에서 multipart/form-data를 지원하지 않으므로 JSON으로만 전송
+      const response = await axios.post('/boards/{boardCode}/posts', {
+        title: postData.title,
+        content: postData.content,
+        user_id: userId,
+        board_id: postData.board_id || 1,
+        language_id: postData.language_id || 1,
+        images: [] // 빈 배열 (이미지 업로드 준비될 때까지)
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
       return response.data;
+      
     } catch (error) {
       console.error('게시글 작성 실패:', error);
+      console.error('에러 응답:', error.response?.data);
       
-      // 404 오류인 경우 더 구체적인 메시지
-      if (error.response?.status === 404) {
-        throw new Error('API 엔드포인트가 존재하지 않습니다. 백엔드 개발자에게 API 경로를 확인해주세요.');
+      // 500 오류인 경우 (서버 내부 오류)
+      if (error.response?.status === 500) {
+        throw new Error('서버 내부 오류가 발생했습니다. 사용자 인증 정보를 확인해주세요.');
       }
       
-      throw new Error(error.response?.data?.message || '게시글 작성에 실패했습니다.');
+      // 401 오류인 경우 (인증 실패)
+      if (error.response?.status === 401) {
+        throw new Error('사용자 인증이 필요합니다. 다시 로그인해주세요.');
+      }
+      
+      // 415 오류인 경우 (Content-Type not supported)
+      if (error.response?.status === 415) {
+        throw new Error('백엔드에서 해당 요청 형식을 지원하지 않습니다.');
+      }
+      
+      // 404 오류인 경우
+      if (error.response?.status === 404) {
+        throw new Error('API 엔드포인트가 존재하지 않습니다. 백엔드 개발자에게 확인해주세요.');
+      }
+      
+      throw new Error(error.response?.data?.message || error.message || '게시글 작성에 실패했습니다.');
     }
   },
 
-  // 글 수정 (백엔드 명세에 없음 - 확인 필요)
+  // 글 수정 (JSON으로만)
   updatePost: async (postId, postData) => {
     try {
-      const formData = new FormData();
-      
-      // 기본 데이터 추가
-      formData.append('title', postData.title);
-      formData.append('content', postData.content);
-      formData.append('user_id', postData.user_id || localStorage.getItem('user_id'));
-      formData.append('board_id', postData.board_id || 1);
-      formData.append('language_id', postData.language_id || 1);
-      
-      // 새 이미지 파일들 추가
-      if (postData.files && postData.files.length > 0) {
-        postData.files.forEach((file) => {
-          formData.append('images[]', file);
-        });
-      }
-
-      // PUT 요청 (백엔드에서 지원하는지 확인 필요)
-      const response = await axios.put(`/posts/${postId}`, formData, {
+      // JSON으로만 전송 (이미지 업로드 준비될 때까지)
+      const response = await axios.put(`/posts/${postId}`, {
+        title: postData.title,
+        content: postData.content,
+        user_id: postData.user_id || localStorage.getItem('user_id') || 'test_user',
+        board_id: postData.board_id || 1,
+        language_id: postData.language_id || 1,
+        images: [] // 빈 배열
+      }, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
         },
       });
 

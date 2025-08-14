@@ -3,10 +3,22 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import koundaryLogo from '../../components/common/Koundarylogo.png';
 import { postAPI } from '../../api/post'; // 새로 만든 API import
-import { getCategoryBoardId, getLanguageId } from '../../utils/categoryUtils'; // 유틸리티 import
 
 // API 기본 URL 설정 - 실제 백엔드 서버 주소로 수정
 const API_BASE_URL = 'http://192.168.174.75:8080';
+
+// 카테고리를 board_id로 변환하는 함수 (임시)
+const getCategoryBoardId = (categoryName) => {
+  const categoryMap = {
+    '소속국가': 1,
+    '소속학교': 2,
+    '자유게시판': 3,
+    '정보게시판': 4,
+    '중고거래 게시판': 5,
+    '모임게시판': 6
+  };
+  return categoryMap[categoryName] || 1;
+};
 
 const Post = () => {
   const navigate = useNavigate();
@@ -23,7 +35,7 @@ const Post = () => {
     content: '',
     category: '소속국가'
   });
-  const [selectedFiles, setSelectedFiles] = useState([]);
+  // const [selectedFiles, setSelectedFiles] = useState([]); // 이미지 업로드 준비될 때까지 주석처리
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInfoPost, setIsInfoPost] = useState(false);
   const [error, setError] = useState(null);
@@ -58,6 +70,8 @@ const Post = () => {
     if (error) setError(null);
   };
 
+  // 이미지 업로드 관련 함수들 - 백엔드 준비될 때까지 주석처리
+  /*
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     
@@ -77,6 +91,7 @@ const Post = () => {
   const removeFile = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
+  */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,14 +112,29 @@ const Post = () => {
 
     try {
       // API 데이터 준비 - 백엔드 명세에 맞게 수정
+      const userId = localStorage.getItem('user_id') || 
+                    localStorage.getItem('userId') || 
+                    'test_user_001';
+
+      console.log('현재 localStorage 상태:', {
+        user_id: localStorage.getItem('user_id'),
+        userId: localStorage.getItem('userId'),
+        authToken: localStorage.getItem('authToken'),
+        사용할_userId: userId
+      });
+
       const apiData = {
         title: formData.title,
         content: formData.content,
-        user_id: localStorage.getItem('user_id'), // 사용자 ID 필요
+        user_id: userId,
         board_id: getCategoryBoardId(formData.category), // 카테고리를 board_id로 변환
-        language_id: getLanguageId('ko'), // 언어 ID (기본: 한국어)
-        files: selectedFiles
+        language_id: 1, // 한국어 기본값
+        category: formData.category, // 카테고리 이름도 같이 전송
+        isInfoPost,
+        files: [] // 빈 배열로 전송
       };
+
+      console.log('전송할 데이터:', apiData);
 
       let result;
       if (isEditMode) {
@@ -139,7 +169,8 @@ const Post = () => {
   };
 
   const handleCancel = () => {
-    if (formData.title || formData.content || selectedFiles.length > 0) {
+    // if (formData.title || formData.content || selectedFiles.length > 0) { // 이미지 체크 제거
+    if (formData.title || formData.content) {
       if (window.confirm('작성 중인 내용이 있습니다. 정말 취소하시겠습니까?')) {
         navigate('/main');
       }
@@ -274,7 +305,8 @@ const Post = () => {
               </div>
             </div>
 
-            {/* File Upload */}
+            {/* File Upload - 백엔드 이미지 업로드 준비될 때까지 주석처리 */}
+            {/*
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 이미지 첨부 (선택사항)
@@ -290,7 +322,6 @@ const Post = () => {
                 이미지 파일만 업로드 가능 (JPG, PNG, GIF 등, 최대 5MB)
               </div>
               
-              {/* 선택된 파일 목록 */}
               {selectedFiles.length > 0 && (
                 <div className="mt-3 space-y-2">
                   <p className="text-sm font-medium text-gray-700">선택된 파일:</p>
@@ -309,6 +340,7 @@ const Post = () => {
                 </div>
               )}
             </div>
+            */}
           </div>
 
           {/* Form Actions */}
@@ -352,6 +384,31 @@ const Post = () => {
           </div>
         </div>
 
+        {/* 현재 오류 상황 알림 */}
+        <div className="bg-red-50 border border-red-200 rounded p-4 mt-4">
+          <h3 className="font-medium text-red-800 mb-2">🚨 현재 오류 상황</h3>
+          <div className="text-sm text-red-700 space-y-1">
+            <p>• <strong>오류</strong>: userDetails가 null (사용자 인증 실패)</p>
+            <p>• <strong>원인</strong>: 백엔드에서 사용자 정보를 찾지 못함</p>
+            <p>• <strong>임시 해결책</strong>: 백엔드에서 인증 체크 임시 비활성화 필요</p>
+          </div>
+        </div>
+
+        {/* 백엔드 개발자 요청 사항 */}
+        <div className="bg-blue-50 border border-blue-200 rounded p-4 mt-4">
+          <h3 className="font-medium text-blue-800 mb-2">👨‍💻 백엔드 개발자 요청 사항</h3>
+          <div className="text-sm text-blue-700 space-y-1">
+            <p><strong>1. 임시 테스트를 위해:</strong></p>
+            <p className="ml-4">• POST /posts 엔드포인트에서 사용자 인증 체크 임시 비활성화</p>
+            <p className="ml-4">• 또는 기본 테스트 사용자 생성 (test_user_001)</p>
+            <p><strong>2. 로그 확인:</strong></p>
+            <p className="ml-4">• user_id가 올바르게 전달되는지 확인</p>
+            <p className="ml-4">• CustomUserDetails.getUserId() 에러 원인 파악</p>
+            <p><strong>3. 데이터베이스:</strong></p>
+            <p className="ml-4">• users 테이블에 test_user_001 사용자 존재하는지 확인</p>
+          </div>
+        </div>
+
         {/* 글 작성 가이드 */}
         <div className="bg-blue-50 border border-blue-200 rounded p-4 mt-4">
           <h3 className="font-medium text-blue-800 mb-2">📝 글 작성 가이드</h3>
@@ -359,7 +416,7 @@ const Post = () => {
             <li>• 제목은 100자 이내로 작성해주세요</li>
             <li>• 내용은 2000자 이내로 작성해주세요</li>
             <li>• 적절한 게시판을 선택해주세요</li>
-            <li>• 이미지는 최대 5MB까지 업로드 가능합니다</li>
+            <li>• 현재 텍스트만 작성 가능합니다 (이미지 업로드 준비 중)</li>
             <li>• 욕설이나 부적절한 내용은 삭제될 수 있습니다</li>
           </ul>
         </div>

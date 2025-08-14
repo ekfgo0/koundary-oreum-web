@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import koundaryLogo from '../../components/common/Koundarylogo.png';
 
 const BRAND = '#2e8ada';
-const SHOW_BUTTONS_PATHS = ['/main', '/posts'];
+const SHOW_BUTTONS_PATHS = ['/main', '/posts', '/board'];
 
 const Header = ({ title = '', showActions, onlyLogout = false }) => {
   const navigate = useNavigate();
