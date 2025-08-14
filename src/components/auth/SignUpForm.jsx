@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  checkNickname,
-  checkUsername,
-  sendVerificationEmail,
-  verifyCode,
-  signUp
-} from '../../api/auth';
+import { signUp, checkNickname, checkUsername, sendVerificationEmail, verifyCode } from '../../api/auth';
 
 const labelStyle = {
   display: 'block',
@@ -83,50 +77,50 @@ const messageStyle = {
   minHeight: '16px',
 };
 
-// 모든 폼 입력값을 저장하는 상태 객체
 const SignUpForm = () => {
+  // React Router의 페이지 이동 함수 (회원가입 완료 후 로그인 페이지로 이동)
+  const navigate = useNavigate();
+  
+  // 모든 폼 입력값을 저장하는 상태 객체
   const [form, setForm] = useState({
-    nationality: '',
-    university: '',
-    nickname: '',
     userId: '',
     password: '',
     confirmPassword: '',
+    nickname: '',
     email: '',
     verificationCode: '',
+    university: '',
+    nationality: ''
   });
 
   // 중복확인 결과 메세지를 저장하는 상태 객체
   const [messages, setMessages] = useState({
-    nickname: '',
     userId: '',
+    nickname: '',
+    password: '',
+    confirmPassword: ''
   });
 
   // 중복확인 성공 여부를 저장하는 상태 객체
   const [validStatus, setValidStatus] = useState({
-    nickname: false,
     userId: false,
+    nickname: false,
+    password: false,
+    confirmPassword: false
   });
 
-  // React Router의 페이지 이동 함수 (회원가입 완료 후 로그인 페이지로 이동)
-  const navigate = useNavigate();
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // 모든 입력 필드의 값 변경을 처리하는 공통 함수
   // 매개변수: e - 이벤트 객체
   // 동작: 입력값 업데이트 + 닉네임/아이디 필드 변경 시 검증 상태 초기화
   // (이 함수가 없으면 한 번 닉네임, 아이디를 입력하고 나면 그 다음부턴 계속 중복된 정보라고 뜰 것임)
-  const handleChange = e => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-    
-    // 입력값이 변경되면 해당 필드의 메시지와 상태 초기화
-    if (name === 'nickname') {
-      setMessages(prev => ({ ...prev, nickname: '' }));
-      setValidStatus(prev => ({ ...prev, nickname: false }));
-    } else if (name === 'userId') {
-      setMessages(prev => ({ ...prev, userId: '' }));
-      setValidStatus(prev => ({ ...prev, userId: false }));
-    }
+    setForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   // 마우스를 올렸을 때 배경색과 글씨를 바꾸는 함수
@@ -153,22 +147,22 @@ const SignUpForm = () => {
       return;
     }
 
-   try {
-    const response = await checkNickname(form.nickname);
-    console.log('닉네임 확인 응답:', response);
+    try {
+      const response = await checkNickname(form.nickname);
+      console.log('닉네임 확인 응답:', response);
 
-    setMessages(prev => ({ ...prev, nickname: response.message }));
-    setValidStatus(prev => ({ ...prev, nickname: response.available }));
+      setMessages(prev => ({ ...prev, nickname: response.message }));
+      setValidStatus(prev => ({ ...prev, nickname: response.available }));
 
-    alert(response.message);
-  } catch (err) {
-    console.error('닉네임 확인 에러:', err);
-    const errorMessage = err.message || '닉네임 확인 중 오류가 발생했습니다.';
-    setMessages(prev => ({ ...prev, nickname: errorMessage }));
-    setValidStatus(prev => ({ ...prev, nickname: false }));
-    alert(errorMessage);
-  }
-};
+      alert(response.message);
+    } catch (err) {
+      console.error('닉네임 확인 에러:', err);
+      const errorMessage = err.message || '닉네임 확인 중 오류가 발생했습니다.';
+      setMessages(prev => ({ ...prev, nickname: errorMessage }));
+      setValidStatus(prev => ({ ...prev, nickname: false }));
+      alert(errorMessage);
+    }
+  };
 
   // 아이디 중복 확인 처리
   const handleIDCheck = async () => {
@@ -182,11 +176,9 @@ const SignUpForm = () => {
       const response = await checkUsername(form.userId);
       console.log('아이디 확인 응답:', response);
       
-      // 백엔드 응답 메시지 표시
       setMessages(prev => ({ ...prev, userId: response.message }));
       setValidStatus(prev => ({ ...prev, userId: response.available }));
       
-      // alert도 함께 표시
       alert(response.message);
     } catch (err) {
       console.error('아이디 확인 에러:', err);
@@ -199,25 +191,34 @@ const SignUpForm = () => {
 
   // 이메일 인증 메일 전송
   const handleSendEmail = async () => {
+    if (!form.email.trim()) {
+      alert('이메일을 입력해주세요.');
+      return;
+    }
+
     try {
       const response = await sendVerificationEmail(form.email);
       console.log('이메일 전송 응답:', response);
       alert('인증 메일이 전송되었습니다.');
     } catch (err) {
-      console.error(err);
+      console.error('이메일 전송 에러:', err);
       alert('이메일 전송에 실패했습니다.');
     }
   };
 
   // 이메일 인증번호 확인
   const handleVerifyCode = async () => {
-    try {
+    if (!form.verificationCode.trim()) {
+      alert('인증번호를 입력해주세요.');
+      return;
+    }
 
+    try {
       const response = await verifyCode(form.email.trim(), form.verificationCode.trim());
       console.log('인증번호 확인 응답:', response);
       alert('인증에 성공했습니다.');
     } catch (err) {
-      console.error(err);
+      console.error('인증 확인 에러:', err);
 
       if (err.response?.data?.message?.includes('만료')) {
         alert('인증번호가 만료되었습니다.');
@@ -229,9 +230,37 @@ const SignUpForm = () => {
     }
   };
 
-  // 최종 회원가입 처리 - 백엔드에서 모든 검증을 처리
-  const handleSubmit = async e => {
+  // 최종 회원가입 처리 - 함수명 변경으로 중복 해결
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 기본 유효성 검사
+    if (!form.userId.trim()) {
+      alert('아이디를 입력해주세요.');
+      return;
+    }
+    
+    if (!form.password.trim()) {
+      alert('비밀번호를 입력해주세요.');
+      return;
+    }
+    
+    if (form.password !== form.confirmPassword) {
+      alert('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    
+    if (!form.nickname.trim()) {
+      alert('닉네임을 입력해주세요.');
+      return;
+    }
+    
+    if (!form.email.trim()) {
+      alert('이메일을 입력해주세요.');
+      return;
+    }
+
+    setIsSubmitting(true);
     
     // 백엔드가 기대하는 형태로 데이터 변환
     const signupData = {
@@ -250,17 +279,16 @@ const SignUpForm = () => {
       alert('회원가입이 완료되었습니다!');
       navigate('/login');
     } catch (err) {
-      console.error(err);
-
-      // 백엔드에서 보내는 구체적인 에러 메시지를 표시
+      console.error('회원가입 에러:', err);
       const errorMessage = err.response?.data?.message || err.message || '회원가입에 실패했습니다.';
       alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // 비밀번호와 비밀번호 확인이 일치하는지 확인하는 계산된 값
-  // 비밀번호 확인 필드에 값이 있고, 두 비밀번호가 일치할 때 true
-  const isMatching = form.confirmPassword && form.password === form.confirmPassword;
+  // 비밀번호 일치 확인
+  const isPasswordMatching = form.confirmPassword && form.password === form.confirmPassword;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -271,7 +299,7 @@ const SignUpForm = () => {
           name="nationality"
           id="nationality"
           value={form.nationality}
-          onChange={handleChange}
+          onChange={handleInputChange}
           style={selectStyle}
         >
           <option value="">선택하세요</option>
@@ -289,7 +317,7 @@ const SignUpForm = () => {
           name="university"
           id="university"
           value={form.university}
-          onChange={handleChange}
+          onChange={handleInputChange}
           style={selectStyle}
         >
           <option value="">선택하세요</option>
@@ -308,7 +336,7 @@ const SignUpForm = () => {
             type="text"
             name="nickname"
             value={form.nickname}
-            onChange={handleChange}
+            onChange={handleInputChange}
             style={inputStyle}
           />
         </div>
@@ -331,7 +359,7 @@ const SignUpForm = () => {
             type="text"
             name="userId"
             value={form.userId}
-            onChange={handleChange}
+            onChange={handleInputChange}
             style={inputStyle}
           />
         </div>
@@ -353,7 +381,7 @@ const SignUpForm = () => {
           type="password"
           name="password"
           value={form.password}
-          onChange={handleChange}
+          onChange={handleInputChange}
           style={inputStyle}
         />
       </div>
@@ -366,18 +394,18 @@ const SignUpForm = () => {
             type="password"
             name="confirmPassword"
             value={form.confirmPassword}
-            onChange={handleChange}
+            onChange={handleInputChange}
             style={inputStyle}
           />
           <span
             style={{
               minWidth: '200px',
-              color: isMatching ? '#2e8ada' : 'red',
-              fontSize: isMatching ? '14px' : '12px',
+              color: isPasswordMatching ? '#2e8ada' : 'red',
+              fontSize: isPasswordMatching ? '14px' : '12px',
             }}
           >
             {form.confirmPassword
-              ? isMatching
+              ? isPasswordMatching
                 ? '사용가능!'
                 : '비밀번호가 서로 일치하지 않습니다.'
               : ''}
@@ -393,7 +421,7 @@ const SignUpForm = () => {
             type="email"
             name="email"
             value={form.email}
-            onChange={handleChange}
+            onChange={handleInputChange}
             style={inputStyle}
           />
         </div>
@@ -416,7 +444,7 @@ const SignUpForm = () => {
             type="text"
             name="verificationCode"
             value={form.verificationCode}
-            onChange={handleChange}
+            onChange={handleInputChange}
             style={inputStyle}
           />
         </div>
@@ -436,6 +464,7 @@ const SignUpForm = () => {
         <button
           type="submit"
           style={SignUpButtonStyle}
+          disabled={isSubmitting}
           onMouseEnter={ e => {
             e.target.style.backgroundColor = "#086cc3";
           }}
@@ -443,7 +472,7 @@ const SignUpForm = () => {
             e.target.style.backgroundColor = "#2e8ada";
           }}
         >
-          회원가입
+          {isSubmitting ? '회원가입 중...' : '회원가입'}
         </button>
       </div>
     </form>

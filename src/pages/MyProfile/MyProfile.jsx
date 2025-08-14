@@ -107,7 +107,9 @@ export default function MyProfile() {
 
   return (
     <div>
-      <Header />
+      {/* 프로필 화면에서는 로그아웃만 노출 */}
+      <Header title="내 프로필" showActions={true} onlyLogout={true} />
+
       <main className="max-w-screen-lg mx-auto px-4 py-4 space-y-6">
         <ProfileCard
           nickname={me?.nickname || '닉네임 없음'}
@@ -128,4 +130,7 @@ export default function MyProfile() {
       </main>
     </div>
   );
-}
+};
+
+
+

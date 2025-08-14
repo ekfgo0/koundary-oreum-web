@@ -8,6 +8,8 @@ import ChangePassword from './pages/ChangePassword/ChangePassword';
 import Posts from "./pages/Posts/Posts";
 import BoardList from './pages/BoardList/BoardList';
 // import PostDetail from './pages/BoardList/PostDetail'; // 상세가 있으면 추가
+import MyPost from "./pages/MyPost/MyPost";
+import YourPost from "./pages/YourPost/YourPost";
 
 function App() {
   return (
@@ -35,6 +37,8 @@ function App() {
 
       {/* 그 외 전부 기본으로 */}
       <Route path="*" element={<Navigate to="/board/free" replace />} />
+      <Route path="/mypost/:postId" element={<MyPost />} />
+      <Route path="/yourpost/:postId" element={<YourPost />} />
     </Routes>
   );
 }
