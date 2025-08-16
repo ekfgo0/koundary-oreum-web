@@ -14,7 +14,6 @@ import YourPost from "./pages/YourPost/YourPost";
 function App() {
   return (
     <Routes>
-      {/* 기본 진입은 자유게시판으로 */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
       {/* 인증/기타 페이지 */}

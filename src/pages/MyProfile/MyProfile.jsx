@@ -12,20 +12,38 @@ import {
 } from '../../api/user';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
-// ✅ 문자열 안전 처리 (기본값 true로 두면 백엔드 없어도 잘 뜸)
 const USE_MOCK = (import.meta.env?.VITE_USE_MOCK ?? 'true').toString() === 'true';
 
 export default function MyProfile() {
   const [me, setMe] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);       // 첫 진입 때만 사용
+  const [refreshing, setRefreshing] = useState(false); // 조용한 재조회 표시(선택)
+  const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState(null);
 
-  const fetchMe = async () => {
+  // http/https에만 캐시 무력화(blob:/data:는 그대로)
+  const bust = (url) => {
+    if (!url) return '';
+    const s = String(url).toLowerCase();
+    const isHttp = s.startsWith('http://') || s.startsWith('https://');
+    return isHttp ? `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}` : url;
+  };
+
+  // opts.silent=true면 전체 로딩을 띄우지 않음
+  const fetchMe = async (opts = { silent: false }) => {
+    const { silent } = opts;
     try {
       setErr(null);
-      setLoading(true);
-      const data = await getMyProfile(); // mock 또는 실제 API
-      setMe(data);
+      if (silent) setRefreshing(true);
+      else setLoading(true);
+
+      const data = await getMyProfile();
+      // 머지 + 캐시 무력화된 이미지 적용
+      setMe((prev) => ({
+        ...prev,
+        ...data,
+        profileImage: bust(data.profileImage),
+      }));
     } catch (e) {
       console.error('getMyProfile error:', e);
       const code = e?.code || '';
@@ -40,17 +58,16 @@ export default function MyProfile() {
           : e?.response?.data?.message || '프로필을 불러오지 못했습니다.';
       setErr(msg);
     } finally {
-      setLoading(false);
+      if (silent) setRefreshing(false);
+      else setLoading(false);
     }
   };
 
   useEffect(() => {
-    // ✅ mock이면 가드 스킵하고 바로 호출
     if (USE_MOCK) {
-      fetchMe();
+      fetchMe({ silent: false });
       return;
     }
-    // 실제 API만 가드 적용
     if (!API_BASE) {
       setErr('API 주소가 설정되어 있지 않습니다. (.env 확인)');
       setLoading(false);
@@ -62,7 +79,7 @@ export default function MyProfile() {
       setLoading(false);
       return;
     }
-    fetchMe();
+    fetchMe({ silent: false });
   }, []);
 
   if (loading) {
@@ -85,7 +102,7 @@ export default function MyProfile() {
               API_BASE: {API_BASE || '(미설정)'}
             </div>
           )}
-          <button onClick={fetchMe} className="px-3 py-2 border rounded">
+          <button onClick={() => fetchMe({ silent: false })} className="px-3 py-2 border rounded">
             다시 시도
           </button>
         </main>
@@ -93,48 +110,87 @@ export default function MyProfile() {
     );
   }
 
-  // 이벤트 핸들러
-  const handleChangeImage = async () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async () => {
-      if (!input.files?.[0]) return;
-      await uploadMyAvatar(input.files[0]); // mock/real 공통
-      await fetchMe();
-    };
-    input.click();
+  // 파일 선택 → 미리보기 즉시 반영 → 업로드 → 조용한 재조회
+  const handleSelectImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드 가능합니다.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('5MB 이하의 이미지만 가능합니다.');
+      e.target.value = '';
+      return;
+    }
+
+    // 즉시 미리보기(낙관적 UI)
+    const previewUrl = URL.createObjectURL(file);
+    setMe((prev) => (prev ? { ...prev, profileImage: previewUrl } : prev));
+
+    try {
+      setUploading(true);
+      const fd = new FormData();
+      fd.append('file', file); // 백엔드 필드명('avatar' 등)이 다르면 변경
+      await uploadMyAvatar(fd);
+
+      // 전체 로딩 없이 최신 데이터만 병합
+      await fetchMe({ silent: true });
+    } catch (error) {
+      console.error(error);
+      alert('이미지 업로드에 실패했습니다.');
+      await fetchMe({ silent: true }); // 롤백/재동기화
+    } finally {
+      e.target.value = ''; // 동일 파일 재선택 허용
+      try { URL.revokeObjectURL(previewUrl); } catch {}
+      setUploading(false);
+    }
   };
 
   const handleDeleteImage = async () => {
-    await deleteMyAvatar();
-    await fetchMe();
+    try {
+      await deleteMyAvatar();
+      await fetchMe({ silent: true });
+    } catch (e) {
+      console.error(e);
+      alert('이미지 삭제에 실패했습니다.');
+    }
   };
 
   const handleDeleteAccount = async () => {
     if (!confirm('정말 탈퇴하시겠습니까?')) return;
-    await deleteMyAccount();
-    alert('탈퇴 완료');
+    try {
+      await deleteMyAccount();
+      alert('탈퇴 완료');
+    } catch (e) {
+      console.error(e);
+      alert('탈퇴에 실패했습니다.');
+    }
   };
 
-  // ✅ 키 이름 매칭: profileImage / account.userId / activity.*
   return (
     <div>
       <Header title="내 프로필" showActions={true} onlyLogout={true} />
 
       <main className="max-w-screen-lg mx-auto px-4 py-4 space-y-6">
+        {/* 필요하면 refreshing 상태를 여기서 작은 텍스트/스피너로 표시해도 됨 */}
+        {/* {refreshing && <div className="text-sm text-gray-400">동기화 중…</div>} */}
+
         <ProfileCard
           nickname={me?.nickname || '홍길동'}
           country={me?.country || 'Korea'}
           school={me?.school || '홍익대학교'}
-          profileImage={me?.profileImage || ''}       
-          onChangeImage={handleChangeImage}
-          onDeleteImage={handleDeleteImage}
+          profileImage={me?.profileImage || ''}
+          onSelectImage={handleSelectImage}
+          onClickDeleteImage={handleDeleteImage}
+          uploading={uploading || refreshing}
         />
 
         <div className="flex flex-col md:flex-row gap-6">
           <AccountInfoCard
-            userId={me?.account?.userId || 'abcd123'}    
+            userId={me?.account?.userId || 'abcd123'}
             onEditPassword={() => alert('비밀번호 수정 예정!')}
             onDeleteAccount={handleDeleteAccount}
           />
