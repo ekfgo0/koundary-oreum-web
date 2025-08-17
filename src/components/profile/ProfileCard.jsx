@@ -5,9 +5,12 @@ const ProfileCard = ({
   country = '국가 없음',
   school = '학교 없음',
   profileImage = '',
-  onClickChangeImage,   // 파일 선택 트리거
-  onClickDeleteImage,   // 이미지 삭제
+  onSelectImage,       // (e) => void  ← 변경
+  onClickDeleteImage,  // () => void
+  uploading = false,
 }) => {
+  const inputId = 'profileImageInput';
+
   return (
     <div className="border p-6 flex gap-6 items-center">
       {/* 프로필 이미지 */}
@@ -22,15 +25,30 @@ const ProfileCard = ({
           )}
         </div>
 
-        <button
-          onClick={onClickChangeImage}
-          className="mt-2 px-3 py-1 bg-blue-500 text-white text-sm rounded"
+        {/* 숨겨진 파일 입력 */}
+        <input
+          id={inputId}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={onSelectImage}
+          disabled={uploading}
+        />
+
+        {/* 라벨 클릭 → 파일 선택창 */}
+        <label
+          htmlFor={inputId}
+          className={`mt-2 px-3 py-1 text-white text-sm rounded cursor-pointer
+            ${uploading ? 'bg-blue-400 opacity-70 pointer-events-none' : 'bg-blue-500 hover:opacity-90'}`}
         >
-          이미지 변경
-        </button>
+          {uploading ? '업로드 중...' : '이미지 변경'}
+        </label>
+
         <button
+          type="button"
           onClick={onClickDeleteImage}
           className="mt-1 px-3 py-1 text-sm border rounded"
+          disabled={uploading}
         >
           이미지 삭제
         </button>

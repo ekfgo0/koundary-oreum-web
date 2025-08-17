@@ -29,7 +29,7 @@ const Header = ({ title = '', showActions, onlyLogout = false }) => {
             src={koundaryLogo}
             alt="Koundary Logo"
             className="h-8 object-contain cursor-pointer"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/main')}
           />
           {title && <span className="text-lg md:text-xl font-semibold">{title}</span>}
         </div>
