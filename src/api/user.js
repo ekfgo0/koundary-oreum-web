@@ -1,4 +1,4 @@
-import axios from './axiosInstance';
+import axiosInstance from './axiosInstance';
 
 const USE_MOCK = (import.meta.env?.VITE_USE_MOCK ?? 'true').toString() === 'true';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -7,12 +7,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LS_KEY = 'mock_me_v1';
 
 const defaultMock = {
+  userID: 1, // 유저 고유 아이디
+  loginId: 'abcd123', // 유저가 입력한 로그인 아이디
   nickname: '홍길동',
+  university: '홍익대학교',
+  email: 'test@example.com',
   country: 'Korea',
-  school: '홍익대학교',
-  profileImage: '', // 시작은 빈 값
-  activity: { posts: 12, comments: 47, lastLogin: '2025-08-10T12:34:00+09:00' },
-  account: { userId: 'abcd123' },
+  profileImageUrl: '', // 프로필 이미지 URL
+  isDefaultImage: true, // 기본 프로필 이미지 여부
 };
 
 function readMock() {
@@ -23,45 +25,69 @@ function readMock() {
     return defaultMock;
   }
 }
+
 function writeMock(obj) {
   localStorage.setItem(LS_KEY, JSON.stringify(obj));
 }
 
 // 서버-프론트 필드 정규화
 const normalize = (data = {}) => ({
+  userID: data.userID ?? data.userId ?? data.id ?? 0, // 고유 아이디 
+  loginId: data.loginId ?? data.username ?? '', // 로그인 아이디
   nickname: data.nickname ?? '',
-  country: data.country ?? '',
-  school: data.school ?? '',
-  profileImage: data.profileImageUrl ?? data.profileImage ?? '',
-  activity: {
-    posts: data.postCount ?? data.posts ?? 0,
-    comments: data.commentCount ?? data.comments ?? 0,
-    lastLogin: data.lastLoginAt ?? data.lastLogin ?? '',
-  },
-  account: { userId: data.loginId ?? data.userId ?? '' },
+  university: data.university ?? data.school ?? '',
+  email: data.email ?? '',
+  country: data.country ?? data.nationality ?? '',
+  profileImageUrl: data.profileImageUrl ?? data.profileImage ?? '',
+  isDefaultImage: data.isDefaultImage ?? true,
 });
 
-// 내 프로필
+// ============ 프로필 조회 ============
+// 내 프로필 정보 가져오기
 export const getMyProfile = async () => {
   if (USE_MOCK) {
     await sleep(250);
-    return readMock(); // 캐시 무력화는 페이지에서 처리
+    return readMock();
   }
-  const { data } = await axios.get('/users/me');
-  return normalize(data);
+  
+  try {
+    const { data } = await axiosInstance.get('/users/me');
+    const normalizedData = normalize(data);
+    
+    // 최신 프로필 정보를 localStorage에 업데이트
+    localStorage.setItem('userInfo', JSON.stringify(normalizedData));
+    
+    return normalizedData;
+  } catch (error) {
+    console.error('프로필 조회 실패:', error.response?.data || error.message);
+    throw (error.response?.data ?? error);
+  }
 };
 
-// 비밀번호 변경
-export const changeMyPassword = async ({ current, next }) => {
+// ============ 비밀번호 변경 ============
+export const changePassword = async (currentPassword, newPassword) => {
   if (USE_MOCK) {
     await sleep(200);
     return { ok: true };
   }
-  return axios.patch('/users/me/password', { current, next });
+  
+  try {
+    const { data } = await axiosInstance.patch('/users/me/password', {
+      current: currentPassword,
+      next: newPassword
+    });
+    
+    console.log('비밀번호 변경 성공');
+    return data;
+  } catch (error) {
+    console.error('비밀번호 변경 실패:', error.response?.data || error.message);
+    throw (error.response?.data ?? error);
+  }
 };
 
-// 프로필 이미지 업로드 (mock은 data URL로 저장)
-export const uploadMyAvatar = async (fileOrFormData) => {
+// ============ 프로필 이미지 관리 ============
+// 프로필 이미지 업로드
+export const uploadProfileImage = async (fileOrFormData) => {
   if (USE_MOCK) {
     await sleep(300);
 
@@ -74,70 +100,94 @@ export const uploadMyAvatar = async (fileOrFormData) => {
     }
     if (!(file instanceof File)) throw new Error('MOCK: 파일이 필요합니다.');
 
-    // File → data URL(base64)로 변환 (새로고침해도 유지, blob 문제 없음)
+    // File → data URL(base64)로 변환
     const toDataURL = (f) =>
       new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result); // "data:image/png;base64,...."
+        reader.onload = () => resolve(reader.result);
         reader.onerror = reject;
         reader.readAsDataURL(f);
       });
 
     const dataUrl = await toDataURL(file);
     const me = readMock();
-    me.profileImage = dataUrl;
+    me.profileImageUrl = dataUrl;
+    me.isDefaultImage = false;
     writeMock(me);
-    return { url: dataUrl };
+    return { url: dataUrl, isDefaultImage: false };
   }
 
-  const form = new FormData();
-  if (fileOrFormData instanceof FormData) {
-    const f =
-      fileOrFormData.get('file') ||
-      fileOrFormData.get('avatar') ||
-      fileOrFormData.get('image');
-    form.append('file', f);
-  } else {
-    form.append('file', fileOrFormData);
-  }
+  try {
+    const form = new FormData();
+    if (fileOrFormData instanceof FormData) {
+      const f =
+        fileOrFormData.get('file') ||
+        fileOrFormData.get('avatar') ||
+        fileOrFormData.get('image');
+      form.append('file', f);
+    } else {
+      form.append('file', fileOrFormData);
+    }
 
-  return axios.post('/users/me/avatar', form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+    const { data } = await axiosInstance.post('/users/me/avatar', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    // 업데이트된 프로필 정보를 localStorage에 반영
+    const currentUser = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const updatedUser = {
+      ...currentUser,
+      profileImageUrl: data.profileImageUrl || data.url,
+      isDefaultImage: false
+    };
+    localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+    
+    console.log('프로필 이미지 업로드 성공');
+    return data;
+  } catch (error) {
+    console.error('프로필 이미지 업로드 실패:', error.response?.data || error.message);
+    throw (error.response?.data ?? error);
+  }
 };
 
-// 프로필 이미지 삭제
-export const deleteMyAvatar = async () => {
+// 프로필 이미지 삭제 (기본 이미지로 되돌림)
+export const deleteProfileImage = async () => {
   if (USE_MOCK) {
     await sleep(150);
     const me = readMock();
-    me.profileImage = '';
+    me.profileImageUrl = '';
+    me.isDefaultImage = true;
     writeMock(me);
-    return { ok: true };
+    return { ok: true, isDefaultImage: true };
   }
-  return axios.delete('/users/me/avatar');
-};
 
-// 회원 탈퇴
-export const deleteMyAccount = async () => {
-  if (USE_MOCK) {
-    await sleep(150);
-    localStorage.removeItem(LS_KEY);
-    return { ok: true };
-  }
-  return axios.delete('/users/me');
-};
-
-export const logout = async () => {
   try {
-    // 서버에 전달할 게 없으면 생략 가능
-    // await axios.post('/auth/logout'); // (선택) 서버에 로그아웃 알림
-  } catch (e) {
-    // 로그아웃 API가 없어도 무시 가능
-  } finally {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    // 혹시 기본값 박아둔 적 있으면 제거
-    delete axios.defaults.headers.common.Authorization;
+    const { data } = await axiosInstance.delete('/users/me/avatar');
+
+    // 기본 이미지로 되돌림을 localStorage에 반영
+    const currentUser = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const updatedUser = {
+      ...currentUser,
+      profileImageUrl: '',
+      isDefaultImage: true
+    };
+    localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+    
+    console.log('프로필 이미지 삭제 성공 - 기본 이미지로 변경');
+    return data;
+  } catch (error) {
+    console.error('프로필 이미지 삭제 실패:', error.response?.data || error.message);
+    throw (error.response?.data ?? error);
+  }
+};
+
+// 캐시된 프로필 정보 새로고침
+export const refreshProfile = async () => {
+  try {
+    const profileData = await getMyProfile();
+    return profileData;
+  } catch (error) {
+    console.error('프로필 새로고침 실패:', error);
+    throw error;
   }
 };

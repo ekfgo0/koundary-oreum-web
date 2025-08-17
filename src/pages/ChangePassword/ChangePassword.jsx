@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header';
-import { changePassword } from '../../api/auth'; // auth.js에서 함수 import
+import { changePassword } from '../../api/user';
 
 const ChangePassword = () => {
     const navigate = useNavigate();

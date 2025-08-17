@@ -137,20 +137,3 @@ export const signUp = async (formData) => {
   const { data } = await axiosInstance.post('/users/signup', formData);
   return data;
 };
-
-// ============ 프로필 수정 관련 ============
-// 비밀번호 변경
-export const changePassword = async (currentPassword, newPassword) => {
-  try {
-    const { data } = await axiosInstance.put('/auth/change-password', {
-      currentPassword,
-      newPassword
-    });
-    
-    console.log('비밀번호 변경 성공');
-    return data;
-  } catch (error) {
-    console.error('비밀번호 변경 실패:', error.response?.data || error.message);
-    throw (error.response?.data ?? error);
-  }
-};
