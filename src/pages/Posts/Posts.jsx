@@ -1,11 +1,8 @@
-// src/pages/Posts/Post.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import koundaryLogo from '../../components/common/Koundarylogo.png';
-import { postAPI } from '../../api/post'; // 새로 만든 API import
-
-// API 기본 URL 설정 - 실제 백엔드 서버 주소로 수정
-const API_BASE_URL = 'http://192.168.174.75:8080';
+import { postAPI } from '../../api/post';
+import axiosInstance from '../../api/axiosInstance'; // 이미지 업로드용
+import Header from '../../components/common/Header';
 
 // 카테고리를 boardCode로 변환하는 함수
 const getCategoryBoardCode = (categoryName) => {
@@ -35,10 +32,13 @@ const Post = () => {
     content: '',
     category: '소속국가'
   });
-  // const [selectedFiles, setSelectedFiles] = useState([]); // 이미지 업로드 준비될 때까지 주석처리
+  
+  const [selectedFiles, setSelectedFiles] = useState([]); // 선택된 파일들
+  const [uploadedImageUrls, setUploadedImageUrls] = useState([]); // 업로드된 이미지 URL들
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInfoPost, setIsInfoPost] = useState(false);
   const [error, setError] = useState(null);
+  const [uploadingImages, setUploadingImages] = useState(false); // 이미지 업로드 상태
 
   // 수정 모드일 때 기존 데이터로 폼 초기화
   useEffect(() => {
@@ -48,6 +48,10 @@ const Post = () => {
         content: editData.content,
         category: editData.category
       });
+      // 기존 이미지 URL들도 설정
+      if (editData.imageUrls && editData.imageUrls.length > 0) {
+        setUploadedImageUrls(editData.imageUrls);
+      }
     }
   }, [isEditMode, editData]);
 
@@ -70,14 +74,17 @@ const Post = () => {
     if (error) setError(null);
   };
 
-  // 이미지 업로드 관련 함수들 - 백엔드 준비될 때까지 주석처리
-  /*
+  // 이미지 파일 선택 처리
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     
-    // 파일 크기 검증 (5MB)
-    const maxSize = 5 * 1024 * 1024;
+    // 파일 크기 및 타입 검증
+    const maxSize = 5 * 1024 * 1024; // 5MB
     const validFiles = files.filter(file => {
+      if (!file.type.startsWith('image/')) {
+        alert(`${file.name}은 이미지 파일이 아닙니다.`);
+        return false;
+      }
       if (file.size > maxSize) {
         alert(`${file.name}은 5MB를 초과합니다.`);
         return false;
@@ -85,13 +92,54 @@ const Post = () => {
       return true;
     });
     
-    setSelectedFiles(validFiles);
+    setSelectedFiles(prev => [...prev, ...validFiles]);
   };
 
+  // 선택된 파일 제거
   const removeFile = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
-  */
+
+  // 업로드된 이미지 URL 제거
+  const removeUploadedImage = (index) => {
+    setUploadedImageUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // 이미지 업로드 함수
+  const uploadImages = async () => {
+    if (selectedFiles.length === 0) return [];
+
+    setUploadingImages(true);
+    const uploadedUrls = [];
+
+    try {
+      for (const file of selectedFiles) {
+        const formData = new FormData();
+        formData.append('image', file); // 백엔드에서 받는 필드명에 맞게 조정
+
+        try {
+          const response = await axiosInstance.post('/upload/image', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+
+          // 백엔드 응답에서 이미지 URL 추출
+          const imageUrl = response.data.imageUrl || response.data.url || response.data.data?.url;
+          if (imageUrl) {
+            uploadedUrls.push(imageUrl);
+          }
+        } catch (uploadError) {
+          console.error(`이미지 업로드 실패 (${file.name}):`, uploadError);
+          alert(`${file.name} 업로드에 실패했습니다.`);
+        }
+      }
+
+      return uploadedUrls;
+    } finally {
+      setUploadingImages(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -117,6 +165,7 @@ const Post = () => {
       if (USE_MOCK_MODE) {
         // Mock 모드: 실제 API 호출 없이 성공 시뮬레이션
         console.log('Mock 모드 - 글 작성 시뮬레이션');
+        console.log('Mock 이미지 URL들:', uploadedImageUrls);
         await new Promise(resolve => setTimeout(resolve, 1000)); // 로딩 시뮬레이션
         
         const message = isEditMode 
@@ -130,23 +179,27 @@ const Post = () => {
         return;
       }
 
-      // 실제 API 호출 (백엔드 준비 완료 후)
+      // 1. 새로 선택된 파일들을 업로드
+      const newImageUrls = await uploadImages();
+      
+      // 2. 기존 업로드된 URL들과 새로운 URL들을 합침
+      const allImageUrls = [...uploadedImageUrls, ...newImageUrls];
+
+      // 3. 게시글 데이터 준비
       const boardCode = getCategoryBoardCode(formData.category);
-
-      console.log('API 호출 데이터:', {
-        boardCode,
-        title: formData.title,
-        content: formData.content,
-        imageUrls: [] // 현재는 빈 배열
-      });
-
-      // 새로운 API 구조에 맞게 호출
       const postData = {
         title: formData.title,
         content: formData.content,
-        imageUrls: [] // 이미지 업로드 준비될 때까지 빈 배열
+        imageUrls: allImageUrls, // URL 배열로 전송
+        isInfoPost: isInfoPost && formData.category !== '정보게시판' // 정보글 여부
       };
 
+      console.log('API 호출 데이터:', {
+        boardCode,
+        postData
+      });
+
+      // 4. 게시글 작성/수정 API 호출
       let result;
       if (isEditMode) {
         result = await postAPI.updatePost(boardCode, editPostId, postData);
@@ -172,15 +225,14 @@ const Post = () => {
       
     } catch (error) {
       console.error(isEditMode ? '글 수정 실패:' : '글 작성 실패:', error);
-      setError(error.message);
+      setError(error.message || '글 작성에 실패했습니다.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
-    // if (formData.title || formData.content || selectedFiles.length > 0) { // 이미지 체크 제거
-    if (formData.title || formData.content) {
+    if (formData.title || formData.content || selectedFiles.length > 0 || uploadedImageUrls.length > 0) {
       if (window.confirm('작성 중인 내용이 있습니다. 정말 취소하시겠습니까?')) {
         navigate('/main');
       }
@@ -191,40 +243,7 @@ const Post = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b py-4">
-        <div className="max-w-screen-lg mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div onClick={() => navigate('/main')} className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
-              <img 
-                src={koundaryLogo} 
-                alt="Koundary Logo" 
-                className="h-8 object-contain"
-                onError={(e) => {
-                  console.error('이미지 로드 실패:', e.target.src);
-                  e.target.style.display = 'none';
-                  e.target.nextElementSibling.style.display = 'flex';
-                }}
-              />
-              <div 
-                className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white font-bold" 
-                style={{ display: 'none' }}
-              >
-                K
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex gap-2">
-            <button className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all">
-              내 프로필
-            </button>
-            <button className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-all">
-              로그아웃
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header title={isEditMode ? "글 수정" : "새 글 작성"} showActions={true} onlyLogout={false} />
 
       {/* Post Writing Form */}
       <div className="max-w-6xl mx-auto px-5 mt-5">
@@ -315,8 +334,7 @@ const Post = () => {
               </div>
             </div>
 
-            {/* File Upload - 백엔드 이미지 업로드 준비될 때까지 주석처리 */}
-            {/*
+            {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 이미지 첨부 (선택사항)
@@ -327,21 +345,38 @@ const Post = () => {
                 accept="image/*"
                 onChange={handleFileChange}
                 className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                disabled={uploadingImages || isSubmitting}
               />
               <div className="text-sm text-gray-500 mt-1">
                 이미지 파일만 업로드 가능 (JPG, PNG, GIF 등, 최대 5MB)
               </div>
               
-              {selectedFiles.length > 0 && (
+              {/* 업로드된 이미지 URL들 표시 */}
+              {uploadedImageUrls.length > 0 && (
                 <div className="mt-3 space-y-2">
-                  <p className="text-sm font-medium text-gray-700">선택된 파일:</p>
-                  {selectedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span className="text-sm text-gray-600">{file.name}</span>
+                  <p className="text-sm font-medium text-gray-700">업로드된 이미지:</p>
+                  {uploadedImageUrls.map((url, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={url} 
+                          alt={`업로드된 이미지 ${index + 1}`}
+                          className="w-12 h-12 object-cover rounded"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextElementSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-500 text-xs" style={{ display: 'none' }}>
+                          이미지
+                        </div>
+                        <span className="text-sm text-gray-600 truncate max-w-xs">{url}</span>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => removeFile(index)}
+                        onClick={() => removeUploadedImage(index)}
                         className="text-red-500 hover:text-red-700 text-sm px-2 py-1 rounded"
+                        disabled={isSubmitting}
                       >
                         삭제
                       </button>
@@ -349,8 +384,39 @@ const Post = () => {
                   ))}
                 </div>
               )}
+
+              {/* 선택된 파일들 표시 */}
+              {selectedFiles.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <p className="text-sm font-medium text-gray-700">선택된 파일 (업로드 대기 중):</p>
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-500 text-xs">
+                          미리보기
+                        </div>
+                        <span className="text-sm text-gray-600">{file.name}</span>
+                        <span className="text-xs text-gray-500">({(file.size / 1024 / 1024).toFixed(2)}MB)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="text-red-500 hover:text-red-700 text-sm px-2 py-1 rounded"
+                        disabled={uploadingImages || isSubmitting}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {uploadingImages && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                  <p className="text-sm text-blue-600">이미지 업로드 중...</p>
+                </div>
+              )}
             </div>
-            */}
           </div>
 
           {/* Form Actions */}
@@ -365,6 +431,7 @@ const Post = () => {
                     checked={isInfoPost}
                     onChange={(e) => setIsInfoPost(e.target.checked)}
                     className="w-4 h-4"
+                    disabled={isSubmitting}
                   />
                   <label htmlFor="infoPost" className="text-sm text-gray-700">
                     정보글 (선택한 게시판과 정보게시판에 동시 게시)
@@ -377,52 +444,28 @@ const Post = () => {
                   type="button"
                   onClick={handleCancel}
                   className="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-all"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || uploadingImages}
                 >
                   취소
                 </button>
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || uploadingImages}
                   className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? (isEditMode ? '수정 중...' : '작성 중...') : (isEditMode ? '글 수정' : '글 작성')}
+                  {uploadingImages ? '이미지 업로드 중...' : 
+                   isSubmitting ? (isEditMode ? '수정 중...' : '작성 중...') : 
+                   (isEditMode ? '글 수정' : '글 작성')}
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Mock 모드 활성화 알림 */}
-        <div className="bg-green-50 border border-green-200 rounded p-4 mt-4">
-          <h3 className="font-medium text-green-800 mb-2">✅ Mock 모드 활성화</h3>
-          <div className="text-sm text-green-700 space-y-1">
-            <p>• 백엔드 인증 문제 해결 전까지 임시로 Mock 모드로 동작합니다</p>
-            <p>• 글 작성 폼과 유효성 검사는 정상 작동합니다</p>
-            <p>• 실제 데이터 저장은 되지 않지만 UI 테스트가 가능합니다</p>
-            <p>• 백엔드 준비 완료 시 <code className="bg-green-100 px-1 rounded">USE_MOCK_MODE = false</code>로 변경</p>
-          </div>
-        </div>
-
-        {/* 백엔드 해결해야 할 문제들 */}
-        <div className="bg-orange-50 border border-orange-200 rounded p-4 mt-4">
-          <h3 className="font-medium text-orange-800 mb-2">🔧 백엔드에서 해결해야 할 문제들</h3>
-          <div className="text-sm text-orange-700 space-y-1">
-            <p><strong>1. 사용자 인증 문제:</strong></p>
-            <p className="ml-4">• CustomUserDetails.getUserId()에서 null 반환</p>
-            <p className="ml-4">• 사용자 정보가 제대로 로드되지 않음</p>
-            <p><strong>2. 임시 해결책:</strong></p>
-            <p className="ml-4">• 테스트용 사용자 생성: test_user_001</p>
-            <p className="ml-4">• 또는 인증 체크 임시 비활성화</p>
-            <p><strong>3. 파일 업로드:</strong></p>
-            <p className="ml-4">• multipart/form-data 지원 추가</p>
-          </div>
-        </div>
-
-        {/* 글 작성 가이드 */}
+                {/* 글 작성 가이드 */}
         <div className="bg-blue-50 border border-blue-200 rounded p-4 mt-4">
-          <h3 className="font-medium text-blue-800 mb-2">📝 글 작성 가이드</h3>
+          <h3 className="font-medium text-blue-800 mb-2">글 작성 가이드</h3>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• 제목은 100자 이내로 작성해주세요</li>
             <li>• 내용은 2000자 이내로 작성해주세요</li>
