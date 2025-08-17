@@ -1,20 +1,21 @@
-// src/pages/MyProfile/MyProfile.jsx
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import ProfileCard from '../../components/profile/ProfileCard';
 import AccountInfoCard from '../../components/profile/AccountInfoCard';
 import ActivityCard from '../../components/profile/ActivityCard';
-import {
-  getMyProfile,
-  uploadMyAvatar,
-  deleteMyAvatar,
-  deleteMyAccount,
+import { 
+  getMyProfile, 
+  uploadProfileImage, 
+  deleteProfileImage,
+  deleteMyAccount 
 } from '../../api/user';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const USE_MOCK = (import.meta.env?.VITE_USE_MOCK ?? 'true').toString() === 'true';
 
 export default function MyProfile() {
+  const navigate = useNavigate();
   const [me, setMe] = useState(null);
   const [loading, setLoading] = useState(true);       // 첫 진입 때만 사용
   const [refreshing, setRefreshing] = useState(false); // 조용한 재조회 표시(선택)
@@ -42,7 +43,7 @@ export default function MyProfile() {
       setMe((prev) => ({
         ...prev,
         ...data,
-        profileImage: bust(data.profileImage),
+        profileImage: bust(data.profileImageUrl), // profileImageUrl로 수정
       }));
     } catch (e) {
       console.error('getMyProfile error:', e);
@@ -73,7 +74,8 @@ export default function MyProfile() {
       setLoading(false);
       return;
     }
-    const token = localStorage.getItem('accessToken');
+    // authToken으로 수정 (기존 accessToken 대신)
+    const token = localStorage.getItem('authToken');
     if (!token) {
       setErr('로그인이 필요합니다.');
       setLoading(false);
@@ -132,9 +134,8 @@ export default function MyProfile() {
 
     try {
       setUploading(true);
-      const fd = new FormData();
-      fd.append('file', file); // 백엔드 필드명('avatar' 등)이 다르면 변경
-      await uploadMyAvatar(fd);
+      // 수정된 함수명 사용
+      await uploadProfileImage(file); // FormData 생성은 함수 내부에서 처리
 
       // 전체 로딩 없이 최신 데이터만 병합
       await fetchMe({ silent: true });
@@ -150,8 +151,10 @@ export default function MyProfile() {
   };
 
   const handleDeleteImage = async () => {
+    if (!confirm('프로필 이미지를 삭제하시겠습니까?')) return;
+    
     try {
-      await deleteMyAvatar();
+      await deleteProfileImage(); // 수정된 함수명 사용
       await fetchMe({ silent: true });
     } catch (e) {
       console.error(e);
@@ -159,14 +162,23 @@ export default function MyProfile() {
     }
   };
 
+  // 비밀번호 변경 페이지로 이동
+  const handleEditPassword = () => {
+    navigate('/change-password');
+  };
+
+  // 회원탈퇴 기능
   const handleDeleteAccount = async () => {
-    if (!confirm('정말 탈퇴하시겠습니까?')) return;
+    if (!confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+    
     try {
       await deleteMyAccount();
-      alert('탈퇴 완료');
+      alert('탈퇴가 완료되었습니다.');
+      // 탈퇴 후 메인 페이지나 로그인 페이지로 이동
+      navigate('/');
     } catch (e) {
       console.error(e);
-      alert('탈퇴에 실패했습니다.');
+      alert('탈퇴에 실패했습니다: ' + (e.message || '알 수 없는 오류'));
     }
   };
 
@@ -181,7 +193,7 @@ export default function MyProfile() {
         <ProfileCard
           nickname={me?.nickname || '홍길동'}
           country={me?.country || 'Korea'}
-          school={me?.school || '홍익대학교'}
+          school={me?.university || '홍익대학교'} // university로 수정
           profileImage={me?.profileImage || ''}
           onSelectImage={handleSelectImage}
           onClickDeleteImage={handleDeleteImage}
@@ -190,9 +202,9 @@ export default function MyProfile() {
 
         <div className="flex flex-col md:flex-row gap-6">
           <AccountInfoCard
-            userId={me?.account?.userId || 'abcd123'}
-            onEditPassword={() => alert('비밀번호 수정 예정!')}
-            onDeleteAccount={handleDeleteAccount}
+            userId={me?.loginId || 'abcd123'} // loginId로 수정
+            onEditPassword={handleEditPassword} // 실제 페이지 이동으로 수정
+            onDeleteAccount={handleDeleteAccount} // 회원탈퇴 기능 활성화
           />
           <ActivityCard
             posts={me?.activity?.posts ?? 12}

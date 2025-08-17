@@ -191,3 +191,21 @@ export const refreshProfile = async () => {
     throw error;
   }
 };
+
+// 회원 탈퇴
+export const deleteMyAccount = async (password) => {
+  try {
+    const { data } = await axiosInstance.delete('/users/me', {
+      data: { password: password }
+    });
+    
+    // 탈퇴 성공 시 모든 로컬 데이터 삭제
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('userInfo');
+    
+    return data;
+  } catch (error) {
+    throw (error.response?.data ?? error);
+  }
+};
