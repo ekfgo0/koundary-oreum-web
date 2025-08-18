@@ -6,11 +6,11 @@ import { getBoardList } from '../../api/board';
 
 const CATEGORY_MAP = {
   free:   { label: '자유 게시판',  backendKey: 'FREE' },
-  info:   { label: '정보 게시판',    backendKey: 'INFO' },
-  market: { label: '중고거래/나눔 게시판',      backendKey: 'MARKET' },
-  meetup: { label: '모임 게시판',   backendKey: 'MEETUP' },
-  country:{ label: '소속 국가',     backendKey: 'COUNTRY' },
-  school: { label: '소속 학교',     backendKey: 'SCHOOL' },
+  info:   { label: '정보 게시판',    backendKey: 'INFORMATION' },
+  market: { label: '중고거래/나눔 게시판',      backendKey: 'TRADE' },
+  meetup: { label: '모임 게시판',   backendKey: 'MEETING' },
+  country:{ label: '소속 국가',     backendKey: 'NATIONALITY' },
+  school: { label: '소속 학교',     backendKey: 'UNIVERSITY' },
 };
 
 export default function BoardList() {
@@ -137,9 +137,9 @@ export default function BoardList() {
           </thead>
           <tbody>
             {rows.map((item) => (
-              <tr key={item.id} className="border-t hover:bg-gray-50 cursor-pointer">
+              <tr key={item.postId} className="border-t hover:bg-gray-50 cursor-pointer">
                 <td className="py-3 pr-4">{item.title}</td>
-                <td className="py-3">{item.author}</td>
+                <td className="py-3">{item.nickname}</td>
                 <td className="py-3">{item.createdAt}</td>
               </tr>
             ))}

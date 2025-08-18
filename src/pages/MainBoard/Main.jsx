@@ -2,21 +2,21 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header';
-import { mockBoards } from '../../api/mockup';   // 목업
-import { getBoardList } from '../../api/board';  // 실제 API
+import { mockBoards } from '../../api/mockup';
+import { getBoardList } from '../../api/board';
 
 const BRAND = '#2e8ada';
 const MAX_WIDTH = 960;
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
-// 프론트 라우트 id ↔ 백엔드 카테고리 매핑
+// 프론트 라우트 id
 const CATEGORY_MAP = {
   country: { name: '소속 국가', backendKey: 'COUNTRY' },
-  school:  { name: '소속 학교', backendKey: 'SCHOOL' },
+  school:  { name: '소속 학교', backendKey: 'UNIVERSITY' },
   free:    { name: '자유 게시판', backendKey: 'FREE' },
-  info:    { name: '정보 게시판', backendKey: 'INFO' },
-  market:  { name: '중고거래/나눔 게시판', backendKey: 'MARKET' },
-  meetup:  { name: '모임 게시판', backendKey: 'MEETUP' },
+  info:    { name: '정보 게시판', backendKey: 'INFORMATION' },
+  market:  { name: '중고거래/나눔 게시판', backendKey: 'TRADE' },
+  meetup:  { name: '모임 게시판', backendKey: 'MEETING' },
 };
 const IDS = Object.keys(CATEGORY_MAP);
 
@@ -28,28 +28,32 @@ const BoardCard = ({ id, title, posts, onMore }) => (
     </div>
 
     <div className="p-4 md:p-5">
-      <ul className="divide-y divide-gray-100 mb-4">
-        {posts.slice(0, 5).map((p, i) => {
-          // 문자열/객체 둘 다 안전하게 제목 뽑기
-          const text =
-            typeof p === 'string'
-              ? p
-              : p?.title ?? p?.name ?? p?.subject ?? p?.content ?? JSON.stringify(p);
-          const key = (typeof p === 'object' && p?.id) ? p.id : i;
+      {/* 빈 posts 배열일 때 메시지 표시 */}
+      {posts.length === 0 ? (
+        <div className="py-8 text-center text-gray-500 text-sm">
+          아직 작성된 글이 없습니다.
+        </div>
+      ) : (
+        <ul className="divide-y divide-gray-100 mb-4">
+          {posts.slice(0, 5).map((p, i) => {
+            let text = '';
+            text = p;
+            const key = (typeof p === 'object' && p?.id) ? p.id : i;
 
-          return (
-            <li key={key} className="py-2">
-              <a
-                href="#"
-                className="block truncate text-[15px] text-gray-700 hover:text-gray-900"
-                title={text}
-              >
-                {text}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
+            return (
+              <li key={key} className="py-2">
+                <a
+                  href="#"
+                  className="block truncate text-[15px] text-gray-700 hover:text-gray-900"
+                  title={text}
+                >
+                  {text}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <button
         onClick={() => onMore(id)}
@@ -80,7 +84,6 @@ export default function Main() {
         const results = await Promise.all(
           IDS.map(async (id) => {
             const { backendKey, name } = CATEGORY_MAP[id];
-            // ⚠️ getBoardList 시그니처/응답 구조는 백엔드에 맞게 조정 필요
             const res = await getBoardList({ category: backendKey, page: 0, size: 5 });
 
             // 대표적인 응답 케이스를 폭넓게 커버
@@ -90,9 +93,10 @@ export default function Main() {
               : Array.isArray(res) ? res
               : [];
 
-            const titles = list.map((post) =>
-              post?.title ?? post?.name ?? post?.subject ?? post?.content ?? String(post)
-            );
+            // 유효한 제목이 있는 포스트만 필터링
+            const titles = list
+              .map((post) => post?.title ?? post?.name ?? post?.subject ?? post?.content ?? '')
+              .filter(title => title && title.trim() !== ''); // 빈 문자열 제거
 
             return { id, name, posts: titles };
           })
@@ -100,8 +104,7 @@ export default function Main() {
         setBoards(results);
       } catch (e) {
         console.error('메인 보드 불러오기 실패:', e);
-        // 실패 시 목업으로 폴백하려면 아래 주석 해제
-        // setBoards(mockBoards);
+
       }
     })();
   }, []);

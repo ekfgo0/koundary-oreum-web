@@ -2,12 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const TABS = [
-  { label: '소속 국가',        slug: 'country' },
-  { label: '소속 학교',        slug: 'school'  },
-  { label: '자유 게시판',      slug: 'free'    },
-  { label: '정보 게시판',      slug: 'info'    },
-  { label: '중고거래/나눔 게시판', slug: 'market'  },
-  { label: '모임 게시판',      slug: 'meetup'  },
+  { label: '소속 국가',        slug: 'NATIONALITY' },
+  { label: '소속 학교',        slug: 'UNIVERSITY'  },
+  { label: '자유 게시판',      slug: 'FREE'    },
+  { label: '정보 게시판',      slug: 'INFORMATION'    },
+  { label: '중고거래/나눔 게시판', slug: 'TRADE'  },
+  { label: '모임 게시판',      slug: 'MEETING'  },
 ];
 
 const CategoryNavigation = ({ currentCategory = '', onCategoryChange }) => {

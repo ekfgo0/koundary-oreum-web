@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import CategoryNavigation from '../../components/common/CategoryNavigation';
 import MyPostForm from '../../components/auth/MyPostForm';
-import { postAPI } from '../../api/post'; // 통합된 API 사용
+import { postAPI } from '../../api/post';
 
 const MyPost = () => {
   const navigate = useNavigate();

@@ -51,7 +51,7 @@ export const getMyProfile = async () => {
   }
   
   try {
-    const { data } = await axiosInstance.get('/users/me');
+    const { data } = await axiosInstance.get('/mypage/me');
     const normalizedData = normalize(data);
     
     // 최신 프로필 정보를 localStorage에 업데이트
@@ -65,16 +65,17 @@ export const getMyProfile = async () => {
 };
 
 // ============ 비밀번호 변경 ============
-export const changePassword = async (currentPassword, newPassword) => {
+export const changePassword = async (currentPassword, newPassword, confirmNewPassword) => {
   if (USE_MOCK) {
     await sleep(200);
     return { ok: true };
   }
   
   try {
-    const { data } = await axiosInstance.patch('/users/me/password', {
-      current: currentPassword,
-      next: newPassword
+    const { data } = await axiosInstance.put('/mypage/password', {
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+      confirmNewPassword: confirmNewPassword
     });
     
     console.log('비밀번호 변경 성공');
@@ -94,9 +95,7 @@ export const uploadProfileImage = async (fileOrFormData) => {
     let file = fileOrFormData;
     if (fileOrFormData instanceof FormData) {
       file =
-        fileOrFormData.get('file') ||
-        fileOrFormData.get('avatar') ||
-        fileOrFormData.get('image');
+        fileOrFormData.get('profileImage');
     }
     if (!(file instanceof File)) throw new Error('MOCK: 파일이 필요합니다.');
 
@@ -121,15 +120,13 @@ export const uploadProfileImage = async (fileOrFormData) => {
     const form = new FormData();
     if (fileOrFormData instanceof FormData) {
       const f =
-        fileOrFormData.get('file') ||
-        fileOrFormData.get('avatar') ||
-        fileOrFormData.get('image');
-      form.append('file', f);
+        fileOrFormData.get('profileImage');
+      form.append('profileImage', f);
     } else {
-      form.append('file', fileOrFormData);
+      form.append('profileImage', fileOrFormData);
     }
 
-    const { data } = await axiosInstance.post('/users/me/avatar', form, {
+    const { data } = await axiosInstance.put('/mypage/profile-image', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
@@ -162,7 +159,7 @@ export const deleteProfileImage = async () => {
   }
 
   try {
-    const { data } = await axiosInstance.delete('/users/me/avatar');
+    const { data } = await axiosInstance.delete('/mypage/delete-profile-image');
 
     // 기본 이미지로 되돌림을 localStorage에 반영
     const currentUser = JSON.parse(localStorage.getItem('userInfo') || '{}');
@@ -195,13 +192,13 @@ export const refreshProfile = async () => {
 // 회원 탈퇴
 export const deleteMyAccount = async (password) => {
   try {
-    const { data } = await axiosInstance.delete('/users/me', {
+    const { data } = await axiosInstance.delete('/mypage/delete-account', {
       data: { password: password }
     });
     
     // 탈퇴 성공 시 모든 로컬 데이터 삭제
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user_id');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('userId');
     localStorage.removeItem('userInfo');
     
     return data;

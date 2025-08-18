@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import koundaryLogo from '../../components/common/Koundarylogo.png';
+import { logout } from '../../api/auth';
 
 const BRAND = '#2e8ada';
 const SHOW_BUTTONS_PATHS = ['/main', '/posts', '/board'];
@@ -15,11 +16,13 @@ const Header = ({ title = '', showActions, onlyLogout = false }) => {
   const shouldShowActions =
     typeof showActions === 'boolean' ? showActions : routeWantsButtons;
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    navigate('/login');
-  };
+const handleLogout = async () => {
+  try {
+    await logout();   // 서버 로그아웃 요청
+  } finally {
+    navigate('/login');  // 요청 끝난 후 로그인 페이지로 이동
+  }
+};
 
   return (
     <header className="w-full border-b bg-white">

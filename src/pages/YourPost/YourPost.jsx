@@ -396,7 +396,7 @@ const YourPost = () => {
         {/* Mock 모드 표시 */}
         {useMockData && (
           <div className="mb-4 p-2 bg-blue-100 border border-blue-300 rounded text-blue-800 text-sm">
-            📝 Mock 데이터 모드가 활성화되어 있습니다. (실제 API 연결 전까지 사용)
+            Mock 데이터 모드가 활성화되어 있습니다. (실제 API 연결 전까지 사용)
           </div>
         )}
         

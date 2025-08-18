@@ -1,18 +1,16 @@
-// src/api/post.js
 import axios from './axiosInstance';
 
 // 게시글 관련 API 함수들
 export const postAPI = {
-  // 새 글 작성 (수정된 API 명세에 맞게)
+  // 새 글 작성
   createPost: async (boardCode, { title, content, imageUrls = [] }) => {
     try {
       console.log('전송할 데이터:', { boardCode, title, content, imageUrls });
 
-      // 백엔드 새 명세: POST /boards/{boardCode}/posts
       const response = await axios.post(`/boards/${boardCode}/posts`, {
         title,
         content,
-        imageUrls, // 서버 DTO가 images면 images로 변경
+        imageUrls,
       });
       
       return response.data;
@@ -40,10 +38,9 @@ export const postAPI = {
     }
   },
 
-  // 글 수정 (새 API 구조 추정)
+  // 글 수정
   updatePost: async (boardCode, postId, { title, content, imageUrls = [] }) => {
     try {
-      // PUT /boards/{boardCode}/posts/{postId} 형태로 추정
       const response = await axios.put(`/boards/${boardCode}/posts/${postId}`, {
         title,
         content,
@@ -62,10 +59,9 @@ export const postAPI = {
     }
   },
 
-  // 게시글 목록 조회 (새 API 구조 추정)
+  // 게시글 목록 조회
   getPosts: async (boardCode, params = {}) => {
     try {
-      // GET /boards/{boardCode}/posts
       const response = await axios.get(`/boards/${boardCode}/posts`, { params });
       return response.data;
     } catch (error) {
@@ -74,11 +70,11 @@ export const postAPI = {
     }
   },
 
-  // 특정 게시글 조회 (새 API 구조 추정)
-  getPost: async (boardCode, postId) => {
+  // 특정 게시글 조회
+  getPost: async (postId, boardCode = null) => {
     try {
-      // GET /boards/{boardCode}/posts/{postId}
-      const response = await axios.get(`/boards/${boardCode}/posts/${postId}`);
+      const url = boardCode ? `/boards/${boardCode}/posts/${postId}` : `/posts/${postId}`;
+      const response = await axios.get(url);
       return response.data;
     } catch (error) {
       console.error('게시글 조회 실패:', error);
@@ -86,11 +82,11 @@ export const postAPI = {
     }
   },
 
-  // 게시글 삭제 (새 API 구조 추정)
-  deletePost: async (boardCode, postId) => {
+  // 게시글 삭제
+  deletePost: async (postId, boardCode = null) => {
     try {
-      // DELETE /boards/{boardCode}/posts/{postId}
-      const response = await axios.delete(`/boards/${boardCode}/posts/${postId}`);
+      const url = boardCode ? `/boards/${boardCode}/posts/${postId}` : `/posts/${postId}`;
+      const response = await axios.delete(url);
       return response.data;
     } catch (error) {
       console.error('게시글 삭제 실패:', error);
@@ -98,11 +94,14 @@ export const postAPI = {
     }
   },
 
-  // 댓글 관련 API (새 API 구조 추정)
-  getComments: async (boardCode, postId) => {
+  // 댓글 조회
+  getComments: async (postId, boardCode = null) => {
     try {
-      // GET /boards/{boardCode}/posts/{postId}/comments
-      const response = await axios.get(`/boards/${boardCode}/posts/${postId}/comments`);
+      // boardCode가 있으면 새 API 구조, 없으면 기존 구조 사용
+      const url = boardCode 
+        ? `/boards/${boardCode}/posts/${postId}/comments` 
+        : `/posts/${postId}/comments`;
+      const response = await axios.get(url);
       return response.data;
     } catch (error) {
       console.error('댓글 조회 실패:', error);
@@ -110,10 +109,14 @@ export const postAPI = {
     }
   },
 
-  createComment: async (boardCode, postId, commentData) => {
+  // 댓글 작성 (boardCode 선택적 처리)
+  createComment: async (postId, commentData, boardCode = null) => {
     try {
-      // POST /boards/{boardCode}/posts/{postId}/comments
-      const response = await axios.post(`/boards/${boardCode}/posts/${postId}/comments`, {
+      // boardCode가 있으면 새 API 구조, 없으면 기존 구조 사용
+      const url = boardCode 
+        ? `/boards/${boardCode}/posts/${postId}/comments`
+        : `/posts/${postId}/comments`;
+      const response = await axios.post(url, {
         content: commentData.content,
         parent_comment_id: commentData.parent_comment_id || null
       });
@@ -124,10 +127,14 @@ export const postAPI = {
     }
   },
 
-  updateComment: async (boardCode, postId, commentId, commentData) => {
+  // 댓글 수정 (boardCode 선택적 처리)
+  updateComment: async (postId, commentId, commentData, boardCode = null) => {
     try {
-      // PUT /boards/{boardCode}/posts/{postId}/comments/{commentId}
-      const response = await axios.put(`/boards/${boardCode}/posts/${postId}/comments/${commentId}`, {
+      // boardCode가 있으면 새 API 구조, 없으면 기존 구조 사용
+      const url = boardCode 
+        ? `/boards/${boardCode}/posts/${postId}/comments/${commentId}`
+        : `/posts/${postId}/comments/${commentId}`;
+      const response = await axios.put(url, {
         content: commentData.content
       });
       return response.data;
@@ -137,10 +144,14 @@ export const postAPI = {
     }
   },
 
-  deleteComment: async (boardCode, postId, commentId) => {
+  // 댓글 삭제 (boardCode 선택적 처리)
+  deleteComment: async (postId, commentId, boardCode = null) => {
     try {
-      // DELETE /boards/{boardCode}/posts/{postId}/comments/{commentId}
-      const response = await axios.delete(`/boards/${boardCode}/posts/${postId}/comments/${commentId}`);
+      // boardCode가 있으면 새 API 구조, 없으면 기존 구조 사용
+      const url = boardCode 
+        ? `/boards/${boardCode}/posts/${postId}/comments/${commentId}`
+        : `/posts/${postId}/comments/${commentId}`;
+      const response = await axios.delete(url);
       return response.data;
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
@@ -149,13 +160,13 @@ export const postAPI = {
   },
 
   // 신고 관련 API (기존 구조 유지 - 백엔드 확인 필요)
-  reportPost: async (boardCode, postId, reason) => {
+  reportPost: async (postId, reason, boardCode = null) => {
     try {
       // POST /report 또는 POST /boards/{boardCode}/posts/{postId}/report
       const response = await axios.post('/report', { 
         reason: reason,
         post_id: postId,
-        board_code: boardCode // 추가 정보
+        boardCode: boardCode // 추가 정보
       });
       return response.data;
     } catch (error) {
@@ -164,14 +175,14 @@ export const postAPI = {
     }
   },
 
-  reportComment: async (boardCode, postId, commentId, reason) => {
+  reportComment: async (postId, commentId, reason, boardCode = null) => {
     try {
       // POST /report
       const response = await axios.post('/report', { 
         reason: reason,
         comment_id: commentId,
         post_id: postId,
-        board_code: boardCode
+        boardCode: boardCode
       });
       return response.data;
     } catch (error) {
@@ -181,12 +192,12 @@ export const postAPI = {
   },
 
   // 스크랩 관련 API (기존 구조 유지 - 백엔드 확인 필요)
-  toggleScrap: async (boardCode, postId) => {
+  toggleScrap: async (postId, boardCode = null) => {
     try {
       // POST /scrap
       const response = await axios.post('/scrap', {
         post_id: postId,
-        board_code: boardCode
+        boardCode: boardCode
       });
       return response.data;
     } catch (error) {
@@ -208,5 +219,4 @@ export const postAPI = {
   }
 };
 
-// 기본 export
 export default postAPI;

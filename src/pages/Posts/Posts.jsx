@@ -7,14 +7,14 @@ import Header from '../../components/common/Header';
 // 카테고리를 boardCode로 변환하는 함수
 const getCategoryBoardCode = (categoryName) => {
   const categoryMap = {
-    '소속국가': 'country',
-    '소속학교': 'school',
-    '자유게시판': 'free',
-    '정보게시판': 'info',
-    '중고거래 게시판': 'trade',
-    '모임게시판': 'meeting'
+    '소속국가': 'NATIONALITY',
+    '소속학교': 'UNIVERSITY',
+    '자유게시판': 'FREE',
+    '정보게시판': 'INFORMATION',
+    '중고거래 게시판': 'TRADE',
+    '모임게시판': 'MEETING'
   };
-  return categoryMap[categoryName] || 'free';
+  return categoryMap[categoryName] || 'Free';
 };
 
 const Post = () => {
@@ -160,7 +160,7 @@ const Post = () => {
 
     try {
       // 임시: Mock 모드 활성화 (백엔드 인증 문제 해결 전까지)
-      const USE_MOCK_MODE = true; // 백엔드 준비되면 false로 변경
+      const USE_MOCK_MODE = false; // 백엔드 준비되면 false로 변경
 
       if (USE_MOCK_MODE) {
         // Mock 모드: 실제 API 호출 없이 성공 시뮬레이션
@@ -186,7 +186,7 @@ const Post = () => {
       const allImageUrls = [...uploadedImageUrls, ...newImageUrls];
 
       // 3. 게시글 데이터 준비
-      const boardCode = getCategoryBoardCode(formData.category);
+      const board_code = getCategoryBoardCode(formData.category);
       const postData = {
         title: formData.title,
         content: formData.content,
@@ -195,17 +195,17 @@ const Post = () => {
       };
 
       console.log('API 호출 데이터:', {
-        boardCode,
+        board_code,
         postData
       });
 
       // 4. 게시글 작성/수정 API 호출
       let result;
       if (isEditMode) {
-        result = await postAPI.updatePost(boardCode, editPostId, postData);
+        result = await postAPI.updatePost(board_code, editPostId, postData);
         console.log('글 수정 성공:', result);
       } else {
-        result = await postAPI.createPost(boardCode, postData);
+        result = await postAPI.createPost(board_code, postData);
         console.log('글 작성 성공:', result);
       }
       
