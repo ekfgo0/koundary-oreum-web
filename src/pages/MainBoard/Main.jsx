@@ -1,6 +1,6 @@
 // src/pages/MainBoard/Main.jsx
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../components/common/Header';
 import { mockBoards } from '../../api/mockup';
 import { getBoardList } from '../../api/board';
@@ -68,6 +68,7 @@ const BoardCard = ({ id, title, posts, onMore }) => (
 
 export default function Main() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // 보드 상태 (목업이면 즉시, 실서버면 빈 리스트로 시작)
   const [boards, setBoards] = useState(
@@ -87,15 +88,12 @@ export default function Main() {
             const res = await getBoardList({ category: backendKey, page: 0, size: 5 });
 
             // 대표적인 응답 케이스를 폭넓게 커버
-            const list = Array.isArray(res?.content) ? res.content
-              : Array.isArray(res?.data?.content) ? res.data.content
-              : Array.isArray(res?.data) ? res.data
-              : Array.isArray(res) ? res
+            const list = Array.isArray(res?.data?.content) ? res.data.content
               : [];
 
             // 유효한 제목이 있는 포스트만 필터링
             const titles = list
-              .map((post) => post?.title ?? post?.name ?? post?.subject ?? post?.content ?? '')
+              .map((post) => post?.title)
               .filter(title => title && title.trim() !== ''); // 빈 문자열 제거
 
             return { id, name, posts: titles };
@@ -104,7 +102,6 @@ export default function Main() {
         setBoards(results);
       } catch (e) {
         console.error('메인 보드 불러오기 실패:', e);
-
       }
     })();
   }, []);
@@ -113,7 +110,7 @@ export default function Main() {
 
   return (
     <div className="min-h-screen bg-[#f5f9fc]">
-      <Header title="" />
+      <Header/>
       <main className="mx-auto px-4 md:px-6 py-8 md:py-12" style={{ maxWidth: `${MAX_WIDTH}px` }}>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
           {boards.map((b) => (

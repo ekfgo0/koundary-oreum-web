@@ -15,7 +15,7 @@ const ChangePassword = () => {
    const handleSubmit = async (e) => {
      e.preventDefault();
      
-     // 디버깅용 로그 추가
+     // 디버깅용 로그
      console.log('폼에서 전송하는 값들:', {
        currentPassword: currentPassword,
        newPassword: newPassword,
