@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../../components/common/Header';
 import CategoryNavigation from '../../components/common/CategoryNavigation';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { getBoardList } from '../../api/board';
 
 const CATEGORY_MAP = {
-  free:   { label: '자유 게시판',  backendKey: 'FREE' },
-  info:   { label: '정보 게시판',    backendKey: 'INFORMATION' },
-  market: { label: '중고거래/나눔 게시판',      backendKey: 'TRADE' },
-  meetup: { label: '모임 게시판',   backendKey: 'MEETING' },
-  country:{ label: '소속 국가',     backendKey: 'NATIONALITY' },
-  school: { label: '소속 학교',     backendKey: 'UNIVERSITY' },
+  'FREE':   { label: '자유 게시판',  backendKey: 'FREE' },
+  'INFORMATION':   { label: '정보 게시판',    backendKey: 'INFORMATION' },
+  'TRADE': { label: '중고거래/나눔 게시판',      backendKey: 'TRADE' },
+  'MEETING': { label: '모임 게시판',   backendKey: 'MEETING' },
+  'NATIONALITY':{ label: '소속 국가',     backendKey: 'NATIONALITY' },
+  'UNIVERSITY': { label: '소속 학교',     backendKey: 'UNIVERSITY' },
 };
 
 export default function BoardList() {
-  const { category: slug } = useParams();                 // URL의 :category
-  const meta = CATEGORY_MAP[slug] ?? CATEGORY_MAP.free;   // 매핑 실패 시 free
+  const { category: slug } = useParams();                 // URL의 :category (예: 'FREE')
+  // URL에서 받은 slug가 존재하면 사용, 없으면 'FREE'를 기본값으로 사용
+  const meta = CATEGORY_MAP[slug] ?? CATEGORY_MAP['FREE'];
 
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get('page') || 1);
@@ -26,6 +27,7 @@ export default function BoardList() {
   const [isFetching, setIsFetching] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   // 카테고리 바뀌면 page=1로 리셋 (선택 사항이지만 UX 좋음)
   useEffect(() => {
@@ -43,7 +45,8 @@ export default function BoardList() {
     (async () => {
       try {
         setIsFetching(true);
-        const data = await getBoardList({ category: meta.backendKey, page, size });
+        // post.jsx에서 전달된 새로고침 신호에 따라 항상 첫 페이지를 불러오도록 수정
+        const data = await getBoardList({ category: meta.backendKey, page: 1, size });
 
         const items =
           data?.items ?? data?.content ?? data?.list ?? [];
@@ -65,8 +68,9 @@ export default function BoardList() {
       }
     })();
 
+    // location.state?.refresh가 변경되면 이펙트 재실행
     return () => { mounted = false; };
-  }, [meta.backendKey, page, size]);
+  }, [meta.backendKey, location.state?.refresh]); 
 
   const totalPages = Math.max(1, Math.ceil(total / size));
 
@@ -118,7 +122,7 @@ export default function BoardList() {
 
             {/* 글 작성 버튼 */}
             <button
-              onClick={() => navigate('/posts')}
+              onClick={() => navigate(`/posts/${slug}`)}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition outline-none focus:outline-none"
             >
               글 작성
@@ -136,8 +140,18 @@ export default function BoardList() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((item) => (
-              <tr key={item.postId} className="border-t hover:bg-gray-50 cursor-pointer">
+            {rows.map((item, index) => (
+              <tr 
+                key={item.postId} 
+                className="border-t hover:bg-gray-50 cursor-pointer"
+                onClick={() => {
+                  if (index === 1) {
+                    navigate(`/yourpost/1`);
+                  } else {
+                    navigate(`/mypost/${item.postId}`);
+                  }
+                }}
+              >
                 <td className="py-3 pr-4">{item.title}</td>
                 <td className="py-3">{item.nickname}</td>
                 <td className="py-3">{item.createdAt}</td>
