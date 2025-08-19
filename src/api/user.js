@@ -7,7 +7,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LS_KEY = 'mock_me_v1';
 
 const defaultMock = {
-  userID: 1, // 유저 고유 아이디
+  userID: 1,          // 유저 고유 아이디
   loginId: 'abcd123', // 유저가 입력한 로그인 아이디
   nickname: '홍길동',
   university: '홍익대학교',
@@ -32,8 +32,8 @@ function writeMock(obj) {
 
 // 서버-프론트 필드 정규화
 const normalize = (data = {}) => ({
-  userID: data.userID ?? data.userId ?? data.id ?? 0, // 고유 아이디 
-  loginId: data.loginId ?? data.username ?? '', // 로그인 아이디
+  userID: data.userID ?? data.userId ?? data.id ?? 0,
+  loginId: data.loginId ?? data.username ?? '',
   nickname: data.nickname ?? '',
   university: data.university ?? data.school ?? '',
   email: data.email ?? '',

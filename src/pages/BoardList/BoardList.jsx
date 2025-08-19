@@ -6,7 +6,7 @@ import { getBoardList } from '../../api/board';
 
 const CATEGORY_MAP = {
   'NATIONALITY':{ label: '소속 국가',     backendKey: 'NATIONALITY' },
-    'UNIVERSITY': { label: '소속 학교',     backendKey: 'UNIVERSITY' },
+  'UNIVERSITY': { label: '소속 학교',     backendKey: 'UNIVERSITY' },
   'FREE':   { label: '자유 게시판',  backendKey: 'FREE' },
   'INFORMATION':   { label: '정보 게시판',    backendKey: 'INFORMATION' },
   'TRADE': { label: '중고거래 게시판',      backendKey: 'TRADE' },
@@ -14,9 +14,9 @@ const CATEGORY_MAP = {
 };
 
 export default function BoardList() {
-  const { category: slug } = useParams();                 // URL의 :category (예: 'FREE')
+  const { category: slug } = useParams();
   // URL에서 받은 slug가 존재하면 사용, 없으면 'FREE'를 기본값으로 사용
-  const meta = CATEGORY_MAP[slug] ?? CATEGORY_MAP['FREE'];
+  const meta = CATEGORY_MAP[slug];
 
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get('page') || 1);
@@ -29,14 +29,13 @@ export default function BoardList() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 카테고리 바뀌면 page=1로 리셋 (선택 사항이지만 UX 좋음)
+  // 카테고리 바뀌면 page=1로 리셋
   useEffect(() => {
     const sp = new URLSearchParams(searchParams);
     if ((sp.get('page') || '1') !== '1') {
       sp.set('page', '1');
       setSearchParams(sp);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   // 목록 불러오기
@@ -168,7 +167,6 @@ export default function BoardList() {
           </tbody>
         </table>
 
-        {/* 페이지네이션 */}
         <div className="flex justify-center gap-2 mt-6">
           <button
             className="px-3 py-1 border rounded disabled:opacity-40"

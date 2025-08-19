@@ -97,7 +97,6 @@ export const postAPI = {
   // 댓글 조회
   getComments: async (postId, boardCode = null) => {
     try {
-      // boardCode가 있으면 새 API 구조, 없으면 기존 구조 사용
       const url = boardCode 
         ? `/boards/${boardCode}/posts/${postId}/comments` 
         : `/posts/${postId}/comments`;
@@ -109,10 +108,9 @@ export const postAPI = {
     }
   },
 
-  // 댓글 작성 (boardCode 선택적 처리)
+  // 댓글 작성
   createComment: async (postId, commentData, boardCode = null) => {
     try {
-      // boardCode가 있으면 새 API 구조, 없으면 기존 구조 사용
       const url = boardCode 
         ? `/boards/${boardCode}/posts/${postId}/comments`
         : `/posts/${postId}/comments`;
@@ -127,10 +125,9 @@ export const postAPI = {
     }
   },
 
-  // 댓글 수정 (boardCode 선택적 처리)
+  // 댓글 수정
   updateComment: async (postId, commentId, commentData, boardCode = null) => {
     try {
-      // boardCode가 있으면 새 API 구조, 없으면 기존 구조 사용
       const url = boardCode 
         ? `/boards/${boardCode}/posts/${postId}/comments/${commentId}`
         : `/posts/${postId}/comments/${commentId}`;
@@ -144,10 +141,9 @@ export const postAPI = {
     }
   },
 
-  // 댓글 삭제 (boardCode 선택적 처리)
+  // 댓글 삭제
   deleteComment: async (postId, commentId, boardCode = null) => {
     try {
-      // boardCode가 있으면 새 API 구조, 없으면 기존 구조 사용
       const url = boardCode 
         ? `/boards/${boardCode}/posts/${postId}/comments/${commentId}`
         : `/posts/${postId}/comments/${commentId}`;
@@ -159,14 +155,13 @@ export const postAPI = {
     }
   },
 
-  // 신고 관련 API (기존 구조 유지 - 백엔드 확인 필요)
+  // 신고 관련 API
   reportPost: async (postId, reason, boardCode = null) => {
     try {
-      // POST /report 또는 POST /boards/{boardCode}/posts/{postId}/report
       const response = await axios.post('/report', { 
         reason: reason,
         post_id: postId,
-        boardCode: boardCode // 추가 정보
+        boardCode: boardCode
       });
       return response.data;
     } catch (error) {
@@ -177,7 +172,6 @@ export const postAPI = {
 
   reportComment: async (postId, commentId, reason, boardCode = null) => {
     try {
-      // POST /report
       const response = await axios.post('/report', { 
         reason: reason,
         comment_id: commentId,
@@ -191,7 +185,7 @@ export const postAPI = {
     }
   },
 
-  // 스크랩 관련 API (기존 구조 유지 - 백엔드 확인 필요)
+  // 스크랩
   toggleScrap: async (postId, boardCode = null) => {
     try {
       // POST /scrap
@@ -206,7 +200,7 @@ export const postAPI = {
     }
   },
 
-  // 내가 쓴 글, 댓글 조회 (기존 구조 유지 - 백엔드 확인 필요)
+  // 내가 쓴 글, 댓글 조회
   getMyPosts: async (userId) => {
     try {
       // GET /user/{userId}/posts,comment_id
