@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useSearchParams, useParams } from 'react-router-dom'; // useParams 추가
+import { useNavigate, useLocation, useSearchParams, useParams } from 'react-router-dom';
 import { postAPI } from '../../api/post';
 import axiosInstance from '../../api/axiosInstance';
 import Header from '../../components/common/Header';
 import PostForm from '../../components/auth/PostForm';
 
-// 카테고리를 boardCode로 변환하는 함수
+const CATEGORY_MAP_FRONTEND = {
+  'NATIONALITY': '소속국가',
+  'UNIVERSITY': '소속학교',
+  'FREE': '자유게시판',
+  'INFORMATION': '정보게시판',
+  'TRADE': '중고거래 게시판',
+  'MEETING': '모임게시판',
+};
+
+// 한글 카테고리명을 백엔드 코드로 변환
 const getCategoryBoardCode = (categoryName) => {
   const categoryMap = {
     '소속국가': 'NATIONALITY',
@@ -15,17 +24,16 @@ const getCategoryBoardCode = (categoryName) => {
     '중고거래 게시판': 'TRADE',
     '모임게시판': 'MEETING'
   };
-  return categoryMap[categoryName] || 'FREE';
+  return categoryMap[categoryName];
 };
 
 const Post = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { category: urlCategory } = useParams(); // URL에서 카테고리 정보 읽어오기
+  const { category: urlCategory } = useParams();
 
   const [searchParams] = useSearchParams();
   
-  // 수정 모드 확인
   const editPostId = searchParams.get('edit');
   const isEditMode = Boolean(editPostId);
   const editData = location.state?.postData;
@@ -33,7 +41,8 @@ const Post = () => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    category: urlCategory || 'FREE'
+    // URL에서 받은 값으로 초기 카테고리 설정
+    category: CATEGORY_MAP_FRONTEND[urlCategory]
   });
   
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -152,7 +161,7 @@ const Post = () => {
         console.log('Mock 모드 - 글 작성 시뮬레이션');
         await new Promise(resolve => setTimeout(resolve, 1000));
         alert('Mock: 글이 성공적으로 작성되었습니다!');
-        navigate(`/board/${urlCategory}`); // URL 카테고리 사용
+        navigate(`/board/${urlCategory}`);
         return;
       }
 
@@ -185,7 +194,6 @@ const Post = () => {
       if (isEditMode) {
         navigate(`/mypost/${editPostId}`);
       } else {
-        // 새 글 작성 완료 후 해당 게시판 목록으로 이동하면서 새로고침 신호 전달
         navigate(`/board/${urlCategory || 'FREE'}`, { state: { refresh: true } });
       }
       
@@ -218,6 +226,8 @@ const Post = () => {
           </div>
         )}
 
+        {/* PostForm 컴포넌트에는 이미 카테고리 선택 UI가 포함되어 있으니, 
+            PostForm에 formData와 setFormData를 prop으로 전달하여 상태를 제어합니다. */}
         <PostForm
           formData={formData}
           setFormData={setFormData}
@@ -240,7 +250,6 @@ const Post = () => {
             <li>• 제목은 100자 이내로 작성해주세요</li>
             <li>• 내용은 2000자 이내로 작성해주세요</li>
             <li>• 적절한 게시판을 선택해주세요</li>
-            <li>• 현재 텍스트만 작성 가능합니다 (이미지 업로드 준비 중)</li>
             <li>• 욕설이나 부적절한 내용은 삭제될 수 있습니다</li>
           </ul>
         </div>

@@ -24,7 +24,7 @@ export const mockBoards = [
   },
   {
     id: 'market',
-    name: '중고거래/나눔 게시판',
+    name: '중고거래 게시판',
     posts: ['axios 질문', '라우터 이슈', '빌드 에러', 'CORS 설정', '성능 튜닝'],
   },
   {

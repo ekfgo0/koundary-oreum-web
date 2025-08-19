@@ -5,12 +5,12 @@ import { useParams, useSearchParams, useNavigate, useLocation } from 'react-rout
 import { getBoardList } from '../../api/board';
 
 const CATEGORY_MAP = {
+  'NATIONALITY':{ label: '소속 국가',     backendKey: 'NATIONALITY' },
+    'UNIVERSITY': { label: '소속 학교',     backendKey: 'UNIVERSITY' },
   'FREE':   { label: '자유 게시판',  backendKey: 'FREE' },
   'INFORMATION':   { label: '정보 게시판',    backendKey: 'INFORMATION' },
-  'TRADE': { label: '중고거래/나눔 게시판',      backendKey: 'TRADE' },
+  'TRADE': { label: '중고거래 게시판',      backendKey: 'TRADE' },
   'MEETING': { label: '모임 게시판',   backendKey: 'MEETING' },
-  'NATIONALITY':{ label: '소속 국가',     backendKey: 'NATIONALITY' },
-  'UNIVERSITY': { label: '소속 학교',     backendKey: 'UNIVERSITY' },
 };
 
 export default function BoardList() {
