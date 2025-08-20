@@ -5,7 +5,6 @@ export const postAPI = {
   // 새 글 작성
   createPost: async (boardCode, { title, content, imageUrls = [], isInfoPost = false }) => {
     try {
-      // 게시글 API는 '/api' 접두사가 없으므로 그대로 둡니다.
       const response = await axios.post(`/boards/${boardCode}/posts`, {
         title,
         content,
@@ -168,8 +167,7 @@ export const postAPI = {
   // 스크랩
   toggleScrap: async (postId, boardCode = null) => {
     try {
-      // POST /scrap
-      const response = await axios.post('/scrap', {
+      const response = await axios.post('posts/${postId}/scrap', {
         post_id: postId,
         boardCode: boardCode
       });
@@ -183,8 +181,7 @@ export const postAPI = {
   // 내가 쓴 글, 댓글 조회
   getMyPosts: async (userId) => {
     try {
-      // GET /user/{userId}/posts,comment_id
-      const response = await axios.get(`/user/${userId}/posts,comment_id`);
+      const response = await axios.get(`/user/${postId}/posts,comment_id`);
       return response.data;
     } catch (error) {
       console.error('내 게시글 조회 실패:', error);

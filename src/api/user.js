@@ -7,14 +7,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LS_KEY = 'mock_me_v1';
 
 const defaultMock = {
-  userID: 1,          // 유저 고유 아이디
-  loginId: 'abcd123', // 유저가 입력한 로그인 아이디
+  userID: 1,              // 유저 고유 아이디
+  loginId: 'abcd123',     // 유저가 입력한 로그인 아이디
   nickname: '홍길동',
   university: '홍익대학교',
   email: 'test@example.com',
-  country: 'Korea',
-  profileImageUrl: '', // 프로필 이미지 URL
-  isDefaultImage: true, // 기본 프로필 이미지 여부
+  nationality: 'Korea',
+  profileImageUrl: '',    // 프로필 이미지 URL
+  isDefaultImage: true,   // 기본 프로필 이미지 여부
   // 나의 활동 개수를 위한 목업 데이터 추가
   activity: {
     posts: 2,
@@ -38,15 +38,15 @@ function writeMock(obj) {
 
 // 서버-프론트 필드 정규화
 const normalize = (data = {}) => ({
-  userID: data.userID ?? data.userId ?? data.id ?? 0,
-  loginId: data.loginId ?? data.username ?? '',
+  userID: data.userId ?? 0,
+  loginId: data.loginId ?? '',
   nickname: data.nickname ?? '',
-  university: data.university ?? data.school ?? '',
+  university: data.university ?? '',
   email: data.email ?? '',
-  country: data.country ?? data.nationality ?? '',
+  nationality: data.nationality ?? '',
   profileImageUrl: data.profileImageUrl ?? data.profileImage ?? '',
   isDefaultImage: data.isDefaultImage ?? true,
-  activity: data.activity, // activity 데이터도 추가
+  activity: data.activity,
 });
 
 // ============ 프로필 조회 ============
@@ -60,8 +60,7 @@ export const getMyProfile = async () => {
   try {
     const { data } = await axiosInstance.get('/mypage/me');
     const normalizedData = normalize(data);
-    
-    // 최신 프로필 정보를 localStorage에 업데이트
+
     localStorage.setItem('userInfo', JSON.stringify(normalizedData));
     
     return normalizedData;
@@ -152,7 +151,7 @@ export const uploadProfileImage = async (fileOrFormData) => {
   }
 };
 
-// 프로필 이미지 삭제 (기본 이미지로 되돌림)
+// 프로필 이미지 삭제 (기본 이미지)
 export const deleteProfileImage = async () => {
   if (USE_MOCK) {
     await sleep(150);
@@ -210,23 +209,22 @@ export const deleteMyAccount = async (password) => {
   }
 };
 
-// ============ 나의 활동 조회 (💡💡💡 제가 빠뜨렸던 바로 그 함수예요!) ============
+// ============ 나의 활동 조회 ============
 export const getMyActivity = async (activityType) => {
-  // 백엔드 MyPageController의 엔드포인트에 맞춰서, '댓글 단 글'의 경우 주소를 'commented-posts'로 변경해요.
   const endpoint = activityType === 'comments' ? 'commented-posts' : activityType;
 
   if (USE_MOCK) {
     await sleep(300);
     const mockData = {
       posts: [
-        { postId: 101, title: '내가 쓴 첫 번째 글 (테스트)', nickname: '홍길동', createdAt: '2025-08-21' },
-        { postId: 102, title: '내가 쓴 두 번째 글 (테스트)', nickname: '홍길동', createdAt: '2025-08-20' },
+        { postId: 101, title: '내가 쓴 첫 번째 글', nickname: '문선영', createdAt: '2025-08-21' },
+        { postId: 102, title: '내가 쓴 두 번째 글', nickname: '유영주', createdAt: '2025-08-20' },
       ],
-      comments: [ // 'commented-posts'에 대한 목업 데이터
-        { postId: 201, title: '내가 댓글 단 글 (테스트)', nickname: '춘향이', createdAt: '2025-08-19' },
+      comments: [
+        { postId: 201, title: '내가 댓글 단 글', nickname: '강혁준', createdAt: '2025-08-19' },
       ],
       scraps: [
-        { postId: 301, title: '내가 스크랩한 글 (테스트)', nickname: '이몽룡', createdAt: '2025-08-18' },
+        { postId: 301, title: '내가 스크랩한 글 (테스트)', nickname: '임준서', createdAt: '2025-08-18' },
       ],
     };
     // activityType에 맞는 목업 데이터를 반환하도록 수정
@@ -234,7 +232,7 @@ export const getMyActivity = async (activityType) => {
   }
 
   try {
-    // 실제 서버에 나의 활동 내역을 요청해요.
+    // 실제 서버에 나의 활동 내역 요청
     const { data } = await axiosInstance.get(`/mypage/${endpoint}`);
     return data;
   } catch (error) {

@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Bookmark, User, Reply, Send, Edit, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { postAPI } from '../../api/post'; // postAPI 임포트
+import { postAPI } from '../../api/post';
 
 const MyPostForm = ({ postData, comments, setComments, onCreateComment, onUpdateComment, onDeleteComment }) => {
   const navigate = useNavigate();
   const [newComment, setNewComment] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [replyingTo, setReplyingTo] = useState(null); // 대댓글 작성 대상 ID
-  const commentInputRef = useRef(null); // 댓글 입력창 참조
+  const commentInputRef = useRef(null);
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -37,7 +37,7 @@ const MyPostForm = ({ postData, comments, setComments, onCreateComment, onUpdate
     }
   };
 
-  // 댓글 또는 대댓글 추가 핸들러
+  // 댓글, 대댓글 추가 핸들러
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
@@ -45,7 +45,6 @@ const MyPostForm = ({ postData, comments, setComments, onCreateComment, onUpdate
       let result;
       if (replyingTo) { // 대댓글 작성
         result = await postAPI.createReply(replyingTo.commentId, { content: newComment });
-        // 부모 댓글의 replies 배열에 새 대댓글 추가
         setComments(prev => prev.map(c => 
           c.commentId === replyingTo.commentId 
             ? { ...c, replies: [...(c.replies || []), result] } 

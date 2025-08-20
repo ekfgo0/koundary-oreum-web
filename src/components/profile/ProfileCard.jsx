@@ -2,8 +2,8 @@ import React from 'react';
 
 const ProfileCard = ({
   nickname = '로딩 중...',
-  country = '국가 없음',
-  school = '학교 없음',
+  nationality = '국가 없음',
+  university = '학교 없음',
   profileImage = '',
   onSelectImage,       // (e) => void  ← 변경
   onClickDeleteImage,  // () => void
@@ -57,8 +57,8 @@ const ProfileCard = ({
       {/* 텍스트 정보 */}
       <div className="flex flex-col justify-center my-15">
         <h2 className="text-2xl font-bold mb-1">{nickname}</h2>
-        <p>{country}</p>
-        <p>{school}</p>
+        <p>{nationality}</p>
+        <p>{university}</p>
       </div>
     </div>
   );

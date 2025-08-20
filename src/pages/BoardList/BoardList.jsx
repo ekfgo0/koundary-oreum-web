@@ -99,7 +99,6 @@ export default function BoardList() {
               <tr 
                 key={item.postId} 
                 className="border-t hover:bg-gray-50 cursor-pointer"
-                // 💡[수정!] 새로 만든 handlePostClick 함수를 사용하도록 변경했어요.
                 onClick={() => handlePostClick(item)}
               >
                 <td className="py-3 pr-4">{item.title}</td>

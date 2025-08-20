@@ -57,7 +57,6 @@ const YourPostForm = ({
               )}
             </div>
             <div>
-              {/* 💡[수정!] postData.author.nickname -> postData.nickname */}
               <div className="font-semibold text-gray-900">{postData.nickname}</div>
               <div className="text-sm text-gray-500">{new Date(postData.createdAt).toLocaleString()}</div>
             </div>
