@@ -20,9 +20,9 @@ function App() {
       <Route path="/changepassword" element={<ChangePassword />} />
       <Route path="/posts/:category" element={<Posts />} /> 
       <Route path="/main" element={<Main />} />
-      <Route path="/board/:category" element={<BoardList />} />
-      <Route path="/board" element={<Navigate to="/board/FREE" replace />} />
-      <Route path="/boardlist" element={<Navigate to="/board/FREE" replace />} />
+      <Route path="/boards/:category/posts" element={<BoardList />} />
+      {/* <Route path="/boards" element={<Navigate to="/boards/FREE" replace />} />
+      <Route path="/boardlist" element={<Navigate to="/boards/FREE" replace />} /> */}
       <Route path="/mypost/:postId" element={<MyPost />} />
       <Route path="/yourpost/:postId" element={<YourPost />} />
     </Routes>

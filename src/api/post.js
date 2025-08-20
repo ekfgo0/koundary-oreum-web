@@ -5,9 +5,8 @@ export const postAPI = {
   // 새 글 작성
   createPost: async (boardCode, { title, content, imageUrls = [] }) => {
     try {
-      console.log('전송할 데이터:', { boardCode, title, content, imageUrls });
-
-      const response = await axios.post(`/boards/${boardCode}/posts`, {
+      const response = await axios.post(`/posts`, {
+        boardName: boardCode,
         title,
         content,
         imageUrls,
@@ -19,21 +18,15 @@ export const postAPI = {
       console.error('게시글 작성 실패:', error);
       console.error('에러 응답:', error.response?.data);
       
-      // 500 오류인 경우 (서버 내부 오류)
       if (error.response?.status === 500) {
         throw new Error('서버 내부 오류가 발생했습니다.');
       }
-      
-      // 401 오류인 경우 (인증 실패)
       if (error.response?.status === 401) {
         throw new Error('사용자 인증이 필요합니다. 다시 로그인해주세요.');
       }
-      
-      // 404 오류인 경우
       if (error.response?.status === 404) {
         throw new Error('해당 게시판을 찾을 수 없습니다.');
       }
-      
       throw new Error(error.response?.data?.message || error.message || '게시글 작성에 실패했습니다.');
     }
   },

@@ -24,8 +24,8 @@ export const getBoardList = async ({ category, page = 1, size = 20 }) => {
   }
 
   // --- 실서버 호출 ---
-  const { data } = await axiosInstance.get('/boards', {
-    params: { category, page, size },
+  const { data } = await axiosInstance.get(`/boards/${category}/posts`, {
+    params: { page: page - 1, size },
   });
   return data;
 };

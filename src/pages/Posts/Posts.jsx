@@ -161,7 +161,7 @@ const Post = () => {
         console.log('Mock 모드 - 글 작성 시뮬레이션');
         await new Promise(resolve => setTimeout(resolve, 1000));
         alert('Mock: 글이 성공적으로 작성되었습니다!');
-        navigate(`/board/${urlCategory}`);
+        navigate(`/boards/${urlCategory}/posts`);
         return;
       }
 
@@ -194,7 +194,7 @@ const Post = () => {
       if (isEditMode) {
         navigate(`/mypost/${editPostId}`);
       } else {
-        navigate(`/board/${urlCategory || 'FREE'}`, { state: { refresh: true } });
+        navigate(`/board/${urlCategory}/posts`, { state: { refresh: true } });
       }
       
     } catch (error) {
@@ -208,10 +208,10 @@ const Post = () => {
   const handleCancel = () => {
     if (formData.title || formData.content || selectedFiles.length > 0 || uploadedImageUrls.length > 0) {
       if (window.confirm('작성 중인 내용이 있습니다. 정말 취소하시겠습니까?')) {
-        navigate(`/board/${urlCategory || 'FREE'}`);
+        navigate(`/boards/${urlCategory}/posts`);
       }
     } else {
-      navigate(`/board/${urlCategory || 'FREE'}`);
+      navigate(`/boards/${urlCategory}/posts`);
     }
   };
 

@@ -14,7 +14,10 @@ const CategoryNavigation = ({ currentCategory = '', onCategoryChange }) => {
   const navigate = useNavigate();
 
   const handleCategoryClick = (tab) => {
-    navigate(`/board/${tab.slug}`);         // 슬러그 기반 라우팅
+    navigate(`/boards/${tab.slug}/posts`, {
+      state: { refresh: Date.now() }
+    });
+    
     onCategoryChange?.(tab.slug);
   };
 
