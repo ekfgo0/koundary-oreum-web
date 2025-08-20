@@ -5,19 +5,16 @@ import { useParams, useSearchParams, useNavigate, useLocation } from 'react-rout
 import { getBoardList } from '../../api/board';
 
 const CATEGORY_MAP = {
-  NATIONALITY: { label: '소속 국가', backendKey: 'NATIONALITY' },
-  UNIVERSITY:  { label: '소속 학교', backendKey: 'UNIVERSITY' },
-  FREE:        { label: '자유 게시판', backendKey: 'FREE' },
-  INFORMATION: { label: '정보 게시판', backendKey: 'INFORMATION' },
-  TRADE:       { label: '중고거래 게시판', backendKey: 'TRADE' },
-  MEETING:     { label: '모임 게시판', backendKey: 'MEETING' },
+  'NATIONALITY':{ label: '소속 국가',     backendKey: 'NATIONALITY' },
+  'UNIVERSITY': { label: '소속 학교',     backendKey: 'UNIVERSITY' },
+  'FREE':   { label: '자유 게시판',  backendKey: 'FREE' },
+  'INFORMATION':   { label: '정보 게시판',    backendKey: 'INFORMATION' },
+  'TRADE': { label: '중고거래 게시판',      backendKey: 'TRADE' },
+  'MEETING': { label: '모임 게시판',   backendKey: 'MEETING' },
 };
 
 export default function BoardList() {
   const { category: slug } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
-  
   const meta = CATEGORY_MAP[slug];
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,9 +25,12 @@ export default function BoardList() {
   const [total, setTotal] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
   useEffect(() => {
     if (!meta) {
-      navigate('/board/FREE', { replace: true });
+      navigate('/boards/FREE/posts', { replace: true });
     }
   }, [meta, navigate]);
 
@@ -41,7 +41,7 @@ export default function BoardList() {
     (async () => {
       try {
         setIsFetching(true);
-        const data = await getBoardList({ category: meta.backendKey, page: page, size });
+        const data = await getBoardList({ category: meta.backendKey, page, size });
         
         if (mounted) {
           setRows(data?.content ?? []);
@@ -49,10 +49,7 @@ export default function BoardList() {
         }
       } catch (e) {
         console.error('board list error:', e);
-        if (mounted) {
-          setRows([]);
-          setTotal(0);
-        }
+        if (mounted) { setRows([]); setTotal(0); }
       } finally {
         if (mounted) setIsFetching(false);
       }
@@ -61,8 +58,12 @@ export default function BoardList() {
     return () => { mounted = false; };
   }, [meta, page, size, location.state?.refresh]);
 
+  const handlePostClick = (post) => {
+    navigate(`/boards/${slug}/posts/${post.postId}`);
+  };
+
   if (!meta) {
-    return null;
+    return null; 
   }
 
   const totalPages = Math.max(1, Math.ceil(total / size));
@@ -79,15 +80,7 @@ export default function BoardList() {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-semibold">{meta.label}</h1>
           <div className="flex items-center gap-3">
-            {isFetching && (
-              <div className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V4a4 4 0 00-4 4H4z"></path>
-                </svg>
-                로딩 중…
-              </div>
-            )}
+            {isFetching && ( <div>로딩 중...</div> )}
             <button onClick={() => navigate(`/posts/${slug}`)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
               글 작성
             </button>
@@ -103,7 +96,12 @@ export default function BoardList() {
           </thead>
           <tbody>
             {rows.map((item) => (
-              <tr key={item.postId} className="border-t hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/mypost/${item.postId}`)}>
+              <tr 
+                key={item.postId} 
+                className="border-t hover:bg-gray-50 cursor-pointer"
+                // 💡[수정!] 새로 만든 handlePostClick 함수를 사용하도록 변경했어요.
+                onClick={() => handlePostClick(item)}
+              >
                 <td className="py-3 pr-4">{item.title}</td>
                 <td className="py-3">{item.nickname}</td>
                 <td className="py-3">{item.createdAt}</td>

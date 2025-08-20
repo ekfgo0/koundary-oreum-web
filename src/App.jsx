@@ -7,9 +7,8 @@ import Main from './pages/MainBoard/Main';
 import ChangePassword from './pages/ChangePassword/ChangePassword';
 import Posts from "./pages/Posts/Posts";
 import BoardList from './pages/BoardList/BoardList';
-import MyPost from "./pages/MyPost/MyPost";
-import YourPost from "./pages/YourPost/YourPost";
 import MyActivity from './pages/MyActivity/MyActivity';
+import PostDetail from './pages/PostDetail/PostDetail'; // 💡 새로 만든 페이지를 불러와요
 
 function App() {
   return (
@@ -23,11 +22,9 @@ function App() {
       <Route path="/posts/:category" element={<Posts />} />
       <Route path="/main" element={<Main />} />
       <Route path="/boards/:category/posts" element={<BoardList />} />
-      
+      <Route path="/boards/:category/posts/:postId" element={<PostDetail />} />
       <Route path="/board" element={<Navigate to="/boards/FREE/posts" replace />} />
       <Route path="/boardlist" element={<Navigate to="/boards/FREE/posts" replace />} />
-      <Route path="/mypost/:postId" element={<MyPost />} />
-      <Route path="/yourpost/:postId" element={<YourPost />} />
     </Routes>
   );
 }
