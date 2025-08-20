@@ -5,32 +5,17 @@ export const postAPI = {
   // 새 글 작성
   createPost: async (boardCode, { title, content, imageUrls = [], isInfoPost = false }) => {
     try {
-      // 💡[수정!] 백엔드 PostController의 주소 @RequestMapping("/boards/{boardCode}/posts") 에 맞춰 URL을 수정했어요.
+      // 게시글 API는 '/api' 접두사가 없으므로 그대로 둡니다.
       const response = await axios.post(`/boards/${boardCode}/posts`, {
-        // 💡[수정!] boardName은 이제 URL로 전달되므로 요청 본문(body)에서는 제거했어요.
-        // 백엔드의 PostCreateRequest DTO에 isInformation 필드가 있으니 추가해 줄게요.
         title,
         content,
         isInformation: isInfoPost, 
         imageUrls,
       });
-      
       return response.data;
-      
     } catch (error) {
       console.error('게시글 작성 실패:', error);
-      console.error('에러 응답:', error.response?.data);
-      
-      if (error.response?.status === 500) {
-        throw new Error('서버 내부 오류가 발생했습니다.');
-      }
-      if (error.response?.status === 401) {
-        throw new Error('사용자 인증이 필요합니다. 다시 로그인해주세요.');
-      }
-      if (error.response?.status === 404) {
-        throw new Error('해당 게시판을 찾을 수 없습니다.');
-      }
-      throw new Error(error.response?.data?.message || error.message || '게시글 작성에 실패했습니다.');
+      throw new Error(error.response?.data?.message || '게시글 작성에 실패했습니다.');
     }
   },
 
@@ -42,15 +27,9 @@ export const postAPI = {
         content,
         imageUrls,
       });
-
       return response.data;
     } catch (error) {
       console.error('게시글 수정 실패:', error);
-      
-      if (error.response?.status === 404) {
-        throw new Error('수정할 게시글을 찾을 수 없습니다.');
-      }
-      
       throw new Error(error.response?.data?.message || '게시글 수정에 실패했습니다.');
     }
   },
@@ -90,12 +69,11 @@ export const postAPI = {
     }
   },
 
+
   // 댓글 조회
-  getComments: async (postId, boardCode = null) => {
+  getComments: async (postId) => {
     try {
-      const url = boardCode 
-        ? `/boards/${boardCode}/posts/${postId}/comments` 
-        : `/posts/${postId}/comments`;
+      const url = `/api/posts/${postId}/comments`;
       const response = await axios.get(url);
       return response.data;
     } catch (error) {
@@ -105,14 +83,11 @@ export const postAPI = {
   },
 
   // 댓글 작성
-  createComment: async (postId, commentData, boardCode = null) => {
+  createComment: async (postId, commentData) => {
     try {
-      const url = boardCode 
-        ? `/boards/${boardCode}/posts/${postId}/comments`
-        : `/posts/${postId}/comments`;
+      const url = `/api/posts/${postId}/comments`;
       const response = await axios.post(url, {
         content: commentData.content,
-        parent_comment_id: commentData.parent_comment_id || null
       });
       return response.data;
     } catch (error) {
@@ -121,13 +96,25 @@ export const postAPI = {
     }
   },
 
-  // 댓글 수정
-  updateComment: async (postId, commentId, commentData, boardCode = null) => {
+  // 대댓글 작성
+  createReply: async (commentId, commentData) => {
     try {
-      const url = boardCode 
-        ? `/boards/${boardCode}/posts/${postId}/comments/${commentId}`
-        : `/posts/${postId}/comments/${commentId}`;
-      const response = await axios.put(url, {
+      const url = `/api/comments/${commentId}/replies`;
+      const response = await axios.post(url, {
+        content: commentData.content,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('대댓글 작성 실패:', error);
+      throw new Error(error.response?.data?.message || '대댓글 작성에 실패했습니다.');
+    }
+  },
+
+  // 댓글 수정
+  updateComment: async (commentId, commentData) => {
+    try {
+      const url = `/api/comments/${commentId}`; 
+      const response = await axios.patch(url, {
         content: commentData.content
       });
       return response.data;
@@ -138,11 +125,9 @@ export const postAPI = {
   },
 
   // 댓글 삭제
-  deleteComment: async (postId, commentId, boardCode = null) => {
+  deleteComment: async (commentId) => {
     try {
-      const url = boardCode 
-        ? `/boards/${boardCode}/posts/${postId}/comments/${commentId}`
-        : `/posts/${postId}/comments/${commentId}`;
+      const url = `/api/comments/${commentId}`;
       const response = await axios.delete(url);
       return response.data;
     } catch (error) {
@@ -150,7 +135,6 @@ export const postAPI = {
       throw new Error(error.response?.data?.message || '댓글 삭제에 실패했습니다.');
     }
   },
-
   // 신고 관련 API
   reportPost: async (postId, reason, boardCode = null) => {
     try {

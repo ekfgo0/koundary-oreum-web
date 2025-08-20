@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Bookmark, User, Reply, Send, Edit, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { postAPI } from '../../api/post'; // postAPI 임포트
@@ -7,9 +7,10 @@ const MyPostForm = ({ postData, comments, setComments, onCreateComment, onUpdate
   const navigate = useNavigate();
   const [newComment, setNewComment] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+  const [replyingTo, setReplyingTo] = useState(null); // 대댓글 작성 대상 ID
+  const commentInputRef = useRef(null); // 댓글 입력창 참조
 
   useEffect(() => {
-    // 로컬 스토리지에서 현재 사용자 정보를 가져와요.
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (userInfo) {
       setCurrentUser(userInfo);
@@ -36,15 +37,41 @@ const MyPostForm = ({ postData, comments, setComments, onCreateComment, onUpdate
     }
   };
 
-  const handleAddComment = () => {
+  // 댓글 또는 대댓글 추가 핸들러
+  const handleAddComment = async () => {
     if (!newComment.trim()) return;
-    onCreateComment({ content: newComment });
-    setNewComment('');
+
+    try {
+      let result;
+      if (replyingTo) { // 대댓글 작성
+        result = await postAPI.createReply(replyingTo.commentId, { content: newComment });
+        // 부모 댓글의 replies 배열에 새 대댓글 추가
+        setComments(prev => prev.map(c => 
+          c.commentId === replyingTo.commentId 
+            ? { ...c, replies: [...(c.replies || []), result] } 
+            : c
+        ));
+      } else { // 최상위 댓글 작성
+        result = await postAPI.createComment(postData.postId, { content: newComment });
+        setComments(prev => [...prev, result]);
+      }
+      setNewComment('');
+      setReplyingTo(null);
+    } catch (error) {
+      alert(error.message || '댓글 작성에 실패했습니다.');
+    }
+  };
+  
+  // 답글 달기 버튼 클릭 시
+  const handleReplyClick = (comment) => {
+    setReplyingTo(comment);
+    commentInputRef.current?.focus(); // 입력창으로 포커스 이동
+    setNewComment(`@${comment.authorNickname} `);
   };
 
   // 전체 댓글 수 계산
   const getTotalCommentCount = () => {
-    if (!comments) return 0;
+    if (!Array.isArray(comments)) return 0;
     return comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0);
   };
 
@@ -54,7 +81,6 @@ const MyPostForm = ({ postData, comments, setComments, onCreateComment, onUpdate
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center overflow-hidden">
-              {/* 💡[수정!] postData.author.profileImage -> postData.profileImageUrl */}
               {postData.profileImageUrl ? (
                 <img 
                   src={postData.profileImageUrl} 
@@ -66,7 +92,6 @@ const MyPostForm = ({ postData, comments, setComments, onCreateComment, onUpdate
               )}
             </div>
             <div>
-              {/* 💡[수정!] postData.author.nickname -> postData.nickname */}
               <div className="font-semibold text-gray-900">{postData.nickname}</div>
               <div className="text-sm text-gray-500">{new Date(postData.createdAt).toLocaleString()}</div>
             </div>
@@ -112,13 +137,21 @@ const MyPostForm = ({ postData, comments, setComments, onCreateComment, onUpdate
               currentUser={currentUser}
               onUpdate={onUpdateComment}
               onDelete={onDeleteComment}
+              onReply={handleReplyClick}
             />
           ))}
         </div>
         <div className="border-t border-gray-200 p-4">
+          {replyingTo && (
+            <div className="text-sm text-gray-600 mb-2">
+              <strong>{replyingTo.authorNickname}</strong>님에게 답글 남기는 중...
+              <button onClick={() => setReplyingTo(null)} className="ml-2 text-red-500">[취소]</button>
+            </div>
+          )}
           <div className="flex gap-3">
             <div className="flex-1 flex gap-2">
               <input
+                ref={commentInputRef} // ref 연결
                 type="text"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
@@ -137,31 +170,54 @@ const MyPostForm = ({ postData, comments, setComments, onCreateComment, onUpdate
   );
 };
 
-// 댓글 하나를 담당하는 컴포넌트
-const CommentItem = ({ comment, currentUser, onUpdate, onDelete }) => {
+// 댓글 아이템 컴포넌트
+const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onReply }) => {
   const isMyComment = currentUser?.userId === comment.authorId;
-  
+
   return (
-    <div className="flex gap-3">
-      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-        {comment.authorProfileImage ? <img src={comment.authorProfileImage} alt="댓글 작성자 프로필" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-gray-600" />}
-      </div>
-      <div className="flex-1">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="font-medium text-sm text-gray-900">{comment.authorNickname}</span>
-            <span className="text-xs text-gray-500 ml-2">{new Date(comment.createdAt).toLocaleString()}</span>
-          </div>
-          {isMyComment && (
-            <div className="flex gap-2">
-              <button onClick={() => onUpdate(comment.commentId, { content: prompt('수정할 내용을 입력하세요', comment.content) })} className="text-xs text-gray-500 hover:text-blue-500">수정</button>
-              <button onClick={() => onDelete(comment.commentId)} className="text-xs text-gray-500 hover:text-red-500">삭제</button>
-            </div>
-          )}
+    <div className="flex flex-col">
+      <div className="flex gap-3">
+        <div className="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0 overflow-hidden">
+          {comment.authorProfileImage ? <img src={comment.authorProfileImage} alt="프로필" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-gray-600" />}
         </div>
-        <p className="text-gray-700 text-sm mt-1">{comment.content}</p>
-        {/* 대댓글 기능은 추후 확장 가능 */}
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="font-medium text-sm text-gray-900">{comment.authorNickname}</span>
+              <span className="text-xs text-gray-500 ml-2">{new Date(comment.createdAt).toLocaleString()}</span>
+            </div>
+            <div className="flex gap-2">
+              {isMyComment ? (
+                <>
+                  <button onClick={() => {
+                    const newContent = prompt('수정할 내용을 입력하세요', comment.content);
+                    if (newContent) onUpdate(comment.commentId, { content: newContent });
+                  }} className="text-xs text-gray-500 hover:text-blue-500">수정</button>
+                  <button onClick={() => onDelete(comment.commentId)} className="text-xs text-gray-500 hover:text-red-500">삭제</button>
+                </>
+              ) : (
+                <button onClick={() => onReply(comment)} className="text-xs text-gray-500 hover:text-blue-500">답글</button>
+              )}
+            </div>
+          </div>
+          <p className="text-gray-700 text-sm mt-1">{comment.content}</p>
+        </div>
       </div>
+      {/* 대댓글 렌더링 */}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="ml-10 mt-3 space-y-3 border-l-2 pl-4">
+          {comment.replies.map(reply => (
+            <CommentItem 
+              key={reply.commentId} 
+              comment={reply} 
+              currentUser={currentUser} 
+              onUpdate={onUpdate}
+              onDelete={onDelete}
+              onReply={() => onReply(comment)} // 대댓글의 답글은 최상위 댓글로 달리게 함
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
