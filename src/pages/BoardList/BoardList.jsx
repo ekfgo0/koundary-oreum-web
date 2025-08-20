@@ -5,7 +5,7 @@ import { useParams, useSearchParams, useNavigate, useLocation } from 'react-rout
 import { getBoardList } from '../../api/board';
 
 const CATEGORY_MAP = {
-  'NATIONALITY':{ label: '소속 국가',     backendKey: 'NATIONALITY' },
+  'NATIONALITY':{ label: '소속 국가',     backendKey: 'COUNTRY' },
   'UNIVERSITY': { label: '소속 학교',     backendKey: 'UNIVERSITY' },
   'FREE':   { label: '자유 게시판',  backendKey: 'FREE' },
   'INFORMATION':   { label: '정보 게시판',    backendKey: 'INFORMATION' },
@@ -15,7 +15,10 @@ const CATEGORY_MAP = {
 
 export default function BoardList() {
   const { category: slug } = useParams();
-  // URL에서 받은 slug가 존재하면 사용, 없으면 'FREE'를 기본값으로 사용
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 💡[수정 1] 잘못된 카테고리 slug로 접근 시 오류가 나지 않도록 방어 코드를 추가했어요.
   const meta = CATEGORY_MAP[slug];
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,31 +29,37 @@ export default function BoardList() {
   const [total, setTotal] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
 
-  const navigate = useNavigate();
-  const location = useLocation();
+  // 💡[수정 2] 잘못된 slug로 접근하면 기본 페이지로 이동시켜요.
+  useEffect(() => {
+    if (!meta) {
+      alert('잘못된 접근입니다. 기본 게시판으로 이동합니다.');
+      navigate('/board/FREE', { replace: true });
+    }
+  }, [meta, navigate]);
 
   // 카테고리 바뀌면 page=1로 리셋
   useEffect(() => {
+    if (!meta) return; // meta가 유효할 때만 실행
     const sp = new URLSearchParams(searchParams);
     if ((sp.get('page') || '1') !== '1') {
       sp.set('page', '1');
       setSearchParams(sp);
     }
-  }, [slug]);
+  }, [slug, meta, setSearchParams]);
 
   // 목록 불러오기
   useEffect(() => {
+    if (!meta) return; // meta가 없으면 API 호출 방지
+
     let mounted = true;
     (async () => {
       try {
         setIsFetching(true);
-        // post.jsx에서 전달된 새로고침 신호에 따라 항상 첫 페이지를 불러오도록 수정
-        const data = await getBoardList({ category: meta.backendKey, page: 1, size });
+        // 💡[수정 3] page 파라미터를 사용하도록 수정했어요.
+        const data = await getBoardList({ category: meta.backendKey, page, size });
 
-        const items =
-          data?.items ?? data?.content ?? data?.list ?? [];
-        const totalCount =
-          data?.total ?? data?.totalElements ?? data?.count ?? items.length;
+        const items = data?.content ?? [];
+        const totalCount = data?.totalElements ?? items.length;
 
         if (mounted) {
           setRows(items);
@@ -67,9 +76,21 @@ export default function BoardList() {
       }
     })();
 
-    // location.state?.refresh가 변경되면 이펙트 재실행
     return () => { mounted = false; };
-  }, [meta.backendKey, location.state?.refresh]); 
+  }, [meta, page, size, location.state?.refresh]); // 의존성 배열에 page, size 추가
+
+  // 💡[수정 4] meta 정보가 로드되기 전까지 잠시 대기 화면을 보여줘요.
+  if (!meta) {
+    return (
+       <div className="min-h-screen bg-white">
+        <Header title="" />
+        <CategoryNavigation currentCategory={slug} />
+        <div className="max-w-[1024px] mx-auto px-4 py-8">
+           <p>카테고리 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   const totalPages = Math.max(1, Math.ceil(total / size));
 
@@ -82,54 +103,23 @@ export default function BoardList() {
   return (
     <div className="min-h-screen bg-white">
       <Header title="" />
-
-      {/* 현재 카테고리(slug) 전달해서 활성 탭 표시 */}
       <CategoryNavigation currentCategory={slug} />
-
       <div className="max-w-[1024px] mx-auto px-4 py-8">
-        {/* 제목 + 글 작성 버튼 + 로딩 표시 */}
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-semibold">{meta.label}</h1>
-
           <div className="flex items-center gap-3">
-            {/* 로딩 스피너 */}
             {isFetching && (
               <div className="flex items-center gap-2 bg-white/80 border rounded px-3 py-1 text-sm">
-                <svg
-                  className="animate-spin h-4 w-4 text-gray-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
-                </svg>
+                <svg className="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
                 로딩 중…
               </div>
             )}
-
-            {/* 글 작성 버튼 */}
-            <button
-              onClick={() => navigate(`/posts/${slug}`)}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition outline-none focus:outline-none"
-            >
+            <button onClick={() => navigate(`/posts/${slug}`)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition outline-none focus:outline-none">
               글 작성
             </button>
           </div>
         </div>
 
-        {/* 테이블 */}
         <table className="w-full text-sm border-t transition-opacity">
           <thead>
             <tr className="text-left text-gray-500">
@@ -139,50 +129,29 @@ export default function BoardList() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((item, index) => (
+            {rows.map((item) => (
               <tr 
                 key={item.postId} 
                 className="border-t hover:bg-gray-50 cursor-pointer"
-                onClick={() => {
-                  if (index === 1) {
-                    navigate(`/yourpost/1`);
-                  } else {
-                    navigate(`/mypost/${item.postId}`);
-                  }
-                }}
+                onClick={() => navigate(`/mypost/${item.postId}`)}
               >
                 <td className="py-3 pr-4">{item.title}</td>
                 <td className="py-3">{item.nickname}</td>
                 <td className="py-3">{item.createdAt}</td>
               </tr>
             ))}
-
             {!isFetching && rows.length === 0 && (
-              <tr>
-                <td className="py-12 text-center text-gray-400" colSpan={3}>
-                  게시글이 없습니다
-                </td>
-              </tr>
+              <tr><td className="py-12 text-center text-gray-400" colSpan={3}>게시글이 없습니다</td></tr>
             )}
           </tbody>
         </table>
 
         <div className="flex justify-center gap-2 mt-6">
-          <button
-            className="px-3 py-1 border rounded disabled:opacity-40"
-            onClick={() => goPage(Math.max(1, page - 1))}
-            disabled={page <= 1 || isFetching}
-          >
+          <button className="px-3 py-1 border rounded disabled:opacity-40" onClick={() => goPage(Math.max(1, page - 1))} disabled={page <= 1 || isFetching}>
             이전
           </button>
-
           <span className="px-2 py-1">{page} / {totalPages}</span>
-
-          <button
-            className="px-3 py-1 border rounded disabled:opacity-40"
-            onClick={() => goPage(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages || isFetching}
-          >
+          <button className="px-3 py-1 border rounded disabled:opacity-40" onClick={() => goPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages || isFetching}>
             다음
           </button>
         </div>

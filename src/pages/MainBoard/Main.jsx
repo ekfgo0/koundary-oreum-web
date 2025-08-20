@@ -11,7 +11,7 @@ const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 // 프론트 라우트 id
 const CATEGORY_MAP = {
-  COUNTRY: { name: '소속 국가', backendKey: 'COUNTRY' },
+  NATIONALITY: { name: '소속 국가', backendKey: 'NATIONALITY' },
   UNIVERSITY:  { name: '소속 학교', backendKey: 'UNIVERSITY' },
   FREE:    { name: '자유 게시판', backendKey: 'FREE' },
   INFORMATION:    { name: '정보 게시판', backendKey: 'INFORMATION' },
@@ -35,19 +35,17 @@ const BoardCard = ({ id, title, posts, onMore }) => (
         </div>
       ) : (
         <ul className="divide-y divide-gray-100 mb-4">
-          {posts.slice(0, 5).map((p, i) => {
-            let text = '';
-            text = p;
-            const key = (typeof p === 'object' && p?.id) ? p.id : i;
+          {posts.slice(0, 5).map((postTitle, i) => {
+            const key = (typeof postTitle === 'object' && postTitle?.id) ? postTitle.id : i;
 
             return (
               <li key={key} className="py-2">
                 <a
                   href="#"
                   className="block truncate text-[15px] text-gray-700 hover:text-gray-900"
-                  title={text}
+                  title={postTitle}
                 >
-                  {text}
+                  {postTitle}
                 </a>
               </li>
             );
@@ -85,11 +83,11 @@ export default function Main() {
         const results = await Promise.all(
           IDS.map(async (id) => {
             const { backendKey, name } = CATEGORY_MAP[id];
-            const res = await getBoardList({ category: backendKey, page: 0, size: 5 });
+            // 💡[수정 1] page: 1로 변경
+            const res = await getBoardList({ category: backendKey, page: 1, size: 5 });
 
-            // 대표적인 응답 케이스를 폭넓게 커버
-            const list = Array.isArray(res?.data?.content) ? res.data.content
-              : [];
+            // 💡[수정 2] res.data.content -> res.content로 올바르게 수정
+            const list = Array.isArray(res?.content) ? res.content : [];
 
             // 유효한 제목이 있는 포스트만 필터링
             const titles = list

@@ -193,7 +193,7 @@ export default function MyProfile() {
         <ProfileCard
           nickname={me?.nickname || '홍길동'}
           country={me?.country || 'Korea'}
-          school={me?.university || '홍익대학교'} // university로 수정
+          school={me?.university || '홍익대학교'} // university로 변수이름 바꾸면 학교 없음으로 나옴 (왜지?)
           profileImage={me?.profileImage || ''}
           onSelectImage={handleSelectImage}
           onClickDeleteImage={handleDeleteImage}

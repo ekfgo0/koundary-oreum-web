@@ -35,7 +35,7 @@ const normalize = (data = {}) => ({
   userID: data.userID ?? data.userId ?? data.id ?? 0,
   loginId: data.loginId ?? data.username ?? '',
   nickname: data.nickname ?? '',
-  university: data.university ?? data.school ?? '',
+  university: data.university ?? '',
   email: data.email ?? '',
   country: data.country ?? data.nationality ?? '',
   profileImageUrl: data.profileImageUrl ?? data.profileImage ?? '',
