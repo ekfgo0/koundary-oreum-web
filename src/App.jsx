@@ -9,6 +9,7 @@ import Posts from "./pages/Posts/Posts";
 import BoardList from './pages/BoardList/BoardList';
 import MyPost from "./pages/MyPost/MyPost";
 import YourPost from "./pages/YourPost/YourPost";
+import MyActivity from './pages/MyActivity/MyActivity';
 
 function App() {
   return (
@@ -17,12 +18,14 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/myprofile" element={<MyProfile />} />
+      <Route path="/my-activity/:activityType" element={<MyActivity />} />
       <Route path="/changepassword" element={<ChangePassword />} />
-      <Route path="/posts/:category" element={<Posts />} /> 
+      <Route path="/posts/:category" element={<Posts />} />
       <Route path="/main" element={<Main />} />
       <Route path="/boards/:category/posts" element={<BoardList />} />
-      {/* <Route path="/boards" element={<Navigate to="/boards/FREE" replace />} />
-      <Route path="/boardlist" element={<Navigate to="/boards/FREE" replace />} /> */}
+      
+      <Route path="/board" element={<Navigate to="/boards/FREE/posts" replace />} />
+      <Route path="/boardlist" element={<Navigate to="/boards/FREE/posts" replace />} />
       <Route path="/mypost/:postId" element={<MyPost />} />
       <Route path="/yourpost/:postId" element={<YourPost />} />
     </Routes>

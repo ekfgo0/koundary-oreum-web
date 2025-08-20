@@ -15,6 +15,12 @@ const defaultMock = {
   country: 'Korea',
   profileImageUrl: '', // 프로필 이미지 URL
   isDefaultImage: true, // 기본 프로필 이미지 여부
+  // 나의 활동 개수를 위한 목업 데이터 추가
+  activity: {
+    posts: 2,
+    comments: 1,
+    scraps: 1,
+  },
 };
 
 function readMock() {
@@ -35,11 +41,12 @@ const normalize = (data = {}) => ({
   userID: data.userID ?? data.userId ?? data.id ?? 0,
   loginId: data.loginId ?? data.username ?? '',
   nickname: data.nickname ?? '',
-  university: data.university ?? '',
+  university: data.university ?? data.school ?? '',
   email: data.email ?? '',
   country: data.country ?? data.nationality ?? '',
   profileImageUrl: data.profileImageUrl ?? data.profileImage ?? '',
   isDefaultImage: data.isDefaultImage ?? true,
+  activity: data.activity, // activity 데이터도 추가
 });
 
 // ============ 프로필 조회 ============
@@ -99,7 +106,6 @@ export const uploadProfileImage = async (fileOrFormData) => {
     }
     if (!(file instanceof File)) throw new Error('MOCK: 파일이 필요합니다.');
 
-    // File → data URL(base64)로 변환
     const toDataURL = (f) =>
       new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -130,7 +136,6 @@ export const uploadProfileImage = async (fileOrFormData) => {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
-    // 업데이트된 프로필 정보를 localStorage에 반영
     const currentUser = JSON.parse(localStorage.getItem('userInfo') || '{}');
     const updatedUser = {
       ...currentUser,
@@ -161,7 +166,6 @@ export const deleteProfileImage = async () => {
   try {
     const { data } = await axiosInstance.delete('/mypage/delete-profile-image');
 
-    // 기본 이미지로 되돌림을 localStorage에 반영
     const currentUser = JSON.parse(localStorage.getItem('userInfo') || '{}');
     const updatedUser = {
       ...currentUser,
@@ -196,13 +200,45 @@ export const deleteMyAccount = async (password) => {
       data: { password: password }
     });
     
-    // 탈퇴 성공 시 모든 로컬 데이터 삭제
     localStorage.removeItem('accessToken');
     localStorage.removeItem('userId');
     localStorage.removeItem('userInfo');
     
     return data;
   } catch (error) {
+    throw (error.response?.data ?? error);
+  }
+};
+
+// ============ 나의 활동 조회 (💡💡💡 제가 빠뜨렸던 바로 그 함수예요!) ============
+export const getMyActivity = async (activityType) => {
+  // 백엔드 MyPageController의 엔드포인트에 맞춰서, '댓글 단 글'의 경우 주소를 'commented-posts'로 변경해요.
+  const endpoint = activityType === 'comments' ? 'commented-posts' : activityType;
+
+  if (USE_MOCK) {
+    await sleep(300);
+    const mockData = {
+      posts: [
+        { postId: 101, title: '내가 쓴 첫 번째 글 (테스트)', nickname: '홍길동', createdAt: '2025-08-21' },
+        { postId: 102, title: '내가 쓴 두 번째 글 (테스트)', nickname: '홍길동', createdAt: '2025-08-20' },
+      ],
+      comments: [ // 'commented-posts'에 대한 목업 데이터
+        { postId: 201, title: '내가 댓글 단 글 (테스트)', nickname: '춘향이', createdAt: '2025-08-19' },
+      ],
+      scraps: [
+        { postId: 301, title: '내가 스크랩한 글 (테스트)', nickname: '이몽룡', createdAt: '2025-08-18' },
+      ],
+    };
+    // activityType에 맞는 목업 데이터를 반환하도록 수정
+    return { content: mockData[activityType] || [] };
+  }
+
+  try {
+    // 실제 서버에 나의 활동 내역을 요청해요.
+    const { data } = await axiosInstance.get(`/mypage/${endpoint}`);
+    return data;
+  } catch (error) {
+    console.error(`${activityType} 목록 조회 실패:`, error.response?.data || error.message);
     throw (error.response?.data ?? error);
   }
 };

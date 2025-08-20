@@ -3,12 +3,15 @@ import axios from './axiosInstance';
 // 게시글 관련 API 함수들
 export const postAPI = {
   // 새 글 작성
-  createPost: async (boardCode, { title, content, imageUrls = [] }) => {
+  createPost: async (boardCode, { title, content, imageUrls = [], isInfoPost = false }) => {
     try {
-      const response = await axios.post(`/posts`, {
-        boardName: boardCode,
+      // 💡[수정!] 백엔드 PostController의 주소 @RequestMapping("/boards/{boardCode}/posts") 에 맞춰 URL을 수정했어요.
+      const response = await axios.post(`/boards/${boardCode}/posts`, {
+        // 💡[수정!] boardName은 이제 URL로 전달되므로 요청 본문(body)에서는 제거했어요.
+        // 백엔드의 PostCreateRequest DTO에 isInformation 필드가 있으니 추가해 줄게요.
         title,
         content,
+        isInformation: isInfoPost, 
         imageUrls,
       });
       
@@ -196,6 +199,7 @@ export const postAPI = {
   // 내가 쓴 글, 댓글 조회
   getMyPosts: async (userId) => {
     try {
+      // GET /user/{userId}/posts,comment_id
       const response = await axios.get(`/user/${userId}/posts,comment_id`);
       return response.data;
     } catch (error) {

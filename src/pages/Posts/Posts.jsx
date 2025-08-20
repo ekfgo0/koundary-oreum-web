@@ -41,8 +41,8 @@ const Post = () => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    // URL에서 받은 값으로 초기 카테고리 설정
-    category: CATEGORY_MAP_FRONTEND[urlCategory]
+    // URL에 카테고리 값이 없으면 '자유게시판'을 기본으로 설정해요.
+    category: CATEGORY_MAP_FRONTEND[urlCategory] || '자유게시판'
   });
   
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -52,7 +52,6 @@ const Post = () => {
   const [error, setError] = useState(null);
   const [uploadingImages, setUploadingImages] = useState(false);
 
-  // 수정 모드일 때 기존 데이터로 폼 초기화
   useEffect(() => {
     if (isEditMode && editData) {
       setFormData({
@@ -77,10 +76,7 @@ const Post = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (error) setError(null);
   };
 
@@ -155,16 +151,6 @@ const Post = () => {
     setIsSubmitting(true);
 
     try {
-      const USE_MOCK_MODE = false;
-
-      if (USE_MOCK_MODE) {
-        console.log('Mock 모드 - 글 작성 시뮬레이션');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        alert('Mock: 글이 성공적으로 작성되었습니다!');
-        navigate(`/boards/${urlCategory}/posts`);
-        return;
-      }
-
       const newImageUrls = await uploadImages();
       const allImageUrls = [...uploadedImageUrls, ...newImageUrls];
       const board_code = getCategoryBoardCode(formData.category);
@@ -194,7 +180,8 @@ const Post = () => {
       if (isEditMode) {
         navigate(`/mypost/${editPostId}`);
       } else {
-        navigate(`/board/${urlCategory}/posts`, { state: { refresh: true } });
+        // 💡[수정 완료!] 글 작성 후, 라우터 경로에 맞춰 수정한 주소로 이동해요.
+        navigate(`/boards/${board_code}/posts`, { state: { refresh: true } });
       }
       
     } catch (error) {
@@ -208,10 +195,10 @@ const Post = () => {
   const handleCancel = () => {
     if (formData.title || formData.content || selectedFiles.length > 0 || uploadedImageUrls.length > 0) {
       if (window.confirm('작성 중인 내용이 있습니다. 정말 취소하시겠습니까?')) {
-        navigate(`/boards/${urlCategory}/posts`);
+        navigate(-1); // 이전 페이지로 돌아가기
       }
     } else {
-      navigate(`/boards/${urlCategory}/posts`);
+      navigate(-1); // 이전 페이지로 돌아가기
     }
   };
 
@@ -226,8 +213,6 @@ const Post = () => {
           </div>
         )}
 
-        {/* PostForm 컴포넌트에는 이미 카테고리 선택 UI가 포함되어 있으니, 
-            PostForm에 formData와 setFormData를 prop으로 전달하여 상태를 제어합니다. */}
         <PostForm
           formData={formData}
           setFormData={setFormData}
