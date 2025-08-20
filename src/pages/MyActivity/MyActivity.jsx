@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/common/Header';
-import { getMyActivity } from '../../api/user'; // 새로 추가될 API 함수예요
+import { getMyActivity } from '../../api/user';
 
 const ACTIVITY_TYPE_MAP = {
   posts: '내가 쓴 글',
@@ -41,9 +41,13 @@ const MyActivity = () => {
   }, [activityType, navigate, title]);
 
   const handleItemClick = (item) => {
-    // postId가 있는 경우에만 상세 페이지로 이동하도록 해요.
-    if (item.postId) {
-      navigate(`/mypost/${item.postId}`);
+    // 💡[수정!] '내가 쓴 글' 목록에서 클릭 시, 'MyPost' 페이지로 이동하면서
+    // state에 { boardCode: item.boardCode } 형태로 방 번호를 함께 전달해요.
+    if (item.postId && item.boardCode) {
+      if (activityType === 'posts') {
+        navigate(`/mypost/${item.postId}`, { state: { boardCode: item.boardCode } });
+      }
+      // TODO: 댓글, 스크랩 글 클릭 시 이동 경로 추가
     }
   };
 
@@ -62,7 +66,7 @@ const MyActivity = () => {
             <thead>
               <tr className="text-left text-gray-500">
                 <th className="py-3">제목</th>
-                <th className="py-3 w-32">작성자</th>
+                <th className="py-3 w-48">게시판</th>
                 <th className="py-3 w-36">작성일</th>
               </tr>
             </thead>
@@ -74,8 +78,8 @@ const MyActivity = () => {
                   onClick={() => handleItemClick(item)}
                 >
                   <td className="py-3 pr-4">{item.title}</td>
-                  <td className="py-3">{item.nickname}</td>
-                  <td className="py-3">{item.createdAt}</td>
+                  <td className="py-3">{item.boardName}</td>
+                  <td className="py-3">{new Date(item.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>

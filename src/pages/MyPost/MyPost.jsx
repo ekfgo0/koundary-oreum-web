@@ -26,7 +26,7 @@ const MyPost = () => {
       content: "이것은 목업 데이터입니다. 실제 데이터가 아닙니다.",
       boardCode: "NATIONALITY",
       nickname: "독일유학생",
-      profileImageUrl: null, // 💡 프로필 이미지 URL 필드 추가
+      profileImageUrl: null,
       createdAt: "2024-03-15 14:30",
       scrapCount: 12,
       isMyPost: true
@@ -39,7 +39,6 @@ const MyPost = () => {
     try {
       const post = await postAPI.getPost(postId, boardCode);
       const commentsData = await postAPI.getComments(postId);
-      // 💡 백엔드 응답(PostResponse)에 profileImageUrl이 포함되어 있으므로, 그대로 사용해요.
       return { post, comments: commentsData.content || [] };
     } catch (error) {
       console.error('API 호출 실패:', error);
@@ -54,7 +53,6 @@ const MyPost = () => {
       try {
         setLoading(true);
         setError(null);
-
         let data;
         
         if (useMockData) {
@@ -77,7 +75,6 @@ const MyPost = () => {
           }
         }
 
-        // 💡 isMyPost와 함께 profileImageUrl도 postData에 잘 담아줘요.
         setPostData({ ...data.post, isMyPost: true, profileImageUrl: data.post.profileImageUrl });
         setComments(data.comments);
         setCurrentCategory(data.post.boardCode);
