@@ -203,7 +203,6 @@ export const postAPI = {
   // 내가 쓴 글, 댓글 조회
   getMyPosts: async (userId) => {
     try {
-      // GET /user/{userId}/posts,comment_id
       const response = await axios.get(`/user/${userId}/posts,comment_id`);
       return response.data;
     } catch (error) {

@@ -104,7 +104,7 @@ export default function Main() {
     })();
   }, []);
 
-  const goMore = (key) => navigate(`/board/${key}`);
+  const goMore = (key) => navigate(`/boards/${key}/posts`);
 
   return (
     <div className="min-h-screen bg-[#f5f9fc]">

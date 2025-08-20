@@ -27,5 +27,5 @@ export const getBoardList = async ({ category, page = 1, size = 20 }) => {
   const { data } = await axiosInstance.get('/boards', {
     params: { category, page, size },
   });
-  return data; // 서버 응답 형식에 맞게 그대로 반환
+  return data;
 };
