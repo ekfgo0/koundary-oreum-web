@@ -1,4 +1,4 @@
-// src/pages/PostDetail/PostDetail.jsx (수정 후 전체 코드)
+// src/pages/PostDetail/PostDetail.jsx
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -7,6 +7,50 @@ import CategoryNavigation from '../../components/common/CategoryNavigation';
 import MyPostForm from '../../components/auth/MyPostForm';
 import YourPostForm from '../../components/auth/YourPostForm';
 import { postAPI } from '../../api/post';
+
+// 신고 모달 컴포넌트 추가
+const ReportModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
+  const [reportReason, setReportReason] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!reportReason.trim()) {
+      alert('신고 사유를 입력해주세요.');
+      return;
+    }
+    onSubmit(reportReason.trim());
+    setReportReason('');
+  };
+
+  useEffect(() => { if (!isOpen) setReportReason(''); }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 className="text-lg font-semibold mb-4">게시글 신고</h3>
+        <form onSubmit={handleSubmit}>
+          <textarea
+            value={reportReason}
+            onChange={(e) => setReportReason(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-md resize-none"
+            rows="4"
+            placeholder="신고 사유를 자세히 입력해주세요."
+            maxLength="500"
+            disabled={loading}
+          />
+          <div className="flex justify-end space-x-2 mt-4">
+            <button type="button" onClick={onClose} disabled={loading} className="px-4 py-2 border rounded">취소</button>
+            <button type="submit" disabled={loading || !reportReason.trim()} className="px-4 py-2 bg-red-500 text-white rounded">
+              {loading ? '신고 중...' : '신고하기'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const PostDetail = () => {
   const navigate = useNavigate();
@@ -17,6 +61,9 @@ const PostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isMyPost, setIsMyPost] = useState(false);
+
+  // 신고 모달 상태 추가
+  const [reportModal, setReportModal] = useState({ isOpen: false, type: 'post', targetId: null, loading: false });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,6 +95,42 @@ const PostDetail = () => {
     }
   }, [postId, category, navigate]);
   
+  // 스크랩 핸들러 추가
+  const handleToggleScrap = async () => {
+    try {
+      const result = await postAPI.toggleScrap(postId);
+      setPostData(prev => ({
+        ...prev,
+        isScraped: result.isScraped,
+        scrapCount: result.scrapCount
+      }));
+    } catch (error) {
+      alert(error.message || '스크랩 처리에 실패했습니다.');
+    }
+  };
+
+  // 신고 핸들러 추가
+  const handleReport = async (reason) => {
+    try {
+      setReportModal(prev => ({ ...prev, loading: true }));
+      const { type, targetId } = reportModal;
+      if (type === 'post') {
+        await postAPI.reportPost(targetId, reason);
+      } else {
+        await postAPI.reportComment(postId, targetId, reason);
+      }
+      alert('신고가 접수되었습니다.');
+    } catch (error) {
+      alert(error.message || '신고 처리 중 오류가 발생했습니다.');
+    } finally {
+      closeReportModal();
+    }
+  };
+
+  // 모달 제어 함수 추가
+  const openReportModal = (type, targetId) => setReportModal({ isOpen: true, type, targetId, loading: false });
+  const closeReportModal = () => setReportModal({ isOpen: false, type: 'post', targetId: null, loading: false });
+
   const handleCreateComment = async (commentData) => {
     try {
       let newComment;
@@ -126,9 +209,22 @@ const PostDetail = () => {
             setPostData={setPostData}
             comments={comments}
             setComments={setComments}
+            onReportPost={() => openReportModal('post', postData.postId)}
+            onReportComment={(commentId) => openReportModal('comment', commentId)}
+            onToggleScrap={handleToggleScrap}
+            onCreateComment={handleCreateComment}
+            onUpdateComment={handleUpdateComment}
+            onDeleteComment={handleDeleteComment}
           />
         )}
       </div>
+      {/* ReportModal 렌더링 추가 */}
+      <ReportModal
+        isOpen={reportModal.isOpen}
+        onClose={closeReportModal}
+        onSubmit={handleReport}
+        loading={reportModal.loading}
+      />
     </div>
   );
 };

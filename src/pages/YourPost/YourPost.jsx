@@ -1,3 +1,5 @@
+// src/pages/YourPost/YourPost.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Header from '../../components/common/Header';
@@ -163,9 +165,26 @@ const YourPost = () => {
   };
 
   const handleCreateComment = async (commentData) => {
-     try {
-      const newComment = await postAPI.createComment(postId, commentData);
-      setComments(prev => [...prev, newComment]);
+    try {
+      let newComment;
+      if (commentData.parentId) {
+        newComment = await postAPI.createReply(commentData.parentId, { content: commentData.content });
+        const addReply = (comments, parentId, reply) => {
+          return comments.map(comment => {
+            if (comment.commentId === parentId) {
+              return { ...comment, replies: [...(comment.replies || []), reply] };
+            }
+            if (comment.replies) {
+              return { ...comment, replies: addReply(comment.replies, parentId, reply) };
+            }
+            return comment;
+          });
+        };
+        setComments(prev => addReply(prev, commentData.parentId, newComment));
+      } else {
+        newComment = await postAPI.createComment(postId, { content: commentData.content });
+        setComments(prev => [...prev, newComment]);
+      }
     } catch (error) {
       alert(error.message || '댓글 작성에 실패했습니다.');
     }
