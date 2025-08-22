@@ -137,7 +137,7 @@ export const postAPI = {
   // 신고 관련 API
   reportPost: async (postId, reason, boardCode = null) => {
     try {
-      const response = await axios.post('/report', { 
+      const response = await axios.post('/reports', { 
         reason: reason,
         post_id: postId,
         boardCode: boardCode
@@ -151,7 +151,7 @@ export const postAPI = {
 
   reportComment: async (postId, commentId, reason, boardCode = null) => {
     try {
-      const response = await axios.post('/report', { 
+      const response = await axios.post('/reports', { 
         reason: reason,
         comment_id: commentId,
         post_id: postId,

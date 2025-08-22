@@ -23,7 +23,6 @@ function App() {
       <Route path="/main" element={<Main />} />
       <Route path="/boards/:category/posts" element={<BoardList />} />
       <Route path="/boards/:category/posts/:postId" element={<PostDetail />} />
-  
       <Route path="/board" element={<Navigate to="/boards/FREE/posts" replace />} />
       <Route path="/boardlist" element={<Navigate to="/boards/FREE/posts" replace />} />
       <Route path="/mypost/:postId" element={<Navigate to="/boards/FREE/posts/:postId" replace />} />

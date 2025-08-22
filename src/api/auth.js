@@ -112,10 +112,6 @@ export const logout = async () => {
     localStorage.removeItem('userId');
     localStorage.removeItem('userInfo');
     
-    // 혹시 다른 이름으로 저장된 토큰들도 삭제
-    localStorage.removeItem('token');
-    localStorage.removeItem('authToken');
-    
     console.log('로컬 인증 데이터 삭제 완료');
     
     // 삭제 후 상태 확인
@@ -165,9 +161,8 @@ export const getStoredToken = () => {
   return localStorage.getItem('accessToken');
 };
 
-// 토큰 유효성 검증 (서버에 확인) - 인증 필요
+// 토큰 유효성 검증
 export const validateToken = async () => {
-  // 토큰 확인
   ensureAuthenticated();
   
   try {
@@ -211,7 +206,7 @@ export const initializeAuth = async () => {
   }
 };
 
-// =========== 회원가입 관련 (인증 불필요) ==========
+// =========== 회원가입 관련 ==========
 // 닉네임 중복 확인
 export const checkNickname = async (nickname) => {
   try {
@@ -254,7 +249,7 @@ export const sendVerificationEmail = async (email) => {
 // 인증번호 확인
 export const verifyCode = async (email, code) => {
   try {
-    console.log('📡 인증번호 확인 중...');
+    console.log('인증번호 확인 중...');
     const { data } = await axiosInstance.post('/email/verify-code', { email, code });
     console.log('인증번호 확인 완료');
     return data;

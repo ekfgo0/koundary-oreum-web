@@ -1,7 +1,4 @@
-// src/api/mockup.js
 // 메인 보드용 목업 데이터 (문자열 배열)
-
-// 💡[수정] id를 다른 파일들과 동일한 대문자 ID로 통일했어요.
 export const mockBoards = [
   {
     id: 'NATIONALITY',
