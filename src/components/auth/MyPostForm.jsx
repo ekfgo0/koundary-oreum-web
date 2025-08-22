@@ -29,12 +29,12 @@ const CommentEditForm = ({ comment, onSave, onCancel }) => {
         onKeyPress={(e) => e.key === 'Enter' && handleSave()}
       />
       <button onClick={handleSave} className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg">저장</button>
-      <button onClick={onCancel} className="px-3 py-1.5 bg-gray-200 text-sm rounded-lg">취소</button>
+      <button onClick={onCancel} className="px-3 py-1.5 bg-white border border-gray-300 text-sm rounded-lg">취소</button>
     </div>
   );
 };
 
-// 댓글 아이템 컴포넌트 (수정/삭제/대댓글 UI 관리)
+// 댓글 아이템 컴포넌트
 const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onReply, nestingLevel = 0 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const isMyComment = currentUser?.userId === comment.authorId;
@@ -56,14 +56,16 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onReply, nestin
               <span className="font-medium text-sm text-gray-900">{comment.authorNickname}</span>
               <span className="text-xs text-gray-500 ml-2">{new Date(comment.createdAt).toLocaleString()}</span>
             </div>
-            <div className="flex gap-2 text-xs text-gray-500">
+            <div className="flex items-center gap-2 text-xs">
               {isMyComment ? (
                 <>
-                  <button onClick={() => setIsEditing(true)} className="hover:text-blue-500">수정</button>
-                  <button onClick={() => onDelete(comment.commentId)} className="hover:text-red-500">삭제</button>
+                  {/* [수정] 수정/삭제 버튼에 흰색 배경과 테두리 스타일을 적용합니다. */}
+                  <button onClick={() => setIsEditing(true)} className="px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50">수정</button>
+                  <button onClick={() => onDelete(comment.commentId)} className="px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50">삭제</button>
                 </>
               ) : (
-                <button onClick={() => onReply(comment)} className="hover:text-blue-500">답글</button>
+                // [수정] '답글달기' 버튼에도 동일한 스타일을 적용합니다.
+                <button onClick={() => onReply(comment)} className="px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50">답글달기</button>
               )}
             </div>
           </div>
@@ -74,7 +76,7 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onReply, nestin
           )}
         </div>
       </div>
-      {/* 대댓글 렌더링 (재귀 호출) */}
+      {/* 대댓글 렌더링 */}
       {comment.replies && comment.replies.length > 0 && (
         comment.replies.map(reply => (
           <CommentItem 
@@ -83,7 +85,7 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onReply, nestin
             currentUser={currentUser} 
             onUpdate={onUpdate}
             onDelete={onDelete}
-            onReply={() => onReply(comment)} // 대댓글의 답글은 최상위 댓글을 타겟으로 함
+            onReply={() => onReply(comment)}
             nestingLevel={nestingLevel + 1}
           />
         ))
@@ -139,7 +141,7 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
 
   const handleReplyClick = (comment) => {
     setReplyingTo(comment);
-    commentInputref.current?.focus();
+    commentInputRef.current?.focus(); 
     setNewComment(`@${comment.authorNickname} `);
   };
   
