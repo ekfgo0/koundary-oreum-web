@@ -1,3 +1,5 @@
+// src/pages/MyPost/MyPost.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Header from '../../components/common/Header';
@@ -108,7 +110,7 @@ const MyPost = () => {
     try {
       const updatedComment = await postAPI.updateComment(postId, commentId, commentData);
       setComments(prev => 
-        prev.map(c => c.id === commentId ? updatedComment : c)
+        prev.map(c => c.commentId === commentId ? updatedComment : c)
       );
     } catch (error) {
       alert(error.message || '댓글 수정에 실패했습니다.');
@@ -119,7 +121,8 @@ const MyPost = () => {
     if (window.confirm('정말 댓글을 삭제하시겠습니까?')) {
       try {
         await postAPI.deleteComment(postId, commentId);
-        setComments(prev => prev.filter(c => c.id !== commentId));
+        const commentsData = await postAPI.getComments(postId);
+        setComments(commentsData.content || []);
       } catch (error) {
         alert(error.message || '댓글 삭제에 실패했습니다.');
       }

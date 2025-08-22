@@ -1,3 +1,5 @@
+// src/api/post.js
+
 import axios from './axiosInstance';
 
 // 게시글 관련 API 함수들
@@ -110,7 +112,7 @@ export const postAPI = {
   },
 
   // 댓글 수정
-  updateComment: async (commentId, commentData) => {
+  updateComment: async (postId, commentId, commentData) => {
     try {
       const url = `/api/comments/${commentId}`; 
       const response = await axios.patch(url, {
@@ -124,7 +126,7 @@ export const postAPI = {
   },
 
   // 댓글 삭제
-  deleteComment: async (commentId) => {
+  deleteComment: async (postId, commentId) => {
     try {
       const url = `/api/comments/${commentId}`;
       const response = await axios.delete(url);

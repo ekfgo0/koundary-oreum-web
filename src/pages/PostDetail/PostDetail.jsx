@@ -1,3 +1,5 @@
+// src/pages/PostDetail/PostDetail.jsx (수정 후 전체 코드)
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/common/Header';
@@ -5,8 +7,6 @@ import CategoryNavigation from '../../components/common/CategoryNavigation';
 import MyPostForm from '../../components/auth/MyPostForm';
 import YourPostForm from '../../components/auth/YourPostForm';
 import { postAPI } from '../../api/post';
-
-// [삭제] 이 파일에 있던 filterDeletedComments 함수를 제거합니다.
 
 const PostDetail = () => {
   const navigate = useNavigate();
@@ -33,7 +33,6 @@ const PostDetail = () => {
         setIsMyPost(postIsMine);
         setPostData({ ...post, isMyPost: postIsMine, boardCode: category });
 
-        // [수정] 필터링 로직을 제거하고 서버에서 받은 데이터를 그대로 상태에 저장합니다.
         setComments(commentsData.content || []);
 
       } catch (err) {
@@ -77,7 +76,7 @@ const PostDetail = () => {
 
   const handleUpdateComment = async (commentId, commentData) => {
     try {
-      const updatedComment = await postAPI.updateComment(commentId, commentData);
+      const updatedComment = await postAPI.updateComment(postId, commentId, commentData);
       const update = (comments) => {
         return comments.map(comment => {
           if (comment.commentId === commentId) return updatedComment;
@@ -94,9 +93,7 @@ const PostDetail = () => {
   const handleDeleteComment = async (commentId) => {
     if (window.confirm('정말 댓글을 삭제하시겠습니까?')) {
       try {
-        await postAPI.deleteComment(commentId);
-        // [수정] 삭제 성공 후, 서버에서 최신 댓글 목록을 다시 불러와 화면을 갱신합니다.
-        // 이것이 가장 확실하게 상태를 동기화하는 방법입니다.
+        await postAPI.deleteComment(postId, commentId);
         const commentsData = await postAPI.getComments(postId);
         setComments(commentsData.content || []);
       } catch (error) {
