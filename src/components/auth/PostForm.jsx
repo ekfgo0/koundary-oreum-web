@@ -1,3 +1,5 @@
+// src/components/auth/PostForm.jsx
+
 import React from 'react';
 
 const PostForm = ({
@@ -11,7 +13,7 @@ const PostForm = ({
   handleInputChange,
   handleFileChange,
   removeFile,
-  handleSubmit,  // 이름 원래대로
+  handleSubmit,
   handleCancel,
   isEditMode
 }) => {
@@ -43,13 +45,17 @@ const PostForm = ({
                 key={category}
                 type="button"
                 onClick={() => handleCategoryChange(category)}
+                // [수정] isEditMode일 때 버튼을 비활성화합니다.
+                disabled={isEditMode}
                 className={`flex-1 py-3 px-4 text-sm transition-all rounded-none border border-blue-500 relative ${
                   index !== 0 ? '-ml-px' : ''
                 } ${
                   formData.category === category
                     ? 'bg-blue-500 text-white z-10'
                     : 'bg-white text-blue-500 hover:bg-blue-50 z-0'
-                }`}
+                }
+                ${'' /* [수정] 수정 모드일 때 비활성화된 것처럼 보이게 스타일을 추가합니다. */}
+                ${isEditMode ? 'cursor-not-allowed opacity-70' : ''}`}
               >
                 {category}
               </button>
@@ -164,7 +170,7 @@ const PostForm = ({
             </button>
             <button
               type="button"
-              onClick={handleSubmit}  // 원래 이름으로
+              onClick={handleSubmit}
               disabled={isSubmitting}
               className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >

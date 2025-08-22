@@ -1,3 +1,5 @@
+// src/pages/Posts/Posts.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams, useParams } from 'react-router-dom';
 import { postAPI } from '../../api/post';
@@ -41,7 +43,6 @@ const Post = () => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    // URL에 카테고리 값이 없으면 '자유게시판'을 기본으로 설정해요.
     category: CATEGORY_MAP_FRONTEND[urlCategory] || '자유게시판'
   });
   
@@ -57,7 +58,8 @@ const Post = () => {
       setFormData({
         title: editData.title,
         content: editData.content,
-        category: editData.category
+        // [수정] boardCode를 이용해 프론트엔드 카테고리명으로 변환하여 설정합니다.
+        category: CATEGORY_MAP_FRONTEND[editData.boardCode] || '자유게시판'
       });
       if (editData.imageUrls && editData.imageUrls.length > 0) {
         setUploadedImageUrls(editData.imageUrls);
@@ -172,15 +174,15 @@ const Post = () => {
       const message = isEditMode 
         ? '글이 성공적으로 수정되었습니다!'
         : isInfoPost && formData.category !== '정보게시판'
-          ? `글이 ${formData.category}과 정보게시판에 동시에 작성되었습니다!`
+          ? `글이 ${formData.category}과 정보게시판에 동시 게시되었습니다!`
           : '글이 성공적으로 작성되었습니다!';
       
       alert(message);
       
+      // [수정] 글 수정 후, 해당 게시글의 상세 페이지로 이동하도록 경로를 수정합니다.
       if (isEditMode) {
-        navigate(`/mypost/${editPostId}`);
+        navigate(`/boards/${board_code}/posts/${editPostId}`);
       } else {
-        // 💡[수정 완료!] 글 작성 후, 라우터 경로에 맞춰 수정한 주소로 이동해요.
         navigate(`/boards/${board_code}/posts`, { state: { refresh: true } });
       }
       
