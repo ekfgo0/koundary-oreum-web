@@ -6,6 +6,8 @@ import MyPostForm from '../../components/auth/MyPostForm';
 import YourPostForm from '../../components/auth/YourPostForm';
 import { postAPI } from '../../api/post';
 
+// [삭제] 이 파일에 있던 filterDeletedComments 함수를 제거합니다.
+
 const PostDetail = () => {
   const navigate = useNavigate();
   const { category, postId } = useParams();
@@ -22,7 +24,6 @@ const PostDetail = () => {
         setLoading(true);
         setError(null);
 
-        // 게시글 정보와 댓글 목록을 각각 서버에서 불러옵니다.
         const post = await postAPI.getPost(postId, category);
         const commentsData = await postAPI.getComments(postId);
         
@@ -30,9 +31,9 @@ const PostDetail = () => {
         const postIsMine = myUserId && post.userId && String(post.userId) === myUserId;
         
         setIsMyPost(postIsMine);
-        
-        // 게시글 데이터와 댓글 데이터를 각각 상태에 저장합니다.
         setPostData({ ...post, isMyPost: postIsMine, boardCode: category });
+
+        // [수정] 필터링 로직을 제거하고 서버에서 받은 데이터를 그대로 상태에 저장합니다.
         setComments(commentsData.content || []);
 
       } catch (err) {
@@ -48,13 +49,11 @@ const PostDetail = () => {
     }
   }, [postId, category, navigate]);
   
-  // 댓글 생성 핸들러 (대댓글 포함)
   const handleCreateComment = async (commentData) => {
     try {
       let newComment;
       if (commentData.parentId) {
         newComment = await postAPI.createReply(commentData.parentId, { content: commentData.content });
-        // 상태 업데이트 로직 (대댓글)
         const addReply = (comments, parentId, reply) => {
           return comments.map(comment => {
             if (comment.commentId === parentId) {
@@ -76,11 +75,9 @@ const PostDetail = () => {
     }
   };
 
-  // 댓글 수정 핸들러
   const handleUpdateComment = async (commentId, commentData) => {
     try {
       const updatedComment = await postAPI.updateComment(commentId, commentData);
-      // 상태 업데이트 로직 (대댓글 포함)
       const update = (comments) => {
         return comments.map(comment => {
           if (comment.commentId === commentId) return updatedComment;
@@ -94,19 +91,14 @@ const PostDetail = () => {
     }
   };
 
-  // 댓글 삭제 핸들러
   const handleDeleteComment = async (commentId) => {
     if (window.confirm('정말 댓글을 삭제하시겠습니까?')) {
       try {
         await postAPI.deleteComment(commentId);
-        // 상태 업데이트 로직 (대댓글 포함)
-        const remove = (comments) => {
-          return comments.filter(c => c.commentId !== commentId).map(c => {
-            if (c.replies) return { ...c, replies: remove(c.replies) };
-            return c;
-          });
-        };
-        setComments(prev => remove(prev));
+        // [수정] 삭제 성공 후, 서버에서 최신 댓글 목록을 다시 불러와 화면을 갱신합니다.
+        // 이것이 가장 확실하게 상태를 동기화하는 방법입니다.
+        const commentsData = await postAPI.getComments(postId);
+        setComments(commentsData.content || []);
       } catch (error) {
         alert(error.message || '댓글 삭제에 실패했습니다.');
       }

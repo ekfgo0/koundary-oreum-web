@@ -7,7 +7,6 @@ import { postAPI } from '../../api/post';
 const CommentEditForm = ({ comment, onSave, onCancel }) => {
   const [editText, setEditText] = useState(comment.content);
   const textareaRef = useRef(null);
-
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -16,28 +15,19 @@ const CommentEditForm = ({ comment, onSave, onCancel }) => {
       textarea.style.height = `${textarea.scrollHeight}px`;
     }
   }, []);
-  
   const handleSave = () => {
     if (editText.trim()) {
       onSave(comment.commentId, { content: editText.trim() });
     }
   };
-
   const handleTextChange = (e) => {
     setEditText(e.target.value);
     e.target.style.height = 'auto';
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
-
   return (
     <div className="mt-2 flex items-start gap-2">
-      <textarea
-        ref={textareaRef}
-        value={editText}
-        onChange={handleTextChange}
-        className="flex-1 p-2 border border-gray-300 rounded-lg text-sm resize-none"
-        rows="1"
-      />
+      <textarea ref={textareaRef} value={editText} onChange={handleTextChange} className="flex-1 p-2 border border-gray-300 rounded-lg text-sm resize-none" rows="1" />
       <div className="flex gap-2">
         <button onClick={handleSave} className="px-3 py-1.5 bg-blue-500 text-white text-xs rounded-lg">저장</button>
         <button onClick={onCancel} className="px-3 py-1.5 bg-white border border-gray-300 text-xs rounded-lg">취소</button>
@@ -50,7 +40,6 @@ const CommentEditForm = ({ comment, onSave, onCancel }) => {
 const ReplyForm = ({ parentComment, onCreateReply, onCancel }) => {
   const [replyText, setReplyText] = useState(`@${parentComment.authorNickname} `);
   const textareaRef = useRef(null);
-
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -59,22 +48,14 @@ const ReplyForm = ({ parentComment, onCreateReply, onCancel }) => {
       textarea.selectionEnd = textarea.value.length;
     }
   }, []);
-
   const handleSubmitReply = () => {
     if (replyText.trim()) {
       onCreateReply({ content: replyText, parentId: parentComment.commentId });
     }
   };
-  
   return (
     <div className="mt-3">
-      <textarea
-        ref={textareaRef}
-        value={replyText}
-        onChange={(e) => setReplyText(e.target.value)}
-        className="w-full p-2 border border-gray-300 rounded-lg text-sm resize-y min-h-[60px]"
-        rows="2"
-      />
+      <textarea ref={textareaRef} value={replyText} onChange={(e) => setReplyText(e.target.value)} className="w-full p-2 border border-gray-300 rounded-lg text-sm resize-y min-h-[60px]" rows="2" />
       <div className="flex justify-end gap-2 mt-2">
         <button onClick={handleSubmitReply} className="px-4 py-1.5 bg-blue-500 text-white text-sm rounded-lg">답글 등록</button>
         <button onClick={onCancel} className="px-4 py-1.5 bg-white border border-gray-300 text-sm rounded-lg">취소</button>
@@ -88,43 +69,52 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onCreateReply, 
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const isMyComment = currentUser?.userId === comment.authorId;
+  
+  // [추가] 서버에서 "삭제된 댓글"로 표시된 경우를 확인하는 변수
+  const isDeletedByServer = comment.content === '(삭제된 댓글입니다)';
+  const hasReplies = comment.replies && comment.replies.length > 0;
 
-  const handleUpdate = (commentId, data) => {
-    onUpdate(commentId, data);
-    setIsEditing(false);
-  };
-
-  const handleCreateReply = (replyData) => {
-    onCreateReply(replyData);
-    setIsReplying(false);
-  };
+  // [수정] 서버에서 삭제 처리되었고, 대댓글도 없다면 아무것도 렌더링하지 않음 (완전 삭제 효과)
+  if (isDeletedByServer && !hasReplies) {
+    return null;
+  }
+  
+  const handleUpdate = (commentId, data) => { onUpdate(commentId, data); setIsEditing(false); };
+  const handleCreateReply = (replyData) => { onCreateReply(replyData); setIsReplying(false); };
 
   return (
     <div className={`flex flex-col ${nestingLevel > 0 ? 'ml-10 mt-3 space-y-3 border-l-2 pl-4' : ''}`}>
       <div className="flex gap-3">
         <div className="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0 overflow-hidden">
-          {comment.authorProfileImage ? <img src={comment.authorProfileImage} alt="프로필" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-gray-600" />}
+          {!isDeletedByServer && (comment.authorProfileImage ? <img src={comment.authorProfileImage} alt="프로필" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-gray-600" />)}
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <div>
-              <span className="font-medium text-sm text-gray-900">{comment.authorNickname}</span>
+              <span className={`font-medium text-sm ${isDeletedByServer ? 'text-gray-500' : 'text-gray-900'}`}>
+                {isDeletedByServer ? '삭제된 작성자' : comment.authorNickname}
+              </span>
               <span className="text-xs text-gray-500 ml-2">{new Date(comment.createdAt).toLocaleString()}</span>
             </div>
-            {isMyComment && !isEditing && (
+            {/* [수정] 서버에서 삭제된 댓글에는 수정/삭제 버튼이 보이지 않도록 함 */}
+            {isMyComment && !isEditing && !isDeletedByServer && (
               <div className="flex items-center gap-3 text-xs text-gray-500">
                 <button onClick={() => setIsEditing(true)} className="hover:text-blue-500">수정</button>
                 <button onClick={() => onDelete(comment.commentId)} className="hover:text-red-500">삭제</button>
               </div>
             )}
           </div>
-          {isEditing ? (
+
+          {/* [수정] 삭제된 댓글은 수정 폼을 보여주지 않음 */}
+          {isEditing && !isDeletedByServer ? (
             <CommentEditForm comment={comment} onSave={handleUpdate} onCancel={() => setIsEditing(false)} />
           ) : (
             <>
-              <p className="text-gray-700 text-sm mt-1 whitespace-pre-line">{comment.content}</p>
-              {/* [수정] nestingLevel이 0일 때 (최상위 댓글일 때)만 '답글달기' 버튼을 표시합니다. */}
-              {nestingLevel === 0 && (
+              <p className={`text-gray-700 text-sm mt-1 whitespace-pre-line ${isDeletedByServer ? 'italic text-gray-500' : ''}`}>
+                {comment.content}
+              </p>
+              {/* [수정] 삭제된 댓글과 대댓글에는 '답글달기' 버튼을 표시하지 않음 */}
+              {nestingLevel === 0 && !isDeletedByServer && (
                 <button onClick={() => setIsReplying(true)} className="text-xs text-gray-500 mt-2 hover:text-blue-500">답글달기</button>
               )}
             </>
@@ -135,21 +125,14 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onCreateReply, 
       {/* 대댓글 렌더링 */}
       {comment.replies && comment.replies.length > 0 && (
         comment.replies.map(reply => (
-          <CommentItem 
-            key={reply.commentId} 
-            comment={reply} 
-            currentUser={currentUser} 
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-            onCreateReply={onCreateReply}
-            nestingLevel={nestingLevel + 1}
-          />
+          <CommentItem key={reply.commentId} comment={reply} currentUser={currentUser} onUpdate={onUpdate} onDelete={onDelete} onCreateReply={onCreateReply} nestingLevel={nestingLevel + 1} />
         ))
       )}
     </div>
   );
 };
 
+// MyPostForm의 나머지 부분은 이전과 동일합니다.
 const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDeleteComment, onCreateComment }) => {
   const navigate = useNavigate();
   const [newComment, setNewComment] = useState('');
@@ -161,11 +144,8 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
   }, []);
 
   const handleEditPost = () => {
-    navigate(`/posts/${postData.boardCode}?edit=${postData.postId}`, {
-      state: { postData }
-    });
+    navigate(`/posts/${postData.boardCode}?edit=${postData.postId}`, { state: { postData } });
   };
-
   const handleDeletePost = async () => {
     if (window.confirm('정말로 이 글을 삭제하시겠습니까?')) {
       try {
@@ -177,7 +157,6 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
       }
     }
   };
-
   const handleAddTopLevelComment = async () => {
     if (!newComment.trim()) return;
     try {
@@ -187,7 +166,6 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
       alert(error.message || '댓글 작성에 실패했습니다.');
     }
   };
-  
   const getTotalCommentCount = () => {
     if (!Array.isArray(comments)) return 0;
     return comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0);
@@ -199,15 +177,7 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center overflow-hidden">
-               {postData.profileImageUrl ? (
-                 <img 
-                   src={postData.profileImageUrl} 
-                   alt="프로필" 
-                   className="w-full h-full object-cover"
-                 />
-               ) : (
-                 <User className="w-6 h-6 text-white" />
-               )}
+               {postData.profileImageUrl ? (<img src={postData.profileImageUrl} alt="프로필" className="w-full h-full object-cover" />) : (<User className="w-6 h-6 text-white" />)}
              </div>
              <div>
                <div className="font-semibold text-gray-900">{postData.nickname}</div>
@@ -242,26 +212,12 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
         <div className="p-4 space-y-4">
           <h3 className="font-semibold text-gray-900">댓글 {getTotalCommentCount()}개</h3>
           {comments && comments.map((comment) => (
-            <CommentItem 
-              key={comment.commentId} 
-              comment={comment} 
-              currentUser={currentUser}
-              onUpdate={onUpdateComment}
-              onDelete={onDeleteComment}
-              onCreateReply={onCreateComment}
-            />
+            <CommentItem key={comment.commentId} comment={comment} currentUser={currentUser} onUpdate={onUpdateComment} onDelete={onDeleteComment} onCreateReply={onCreateComment} />
           ))}
         </div>
         <div className="border-t border-gray-200 p-4">
           <div className="flex gap-3">
-             <input
-               type="text"
-               value={newComment}
-               onChange={(e) => setNewComment(e.target.value)}
-               placeholder="댓글을 입력하세요..."
-               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-               onKeyPress={(e) => e.key === 'Enter' && handleAddTopLevelComment()}
-             />
+             <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="댓글을 입력하세요..." className="flex-1 px-4 py-2 border border-gray-300 rounded-lg" onKeyPress={(e) => e.key === 'Enter' && handleAddTopLevelComment()} />
              <button onClick={handleAddTopLevelComment} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
                <Send className="w-4 h-4" />
              </button>
