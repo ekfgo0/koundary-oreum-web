@@ -70,28 +70,51 @@ export const getMyProfile = async () => {
   }
 };
 
-// ============ 비밀번호 변경 ============
+
 export const changePassword = async (currentPassword, newPassword, confirmNewPassword) => {
   if (USE_MOCK) {
-    await sleep(200);
+    await sleep(400);
+
+    // 간단 검증 (ResetConfirm과 동일한 기준을 쓴다고 가정)
+    if (!currentPassword) {
+      const err = new Error('현재 비밀번호를 입력해 주세요.');
+      err.status = 400;
+      throw { message: err.message };
+    }
+    if (!newPassword || !confirmNewPassword) {
+      throw { message: '새 비밀번호를 모두 입력해 주세요.' };
+    }
+    if (newPassword.length < 8) {
+      throw { message: '비밀번호는 8자 이상이어야 해요.' };
+    }
+    if (newPassword !== confirmNewPassword) {
+      throw { message: '새 비밀번호가 일치하지 않아요.' };
+    }
+    // (선택) 현재 비번 검증 흉내
+    if (currentPassword === 'wrongpass') {
+      throw { message: '현재 비밀번호가 올바르지 않습니다.' };
+    }
     return { ok: true };
   }
-  
+
   try {
     const { data } = await axiosInstance.put('/mypage/password', {
-      currentPassword: currentPassword,
-      newPassword: newPassword,
-      confirmNewPassword: confirmNewPassword
+      currentPassword,
+      newPassword,
+      confirmNewPassword,
     });
-    
-    console.log('비밀번호 변경 성공');
     return data;
   } catch (error) {
-    console.error('비밀번호 변경 실패:', error.response?.data || error.message);
-    throw (error.response?.data ?? error);
+    // ResetConfirm과 동일하게 message 중심으로 정규화
+    const msg =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message ||
+      '비밀번호 변경에 실패했습니다.';
+    // 호출부에서 같은 방식으로 처리할 수 있게 message 필드로 throw
+    throw { message: msg, status: error?.response?.status };
   }
 };
-
 // ============ 프로필 이미지 관리 ============
 // 프로필 이미지 업로드
 export const uploadProfileImage = async (fileOrFormData) => {

@@ -75,7 +75,7 @@ export default function MyProfile() {
       return;
     }
     // authToken으로 수정 (기존 accessToken 대신)
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       setErr('로그인이 필요합니다.');
       setLoading(false);
@@ -192,7 +192,7 @@ export default function MyProfile() {
 
         <ProfileCard
           nickname={me?.nickname || '홍길동'}
-          country={me?.country || 'Korea'}
+          nationality={me?.nationality || 'Korea'}
           school={me?.university || '홍익대학교'} // university로 변수이름 바꾸면 학교 없음으로 나옴 (왜지?)
           profileImage={me?.profileImage || ''}
           onSelectImage={handleSelectImage}

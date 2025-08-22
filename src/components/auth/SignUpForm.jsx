@@ -178,20 +178,20 @@ const SignUpForm = () => {
     }
 
     try {
-        const response = await axios.post(
-          'http://localhost:8080/users/check-nickname',
-          { nickname }, // JSON body
-          {
-            headers: {
-              'Content-Type': 'application/json' // 꼭 지정!
-            }
-          }
-    );
-    alert(res.data.available ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.');
-    console.log(response.data); // true or false + message
-  } catch (err) {
-    console.error(err.response?.data || err.message);
-  }
+      const response = await checkNickname(form.nickname);
+      console.log('닉네임 확인 응답:', response);
+
+      setMessages(prev => ({ ...prev, nickname: response.message }));
+      setValidStatus(prev => ({ ...prev, nickname: response.available }));
+
+      alert(response.message);
+    } catch (err) {
+      console.error('닉네임 확인 에러:', err);
+      const errorMessage = err.message || '닉네임 확인 중 오류가 발생했습니다.';
+      setMessages(prev => ({ ...prev, nickname: errorMessage }));
+      setValidStatus(prev => ({ ...prev, nickname: false }));
+      alert(errorMessage);
+    }
   };
 
   // 아이디 중복 확인 처리

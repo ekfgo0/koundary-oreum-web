@@ -167,9 +167,9 @@ export const postAPI = {
   // 스크랩
   toggleScrap: async (postId, boardCode = null) => {
     try {
-      const response = await axios.post('posts/${postId}/scrap', {
+      const response = await axios.post(`/posts/${postId}/scrap`, {
         post_id: postId,
-        boardCode: boardCode
+        //boardCode: boardCode
       });
       return response.data;
     } catch (error) {

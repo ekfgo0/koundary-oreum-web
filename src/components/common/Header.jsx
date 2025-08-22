@@ -32,7 +32,14 @@ const handleLogout = async () => {
             src={koundaryLogo}
             alt="Koundary Logo"
             className="h-8 object-contain cursor-pointer"
-            onClick={() => navigate('/main')}
+            onClick={() => {
+              // 아이디 찾기, 비밀번호 찾기 페이지일 때만 /login 이동
+              if (location.pathname.startsWith('/findid') || location.pathname.startsWith('/resetpassword')) {
+                navigate('/login');
+              } else {
+                navigate('/main');
+              }
+            }}
           />
           {title && <span className="text-lg md:text-xl font-semibold">{title}</span>}
         </div>

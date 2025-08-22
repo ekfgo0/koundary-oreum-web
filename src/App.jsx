@@ -11,6 +11,8 @@ import Posts from "./pages/Posts/Posts";
 import BoardList from './pages/BoardList/BoardList';
 import MyActivity from './pages/MyActivity/MyActivity';
 import PostDetail from './pages/PostDetail/PostDetail';
+import ResetConfirm from './pages/FindAccount/ResetConfirm';
+
 
 function App() {
   return (
@@ -27,6 +29,7 @@ function App() {
       <Route path="/main" element={<Main />} />
       <Route path="/boards/:category/posts" element={<BoardList />} />
       <Route path="/boards/:category/posts/:postId" element={<PostDetail />} />
+      <Route path="/resetconfirm" element={<ResetConfirm />} />
   
       <Route path="/board" element={<Navigate to="/boards/FREE/posts" replace />} />
       <Route path="/boardlist" element={<Navigate to="/boards/FREE/posts" replace />} />
