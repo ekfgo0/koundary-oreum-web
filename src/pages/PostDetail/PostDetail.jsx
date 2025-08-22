@@ -30,7 +30,7 @@ const PostDetail = () => {
         const postIsMine = myUserId && data.userId && String(data.userId) === myUserId;
         
         setIsMyPost(postIsMine);
-        setPostData(data);
+        setPostData({ ...data, isMyPost: postIsMine }); 
         setComments(data.comments || []);
 
       } catch (err) {
