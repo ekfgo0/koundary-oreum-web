@@ -1,6 +1,8 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login/Login';
+import FindID from './pages/FindAccount/FindID';
+import ResetPassword from './pages/FindAccount/ResetPassword';
 import MyProfile from './pages/MyProfile/MyProfile';
 import SignUp from './pages/SignUp/SignUp';
 import Main from './pages/MainBoard/Main';
@@ -16,6 +18,8 @@ function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route path="/findid" element={<FindID />} />
+      <Route path="/resetpassword" element={<ResetPassword />} />
       <Route path="/myprofile" element={<MyProfile />} />
       <Route path="/my-activity/:activityType" element={<MyActivity />} />
       <Route path="/changepassword" element={<ChangePassword />} />

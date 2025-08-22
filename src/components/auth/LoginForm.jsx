@@ -81,8 +81,8 @@ function LoginForm() {
 
         {/* 하단 링크 (폭 316px 맞춤) */}
         <div className="flex justify-between w-[316px] ml-[85px] text-sm text-black">
-          <a href="#" className="underline text-black">아이디 찾기</a>
-          <a href="#" className="underline text-black	">비밀번호 찾기</a>
+          <a href="/findid" className="underline text-black">아이디 찾기</a>
+          <a href="/resetpassword" className="underline text-black	">비밀번호 찾기</a>
           <Link to="/signup" className="underline text-black">회원가입</Link>
         </div>
       </div>

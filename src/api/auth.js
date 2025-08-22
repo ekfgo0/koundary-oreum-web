@@ -1,6 +1,5 @@
 // 인증 관련 API 호출 함수들
 import axiosInstance from './axiosInstance';
-
 // 토큰 확인 헬퍼 함수
 const ensureAuthenticated = () => {
   const token = localStorage.getItem('accessToken');
