@@ -6,42 +6,97 @@ import { postAPI } from '../../api/post';
 // 댓글 수정을 위한 인라인 폼 컴포넌트
 const CommentEditForm = ({ comment, onSave, onCancel }) => {
   const [editText, setEditText] = useState(comment.content);
-  const inputRef = useRef(null);
+  const textareaRef = useRef(null);
 
   useEffect(() => {
-    inputRef.current?.focus();
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.focus();
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
   }, []);
-
+  
   const handleSave = () => {
     if (editText.trim()) {
       onSave(comment.commentId, { content: editText.trim() });
     }
   };
 
+  const handleTextChange = (e) => {
+    setEditText(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
   return (
-    <div className="mt-2 flex gap-2">
-      <input
-        ref={inputRef}
-        type="text"
+    <div className="mt-2 flex items-start gap-2">
+      <textarea
+        ref={textareaRef}
         value={editText}
-        onChange={(e) => setEditText(e.target.value)}
-        className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
-        onKeyPress={(e) => e.key === 'Enter' && handleSave()}
+        onChange={handleTextChange}
+        className="flex-1 p-2 border border-gray-300 rounded-lg text-sm resize-none"
+        rows="1"
       />
-      <button onClick={handleSave} className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg">저장</button>
-      <button onClick={onCancel} className="px-3 py-1.5 bg-white border border-gray-300 text-sm rounded-lg">취소</button>
+      <div className="flex gap-2">
+        <button onClick={handleSave} className="px-3 py-1.5 bg-blue-500 text-white text-xs rounded-lg">저장</button>
+        <button onClick={onCancel} className="px-3 py-1.5 bg-white border border-gray-300 text-xs rounded-lg">취소</button>
+      </div>
+    </div>
+  );
+};
+
+// 답글 작성을 위한 인라인 폼 컴포넌트
+const ReplyForm = ({ parentComment, onCreateReply, onCancel }) => {
+  const [replyText, setReplyText] = useState(`@${parentComment.authorNickname} `);
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.focus();
+      textarea.selectionStart = textarea.value.length;
+      textarea.selectionEnd = textarea.value.length;
+    }
+  }, []);
+
+  const handleSubmitReply = () => {
+    if (replyText.trim()) {
+      onCreateReply({ content: replyText, parentId: parentComment.commentId });
+    }
+  };
+  
+  return (
+    <div className="mt-3">
+      <textarea
+        ref={textareaRef}
+        value={replyText}
+        onChange={(e) => setReplyText(e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded-lg text-sm resize-y min-h-[60px]"
+        rows="2"
+      />
+      <div className="flex justify-end gap-2 mt-2">
+        <button onClick={handleSubmitReply} className="px-4 py-1.5 bg-blue-500 text-white text-sm rounded-lg">답글 등록</button>
+        <button onClick={onCancel} className="px-4 py-1.5 bg-white border border-gray-300 text-sm rounded-lg">취소</button>
+      </div>
     </div>
   );
 };
 
 // 댓글 아이템 컴포넌트
-const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onReply, nestingLevel = 0 }) => {
+const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onCreateReply, nestingLevel = 0 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
   const isMyComment = currentUser?.userId === comment.authorId;
 
   const handleUpdate = (commentId, data) => {
     onUpdate(commentId, data);
     setIsEditing(false);
+  };
+
+  const handleCreateReply = (replyData) => {
+    onCreateReply(replyData);
+    setIsReplying(false);
   };
 
   return (
@@ -56,24 +111,25 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onReply, nestin
               <span className="font-medium text-sm text-gray-900">{comment.authorNickname}</span>
               <span className="text-xs text-gray-500 ml-2">{new Date(comment.createdAt).toLocaleString()}</span>
             </div>
-            <div className="flex items-center gap-2 text-xs">
-              {isMyComment ? (
-                <>
-                  {/* [수정] 수정/삭제 버튼에 흰색 배경과 테두리 스타일을 적용합니다. */}
-                  <button onClick={() => setIsEditing(true)} className="px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50">수정</button>
-                  <button onClick={() => onDelete(comment.commentId)} className="px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50">삭제</button>
-                </>
-              ) : (
-                // [수정] '답글달기' 버튼에도 동일한 스타일을 적용합니다.
-                <button onClick={() => onReply(comment)} className="px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50">답글달기</button>
-              )}
-            </div>
+            {isMyComment && !isEditing && (
+              <div className="flex items-center gap-3 text-xs text-gray-500">
+                <button onClick={() => setIsEditing(true)} className="hover:text-blue-500">수정</button>
+                <button onClick={() => onDelete(comment.commentId)} className="hover:text-red-500">삭제</button>
+              </div>
+            )}
           </div>
           {isEditing ? (
             <CommentEditForm comment={comment} onSave={handleUpdate} onCancel={() => setIsEditing(false)} />
           ) : (
-            <p className="text-gray-700 text-sm mt-1 whitespace-pre-line">{comment.content}</p>
+            <>
+              <p className="text-gray-700 text-sm mt-1 whitespace-pre-line">{comment.content}</p>
+              {/* [수정] nestingLevel이 0일 때 (최상위 댓글일 때)만 '답글달기' 버튼을 표시합니다. */}
+              {nestingLevel === 0 && (
+                <button onClick={() => setIsReplying(true)} className="text-xs text-gray-500 mt-2 hover:text-blue-500">답글달기</button>
+              )}
+            </>
           )}
+          {isReplying && <ReplyForm parentComment={comment} onCreateReply={handleCreateReply} onCancel={() => setIsReplying(false)} />}
         </div>
       </div>
       {/* 대댓글 렌더링 */}
@@ -85,7 +141,7 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onReply, nestin
             currentUser={currentUser} 
             onUpdate={onUpdate}
             onDelete={onDelete}
-            onReply={() => onReply(comment)}
+            onCreateReply={onCreateReply}
             nestingLevel={nestingLevel + 1}
           />
         ))
@@ -98,9 +154,7 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
   const navigate = useNavigate();
   const [newComment, setNewComment] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
-  const [replyingTo, setReplyingTo] = useState(null);
-  const commentInputRef = useRef(null);
-
+  
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     setCurrentUser(userInfo);
@@ -124,25 +178,14 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
     }
   };
 
-  const handleAddComment = async () => {
+  const handleAddTopLevelComment = async () => {
     if (!newComment.trim()) return;
     try {
-      if (replyingTo) {
-        await onCreateComment({ content: newComment, parentId: replyingTo.commentId });
-      } else {
-        await onCreateComment({ content: newComment });
-      }
+      await onCreateComment({ content: newComment });
       setNewComment('');
-      setReplyingTo(null);
     } catch (error) {
       alert(error.message || '댓글 작성에 실패했습니다.');
     }
-  };
-
-  const handleReplyClick = (comment) => {
-    setReplyingTo(comment);
-    commentInputRef.current?.focus(); 
-    setNewComment(`@${comment.authorNickname} `);
   };
   
   const getTotalCommentCount = () => {
@@ -205,28 +248,21 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
               currentUser={currentUser}
               onUpdate={onUpdateComment}
               onDelete={onDeleteComment}
-              onReply={handleReplyClick}
+              onCreateReply={onCreateComment}
             />
           ))}
         </div>
         <div className="border-t border-gray-200 p-4">
-          {replyingTo && (
-            <div className="text-sm text-gray-600 mb-2">
-              <strong>@{replyingTo.authorNickname}</strong>님에게 답글 남기는 중...
-              <button onClick={() => { setReplyingTo(null); setNewComment(''); }} className="ml-2 text-red-500">[취소]</button>
-            </div>
-          )}
           <div className="flex gap-3">
              <input
-               ref={commentInputRef}
                type="text"
                value={newComment}
                onChange={(e) => setNewComment(e.target.value)}
                placeholder="댓글을 입력하세요..."
                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-               onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+               onKeyPress={(e) => e.key === 'Enter' && handleAddTopLevelComment()}
              />
-             <button onClick={handleAddComment} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+             <button onClick={handleAddTopLevelComment} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
                <Send className="w-4 h-4" />
              </button>
           </div>
