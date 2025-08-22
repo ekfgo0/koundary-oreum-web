@@ -1,7 +1,7 @@
 // src/components/auth/YourPostForm.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Bookmark, BookmarkCheck, User, Send, Flag } from 'lucide-react';
+import { MessageCircle, Bookmark, User, Send, Flag } from 'lucide-react';
 
 // 댓글 수정을 위한 인라인 폼 컴포넌트
 const CommentEditForm = ({ comment, onSave, onCancel }) => {
@@ -217,7 +217,11 @@ const YourPostForm = ({
             <span>{totalCommentCount}</span>
           </div>
           <button onClick={onToggleScrap} className="flex items-center gap-2">
-            {postData.isScraped ? <BookmarkCheck className="w-5 h-5 text-blue-500" /> : <Bookmark className="w-5 h-5 text-gray-600 hover:text-blue-500" />}
+            {postData.isScraped ? (
+              <Bookmark className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+            ) : (
+              <Bookmark className="w-5 h-5 text-gray-600 hover:text-yellow-500" />
+            )}
             <span>{postData.scrapCount || 0}</span>
           </button>
         </div>

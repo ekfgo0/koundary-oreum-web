@@ -8,7 +8,6 @@ import MyPostForm from '../../components/auth/MyPostForm';
 import YourPostForm from '../../components/auth/YourPostForm';
 import { postAPI } from '../../api/post';
 
-// 신고 모달 컴포넌트 추가
 const ReportModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
   const [reportReason, setReportReason] = useState('');
 
@@ -61,8 +60,6 @@ const PostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isMyPost, setIsMyPost] = useState(false);
-
-  // 신고 모달 상태 추가
   const [reportModal, setReportModal] = useState({ isOpen: false, type: 'post', targetId: null, loading: false });
 
   useEffect(() => {
@@ -95,10 +92,9 @@ const PostDetail = () => {
     }
   }, [postId, category, navigate]);
   
-  // 스크랩 핸들러 추가
   const handleToggleScrap = async () => {
     try {
-      const result = await postAPI.toggleScrap(postId);
+      const result = await postAPI.toggleScrap(postId, category);
       setPostData(prev => ({
         ...prev,
         isScraped: result.isScraped,
@@ -109,7 +105,6 @@ const PostDetail = () => {
     }
   };
 
-  // 신고 핸들러 추가
   const handleReport = async (reason) => {
     try {
       setReportModal(prev => ({ ...prev, loading: true }));
@@ -127,7 +122,6 @@ const PostDetail = () => {
     }
   };
 
-  // 모달 제어 함수 추가
   const openReportModal = (type, targetId) => setReportModal({ isOpen: true, type, targetId, loading: false });
   const closeReportModal = () => setReportModal({ isOpen: false, type: 'post', targetId: null, loading: false });
 
@@ -218,7 +212,6 @@ const PostDetail = () => {
           />
         )}
       </div>
-      {/* ReportModal 렌더링 추가 */}
       <ReportModal
         isOpen={reportModal.isOpen}
         onClose={closeReportModal}
