@@ -1,3 +1,5 @@
+// src/components/auth/YourPostForm.jsx
+
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, Bookmark, BookmarkCheck, User, Reply, Send, Flag } from 'lucide-react';
 
@@ -34,10 +36,23 @@ const YourPostForm = ({
     }
   };
 
-  const getTotalCommentCount = () => {
+  // [수정] 삭제된 댓글은 세지 않도록 로직 변경
+  const getTotalCommentCount = (comments) => {
     if (!Array.isArray(comments)) return 0;
-    return comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0);
+    
+    let count = 0;
+    for (const comment of comments) {
+      if (comment.content !== '(삭제된 댓글입니다)') {
+        count++;
+      }
+      if (comment.replies) {
+        count += getTotalCommentCount(comment.replies);
+      }
+    }
+    return count;
   };
+
+  const totalCommentCount = getTotalCommentCount(comments);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border">
@@ -45,7 +60,6 @@ const YourPostForm = ({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center overflow-hidden">
-              {/* 💡[수정!] postData.author.profileImage -> postData.profileImageUrl */}
               {postData.profileImageUrl ? (
                 <img 
                   src={postData.profileImageUrl} 
@@ -73,7 +87,7 @@ const YourPostForm = ({
         <div className="flex items-center gap-6 py-4 border-t border-gray-100">
           <div className="flex items-center gap-2 text-gray-600">
             <MessageCircle className="w-5 h-5" />
-            <span>{getTotalCommentCount()}</span>
+            <span>{totalCommentCount}</span>
           </div>
           <button onClick={onToggleScrap} className="flex items-center gap-2">
             {postData.isScraped ? <BookmarkCheck className="w-5 h-5 text-blue-500" /> : <Bookmark className="w-5 h-5 text-gray-600 hover:text-blue-500" />}
@@ -84,7 +98,7 @@ const YourPostForm = ({
       
       <div className="border-t border-gray-200">
         <div className="p-4 space-y-4">
-          <h3 className="font-semibold text-gray-900">댓글 {getTotalCommentCount()}개</h3>
+          <h3 className="font-semibold text-gray-900">댓글 {totalCommentCount}개</h3>
           {comments && comments.map((comment) => (
             <CommentItem 
               key={comment.commentId} 

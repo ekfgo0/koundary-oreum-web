@@ -1,3 +1,5 @@
+// src/components/auth/MyPostForm.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Bookmark, User, Send, Edit, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -70,11 +72,9 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onCreateReply, 
   const [isReplying, setIsReplying] = useState(false);
   const isMyComment = currentUser?.userId === comment.authorId;
   
-  // [추가] 서버에서 "삭제된 댓글"로 표시된 경우를 확인하는 변수
   const isDeletedByServer = comment.content === '(삭제된 댓글입니다)';
   const hasReplies = comment.replies && comment.replies.length > 0;
 
-  // [수정] 서버에서 삭제 처리되었고, 대댓글도 없다면 아무것도 렌더링하지 않음 (완전 삭제 효과)
   if (isDeletedByServer && !hasReplies) {
     return null;
   }
@@ -96,7 +96,6 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onCreateReply, 
               </span>
               <span className="text-xs text-gray-500 ml-2">{new Date(comment.createdAt).toLocaleString()}</span>
             </div>
-            {/* [수정] 서버에서 삭제된 댓글에는 수정/삭제 버튼이 보이지 않도록 함 */}
             {isMyComment && !isEditing && !isDeletedByServer && (
               <div className="flex items-center gap-3 text-xs text-gray-500">
                 <button onClick={() => setIsEditing(true)} className="hover:text-blue-500">수정</button>
@@ -105,7 +104,6 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onCreateReply, 
             )}
           </div>
 
-          {/* [수정] 삭제된 댓글은 수정 폼을 보여주지 않음 */}
           {isEditing && !isDeletedByServer ? (
             <CommentEditForm comment={comment} onSave={handleUpdate} onCancel={() => setIsEditing(false)} />
           ) : (
@@ -113,7 +111,6 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onCreateReply, 
               <p className={`text-gray-700 text-sm mt-1 whitespace-pre-line ${isDeletedByServer ? 'italic text-gray-500' : ''}`}>
                 {comment.content}
               </p>
-              {/* [수정] 삭제된 댓글과 대댓글에는 '답글달기' 버튼을 표시하지 않음 */}
               {nestingLevel === 0 && !isDeletedByServer && (
                 <button onClick={() => setIsReplying(true)} className="text-xs text-gray-500 mt-2 hover:text-blue-500">답글달기</button>
               )}
@@ -122,7 +119,6 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onCreateReply, 
           {isReplying && <ReplyForm parentComment={comment} onCreateReply={handleCreateReply} onCancel={() => setIsReplying(false)} />}
         </div>
       </div>
-      {/* 대댓글 렌더링 */}
       {comment.replies && comment.replies.length > 0 && (
         comment.replies.map(reply => (
           <CommentItem key={reply.commentId} comment={reply} currentUser={currentUser} onUpdate={onUpdate} onDelete={onDelete} onCreateReply={onCreateReply} nestingLevel={nestingLevel + 1} />
@@ -132,7 +128,6 @@ const CommentItem = ({ comment, currentUser, onUpdate, onDelete, onCreateReply, 
   );
 };
 
-// MyPostForm의 나머지 부분은 이전과 동일합니다.
 const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDeleteComment, onCreateComment }) => {
   const navigate = useNavigate();
   const [newComment, setNewComment] = useState('');
@@ -166,10 +161,24 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
       alert(error.message || '댓글 작성에 실패했습니다.');
     }
   };
-  const getTotalCommentCount = () => {
+  
+  // [수정] 삭제된 댓글은 세지 않도록 로직 변경
+  const getTotalCommentCount = (comments) => {
     if (!Array.isArray(comments)) return 0;
-    return comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0);
+    
+    let count = 0;
+    for (const comment of comments) {
+      if (comment.content !== '(삭제된 댓글입니다)') {
+        count++;
+      }
+      if (comment.replies) {
+        count += getTotalCommentCount(comment.replies);
+      }
+    }
+    return count;
   };
+  
+  const totalCommentCount = getTotalCommentCount(comments);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border">
@@ -200,7 +209,7 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
         <div className="flex items-center gap-6 py-4 border-t border-gray-100">
           <div className="flex items-center gap-2 text-gray-600">
             <MessageCircle className="w-5 h-5" />
-            <span>{getTotalCommentCount()}</span>
+            <span>{totalCommentCount}</span>
           </div>
           <div className="flex items-center gap-2 text-gray-400 cursor-not-allowed">
             <Bookmark className="w-5 h-5" />
@@ -210,7 +219,7 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
       </div>
       <div className="border-t border-gray-200">
         <div className="p-4 space-y-4">
-          <h3 className="font-semibold text-gray-900">댓글 {getTotalCommentCount()}개</h3>
+          <h3 className="font-semibold text-gray-900">댓글 {totalCommentCount}개</h3>
           {comments && comments.map((comment) => (
             <CommentItem key={comment.commentId} comment={comment} currentUser={currentUser} onUpdate={onUpdateComment} onDelete={onDeleteComment} onCreateReply={onCreateComment} />
           ))}
