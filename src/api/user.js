@@ -98,7 +98,7 @@ export const changePassword = async (currentPassword, newPassword, confirmNewPas
   }
 
   try {
-    const { data } = await axiosInstance.put('/mypage/password', {
+    const { data } = await axiosInstance.post('/mypage/password', {
       currentPassword,
       newPassword,
       confirmNewPassword,

@@ -9,9 +9,9 @@ import Main from './pages/MainBoard/Main';
 import ChangePassword from './pages/ChangePassword/ChangePassword';
 import Posts from "./pages/Posts/Posts";
 import BoardList from './pages/BoardList/BoardList';
-import MyActivity from './pages/MyActivity/MyActivity';
 import PostDetail from './pages/PostDetail/PostDetail';
 import ResetConfirm from './pages/FindAccount/ResetConfirm';
+import MyActivity from './pages/MyActivity/MyActivity';
 
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
       <Route path="/findid" element={<FindID />} />
       <Route path="/resetpassword" element={<ResetPassword />} />
       <Route path="/myprofile" element={<MyProfile />} />
-      <Route path="/my-activity/:activityType" element={<MyActivity />} />
+      <Route path="/myactivity/:activityType" element={<MyActivity />} />
       <Route path="/changepassword" element={<ChangePassword />} />
       <Route path="/posts/:category" element={<Posts />} />
       <Route path="/main" element={<Main />} />
