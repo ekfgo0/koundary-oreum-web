@@ -75,7 +75,7 @@ export default function MyProfile() {
       return;
     }
     // authToken으로 수정 (기존 accessToken 대신)
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       setErr('로그인이 필요합니다.');
       setLoading(false);
