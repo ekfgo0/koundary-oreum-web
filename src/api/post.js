@@ -169,7 +169,8 @@ export const postAPI = {
   // 스크랩
   toggleScrap: async (postId, boardCode) => {
     try {
-      const response = await axios.post(`/posts/${postId}/scrap`);
+      // API 요청 시 body에 boardCode를 포함하여 전송합니다.
+      const response = await axios.post(`/posts/${postId}/scrap`, { boardCode });
       return response.data;
     } catch (error) {
       console.error('스크랩 처리 실패:', error);

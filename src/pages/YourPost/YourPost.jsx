@@ -116,9 +116,15 @@ const YourPost = () => {
             return;
           }
         }
-        setPostData(data.post);
+        
+        // ✅ 백엔드에서 받은 isScraped 값을 postData 상태에 올바르게 설정합니다.
+        setPostData({
+            ...data.post,
+            isScraped: data.post.isScraped // 동기화 문제 해결
+        });
         setComments(data.comments);
         setCurrentCategory(data.post.boardCode);
+
       } catch (error) {
         setError(error.message || '데이터를 불러오는데 실패했습니다.');
       } finally {
@@ -152,15 +158,23 @@ const YourPost = () => {
   };
 
   const handleToggleScrap = async () => {
+    const originalPostData = postData;
+    setPostData(prev => {
+        if (!prev) return null;
+        const isCurrentlyScraped = prev.isScraped;
+        const currentScrapCount = prev.scrapCount || 0;
+        return {
+            ...prev,
+            isScraped: !isCurrentlyScraped,
+            scrapCount: isCurrentlyScraped ? Math.max(0, currentScrapCount - 1) : currentScrapCount + 1,
+        };
+    });
+
     try {
-      const result = await postAPI.toggleScrap(postId);
-      setPostData(prev => ({
-        ...prev,
-        isScraped: result.isScraped,
-        scrapCount: result.scrapCount
-      }));
+        await postAPI.toggleScrap(postId, postData.boardCode);
     } catch (error) {
-      alert(error.message || '스크랩 처리에 실패했습니다.');
+        alert(error.message || '스크랩 처리에 실패했습니다.');
+        setPostData(originalPostData);
     }
   };
 

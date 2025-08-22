@@ -75,7 +75,13 @@ const PostDetail = () => {
         const postIsMine = myUserId && post.userId && String(post.userId) === myUserId;
         
         setIsMyPost(postIsMine);
-        setPostData({ ...post, isMyPost: postIsMine, boardCode: category });
+        
+        // ✅ 백엔드에서 받은 isScraped 값을 postData 상태에 올바르게 설정합니다.
+        setPostData({ 
+            ...post, 
+            isMyPost: postIsMine, 
+            boardCode: category
+        });
 
         setComments(commentsData.content || []);
 
@@ -93,15 +99,29 @@ const PostDetail = () => {
   }, [postId, category, navigate]);
   
   const handleToggleScrap = async () => {
+    // 1. 롤백을 위해 현재 상태를 저장합니다.
+    const originalPostData = postData;
+
+    // 2. UI를 즉시 업데이트합니다 (낙관적 업데이트).
+    setPostData(prev => {
+        if (!prev) return null;
+        const isCurrentlyScraped = prev.isScraped;
+        const currentScrapCount = prev.scrapCount || 0;
+        return {
+            ...prev,
+            isScraped: !isCurrentlyScraped,
+            scrapCount: isCurrentlyScraped ? Math.max(0, currentScrapCount - 1) : currentScrapCount + 1,
+        };
+    });
+
     try {
-      const result = await postAPI.toggleScrap(postId, category);
-      setPostData(prev => ({
-        ...prev,
-        isScraped: result.isScraped,
-        scrapCount: result.scrapCount
-      }));
+        // 3. 서버에 API 요청을 보냅니다.
+        // 성공 시 UI는 이미 변경되었으므로 아무것도 하지 않습니다.
+        await postAPI.toggleScrap(postId, postData.boardCode);
     } catch (error) {
-      alert(error.message || '스크랩 처리에 실패했습니다.');
+        // 4. API 요청이 실패하면, UI를 원래 상태로 되돌립니다.
+        alert(error.message || '스크랩 처리에 실패했습니다.');
+        setPostData(originalPostData);
     }
   };
 

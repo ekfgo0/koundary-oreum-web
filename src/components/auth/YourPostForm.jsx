@@ -181,6 +181,11 @@ const YourPostForm = ({
 
   const totalCommentCount = getTotalCommentCount(comments);
 
+  // 스크랩 여부에 따라 아이콘 스타일을 결정하는 변수
+  const scrapIconClass = postData.isScraped
+    ? "w-5 h-5 text-yellow-500 fill-yellow-500" // 스크랩된 경우
+    : "w-5 h-5 text-gray-600 hover:text-yellow-500"; // 스크랩되지 않은 경우
+
   return (
     <div className="bg-white rounded-lg shadow-sm border">
       <div className="p-6">
@@ -217,11 +222,7 @@ const YourPostForm = ({
             <span>{totalCommentCount}</span>
           </div>
           <button onClick={onToggleScrap} className="flex items-center gap-2">
-            {postData.isScraped ? (
-              <Bookmark className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-            ) : (
-              <Bookmark className="w-5 h-5 text-gray-600 hover:text-yellow-500" />
-            )}
+            <Bookmark className={scrapIconClass} />
             <span>{postData.scrapCount || 0}</span>
           </button>
         </div>
