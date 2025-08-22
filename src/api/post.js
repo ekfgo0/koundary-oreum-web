@@ -136,35 +136,24 @@ export const postAPI = {
       throw new Error(error.response?.data?.message || '댓글 삭제에 실패했습니다.');
     }
   },
+
   // 신고 관련 API
-  reportPost: async (postId, reason, boardCode = null) => {
+  reportPost: async (postId, reason) => {
     try {
       const response = await axios.post(`/reports`, { 
+        postId: postId,
         reason: reason,
-        post_id: postId,
-        boardCode: boardCode
       });
       return response.data;
     } catch (error) {
       console.error('게시글 신고 실패:', error);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        throw new Error('인증 정보가 유효하지 않습니다. 다시 로그인해주세요.');
+      }
       throw new Error(error.response?.data?.message || '신고 처리 중 오류가 발생했습니다.');
     }
   },
 
-  reportComment: async (postId, commentId, reason, boardCode = null) => {
-    try {
-      const response = await axios.post(`/reports`, { 
-        reason: reason,
-        comment_id: commentId,
-        post_id: postId,
-        boardCode: boardCode
-      });
-      return response.data;
-    } catch (error) {
-      console.error('댓글 신고 실패:', error);
-      throw new Error(error.response?.data?.message || '댓글 신고 처리 중 오류가 발생했습니다.');
-    }
-  },
 
   // 스크랩
   toggleScrap: async (postId) => {
