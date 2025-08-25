@@ -10,7 +10,7 @@ const ActivityCard = () => {
         <li>
           <Link
             to="/myactivity/posts"
-            className="block hover:underline hover:text-blue-600"
+            className="block text-black hover:underline hover:text-blue-600"
           >
             내가 쓴 글
           </Link>
@@ -18,7 +18,7 @@ const ActivityCard = () => {
         <li>
           <Link
             to="/myactivity/comments"
-            className="block hover:underline hover:text-blue-600"
+            className="block text-black hover:underline hover:text-blue-600"
           >
             댓글 단 글
           </Link>
@@ -26,7 +26,7 @@ const ActivityCard = () => {
         <li>
           <Link
             to="/myactivity/scraps"
-            className="block hover:underline hover:text-blue-600"
+            className="block text-black hover:underline hover:text-blue-600"
           >
             스크랩한 글
           </Link>

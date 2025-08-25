@@ -32,6 +32,7 @@ function LoginForm() {
     } catch (err) {
       console.error('Error:', err);  // 에러 메시지 출력
       if (err.response) {
+        
         alert(err.response.data || '로그인에 실패했습니다.');
       } else {
         alert('서버 연결에 실패했습니다.');

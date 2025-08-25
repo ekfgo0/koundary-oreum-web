@@ -72,6 +72,22 @@ export default function BoardList() {
     navigate(`${location.pathname}?page=${next}`, { replace: true, state: {} });
   };
 
+  const formatCreatedAt = (v) => {
+  if (!v) return '-';
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return v; // 파싱 안 되면 원문 출력
+
+  const yyyy  = String(d.getFullYear());
+  const mm  = String(d.getMonth() + 1).padStart(2, '0');
+  const dd  = String(d.getDate()).padStart(2, '0');
+  const hh  = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+
+
+  return `${yyyy}.${mm}.${dd}\n${hh}:${min}:${ss}`;
+};
+
   return (
     <div className="min-h-screen bg-white">
       <Header title="" />
@@ -91,7 +107,7 @@ export default function BoardList() {
             <tr className="text-left text-gray-500">
               <th className="py-3">제목</th>
               <th className="py-3 w-32">작성자</th>
-              <th className="py-3 w-36">작성일</th>
+              <th className="py-3 w-36">작성 시간</th>
             </tr>
           </thead>
           <tbody>
@@ -103,7 +119,9 @@ export default function BoardList() {
               >
                 <td className="py-3 pr-4">{item.title}</td>
                 <td className="py-3">{item.nickname}</td>
-                <td className="py-3">{item.createdAt}</td>
+                <td className="py-3 whitespace-pre-line">
+                  {formatCreatedAt(item.createdAt)}
+              </td>
               </tr>
             ))}
             {!isFetching && rows.length === 0 && (

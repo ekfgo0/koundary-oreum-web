@@ -53,7 +53,7 @@ export default function FindId() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@yonsei.ac.kr"
+                placeholder="example@g.hongik.ac.kr"
                 className="flex-1 h-14 px-4 rounded-xl border border-gray-200 bg-gray-50
                            focus:outline-none focus:ring-2 focus:border-transparent"
                 style={{ '--tw-ring-color': BRAND }}
