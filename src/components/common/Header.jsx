@@ -4,7 +4,7 @@ import koundaryLogo from '../../components/common/Koundarylogo.png';
 import { logout } from '../../api/auth';
 
 const BRAND = '#2e8ada';
-const SHOW_BUTTONS_PATHS = ['/main', '/posts', '/board'];
+const SHOW_BUTTONS_PATHS = ['/main', '/posts', '/board', '/myactivity'];
 
 const Header = ({ title = '', showActions, onlyLogout = false }) => {
   const navigate = useNavigate();
