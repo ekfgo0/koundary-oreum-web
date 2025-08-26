@@ -17,8 +17,8 @@ const USE_MOCK = (import.meta.env?.VITE_USE_MOCK ?? 'true').toString() === 'true
 export default function MyProfile() {
   const navigate = useNavigate();
   const [me, setMe] = useState(null);
-  const [loading, setLoading] = useState(true);       // 첫 진입 때만 사용
-  const [refreshing, setRefreshing] = useState(false); // 조용한 재조회 표시(선택)
+  const [loading, setLoading] = useState(true);         // 첫 진입 때만 사용
+  const [refreshing, setRefreshing] = useState(false);  // 조용한 재조회 표시(선택)
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState(null);
 
@@ -43,7 +43,7 @@ export default function MyProfile() {
       setMe((prev) => ({
         ...prev,
         ...data,
-        profileImage: bust(data.profileImageUrl), // profileImageUrl로 수정
+        profileImage: bust(data.profileImageUrl),
       }));
     } catch (e) {
       console.error('getMyProfile error:', e);
@@ -74,7 +74,7 @@ export default function MyProfile() {
       setLoading(false);
       return;
     }
-    // authToken으로 수정 (기존 accessToken 대신)
+
     const token = localStorage.getItem('accessToken');
     if (!token) {
       setErr('로그인이 필요합니다.');
@@ -128,7 +128,7 @@ export default function MyProfile() {
       return;
     }
 
-    // 즉시 미리보기(낙관적 UI)
+    // 즉시 미리보기
     const previewUrl = URL.createObjectURL(file);
     setMe((prev) => (prev ? { ...prev, profileImage: previewUrl } : prev));
 
@@ -187,13 +187,10 @@ export default function MyProfile() {
       <Header title="내 프로필" showActions={true} onlyLogout={true} />
 
       <main className="max-w-screen-lg mx-auto px-4 py-4 space-y-6">
-        {/* 필요하면 refreshing 상태를 여기서 작은 텍스트/스피너로 표시해도 됨 */}
-        {/* {refreshing && <div className="text-sm text-gray-400">동기화 중…</div>} */}
-
         <ProfileCard
           nickname={me?.nickname || '홍길동'}
           nationality={me?.nationality || 'Korea'}
-          university={me?.university || '홍익대학교'} // university로 변수이름 바꾸면 학교 없음으로 나옴 (왜지?)
+          university={me?.university || '홍익대학교'}
           profileImage={me?.profileImage || ''}
           onSelectImage={handleSelectImage}
           onClickDeleteImage={handleDeleteImage}
@@ -202,9 +199,9 @@ export default function MyProfile() {
 
         <div className="flex flex-col md:flex-row gap-6">
           <AccountInfoCard
-            userId={me?.loginId || 'abcd123'} // loginId로 수정
-            onEditPassword={handleEditPassword} // 실제 페이지 이동으로 수정
-            onDeleteAccount={handleDeleteAccount} // 회원탈퇴 기능 활성화
+            userId={me?.loginId || 'abcd123'}
+            onEditPassword={handleEditPassword}
+            onDeleteAccount={handleDeleteAccount}
           />
           <ActivityCard
             posts={me?.activity?.posts ?? 12}

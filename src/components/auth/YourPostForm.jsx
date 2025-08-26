@@ -3,6 +3,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Bookmark, User, Send, Flag } from 'lucide-react';
 
+const getFullImageUrl = (relativePath) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!baseUrl || !relativePath) {
+    console.error("오류: VITE_API_BASE_URL 또는 이미지 경로가 없습니다.", { baseUrl, relativePath });
+    return "";
+  }
+  const fullUrl = `${baseUrl.replace(/\/$/, '')}/${relativePath.replace(/^\//, '')}`;
+  console.log('생성된 이미지 URL:', fullUrl);
+  return fullUrl;
+};
+
 // 댓글 수정을 위한 인라인 폼 컴포넌트
 const CommentEditForm = ({ comment, onSave, onCancel }) => {
   const [editText, setEditText] = useState(comment.content);
@@ -181,10 +192,9 @@ const YourPostForm = ({
 
   const totalCommentCount = getTotalCommentCount(comments);
 
-  // 스크랩 여부에 따라 아이콘 스타일을 결정하는 변수
   const scrapIconClass = postData.isScraped
-    ? "w-5 h-5 text-yellow-500 fill-yellow-500" // 스크랩된 경우
-    : "w-5 h-5 text-gray-600 hover:text-yellow-500"; // 스크랩되지 않은 경우
+    ? "w-5 h-5 text-yellow-500 fill-yellow-500"
+    : "w-5 h-5 text-gray-600 hover:text-yellow-500";
 
   return (
     <div className="bg-white rounded-lg shadow-sm border">
@@ -215,6 +225,19 @@ const YourPostForm = ({
 
         <h1 className="text-2xl font-bold text-gray-900 mb-4">{postData.title}</h1>
         <div className="text-gray-700 leading-relaxed mb-6 whitespace-pre-line">{postData.content}</div>
+
+        {postData.imageUrls && postData.imageUrls.length > 0 && (
+          <div className="my-6 space-y-4">
+            {postData.imageUrls.map((url, index) => (
+              <img
+                key={index}
+                src={getFullImageUrl(url)}
+                alt={`첨부 이미지 ${index + 1}`}
+                className="max-w-full h-auto rounded-lg border"
+              />
+            ))}
+          </div>
+        )}
 
         <div className="flex items-center gap-6 py-4 border-t border-gray-100">
           <div className="flex items-center gap-2 text-gray-600">

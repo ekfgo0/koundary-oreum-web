@@ -13,5 +13,5 @@
 
 - React (Vite)
 - React Router
-- 상태관리: (예정 - Zustand or Redux)
-- 스타일: (예정 - TailwindCSS or styled-components)
+- 상태관리: Redux
+- 스타일: TailwindCSS

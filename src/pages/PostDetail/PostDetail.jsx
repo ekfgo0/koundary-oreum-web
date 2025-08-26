@@ -94,9 +94,7 @@ const PostDetail = () => {
   
   const handleToggleScrap = async () => {
     try {
-      // 서버에 스크랩 API를 호출합니다.
       await postAPI.toggleScrap(postId, postData.boardCode);
-      // 성공하면, 게시글 데이터를 다시 불러와 최신 정보로 화면을 업데이트합니다.
       await fetchPostDetails();
     } catch (error) {
       alert(error.message || '스크랩 처리에 실패했습니다.');

@@ -7,8 +7,8 @@ const SignUp = () => {
     <div
       style={{
         display: 'flex',
-        justifyContent: 'center', // 주축 방향으로 아이템들을 어떻게 정렬할지 결정
-        alignItems: 'center',     // 교차축 방향으로 아이템들을 어떻게 정렬할지 결정
+        justifyContent: 'center',   // 주축 방향으로 아이템들을 어떻게 정렬할지 결정
+        alignItems: 'center',       // 교차축 방향으로 아이템들을 어떻게 정렬할지 결정
         width: '100vw',
         height: '100vh',
         margin: 0,

@@ -13,7 +13,7 @@ const CATEGORY_MAP = {
   UNIVERSITY:  { name: '소속 학교', backendKey: 'UNIVERSITY' },
   FREE:        { name: '자유 게시판', backendKey: 'FREE' },
   INFORMATION: { name: '정보 게시판', backendKey: 'INFORMATION' },
-  TRADE:       { name: '중고거래 게시판', backendKey: 'TRADE' },
+  TRADE:       { name: '중고거래/나눔 게시판', backendKey: 'TRADE' },
   MEETING:     { name: '모임 게시판', backendKey: 'MEETING' },
 };
 const IDS = Object.keys(CATEGORY_MAP);

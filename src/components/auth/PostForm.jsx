@@ -1,5 +1,3 @@
-// src/components/auth/PostForm.jsx
-
 import React from 'react';
 
 const PostForm = ({

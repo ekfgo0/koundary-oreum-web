@@ -1,17 +1,26 @@
-// src/api/post.js
-
 import axios from './axiosInstance';
 
 // 게시글 관련 API 함수들
 export const postAPI = {
-  // 새 글 작성
-  createPost: async (boardCode, { title, content, imageUrls = [], isInfoPost = false }) => {
+  // 새 글 작성 (수정됨)
+  createPost: async (boardCode, postData, files = []) => {
     try {
-      const response = await axios.post(`/boards/${boardCode}/posts`, {
-        title,
-        content,
-        isInformation: isInfoPost, 
-        imageUrls,
+      const formData = new FormData();
+
+      // 1. JSON 데이터를 'data' 파트에 Blob으로 추가
+      const jsonBlob = new Blob([JSON.stringify(postData)], { type: 'application/json' });
+      formData.append('data', jsonBlob);
+
+      // 2. 이미지 파일들을 'images' 파트에 추가
+      files.forEach(file => {
+        formData.append('images', file);
+      });
+
+      const response = await axios.post(`/boards/${boardCode}/posts`, formData, {
+        headers: {
+          // 중요: multipart/form-data 헤더는 axios가 FormData 객체를 보고 자동으로 설정하므로,
+          // 수동으로 설정하지 않습니다.
+        },
       });
       return response.data;
     } catch (error) {
@@ -20,13 +29,24 @@ export const postAPI = {
     }
   },
 
-  // 글 수정
-  updatePost: async (boardCode, postId, { title, content, imageUrls = [] }) => {
+  // 글 수정 (수정됨)
+  updatePost: async (boardCode, postId, postData, newFiles = []) => {
     try {
-      const response = await axios.patch(`/boards/${boardCode}/posts/${postId}`, {
-        title,
-        content,
-        imageUrls,
+      const formData = new FormData();
+      
+      const jsonBlob = new Blob([JSON.stringify(postData)], { type: 'application/json' });
+      formData.append('data', jsonBlob);
+
+      newFiles.forEach(file => {
+        formData.append('images', file);
+      });
+
+      // 게시글 수정은 PATCH 또는 PUT을 사용할 수 있습니다. 백엔드와 확인이 필요하지만,
+      // 일반적으로 수정을 위해 PATCH를 많이 사용합니다.
+      const response = await axios.patch(`/boards/${boardCode}/posts/${postId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       return response.data;
     } catch (error) {

@@ -5,6 +5,17 @@ import { MessageCircle, Bookmark, User, Send, Edit, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom';
 import { postAPI } from '../../api/post';
 
+const getFullImageUrl = (relativePath) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!baseUrl || !relativePath) {
+    console.error("오류: VITE_API_BASE_URL 또는 이미지 경로가 없습니다.", { baseUrl, relativePath });
+    return "";
+  }
+  const fullUrl = `${baseUrl.replace(/\/$/, '')}/${relativePath.replace(/^\//, '')}`;
+  console.log('생성된 이미지 URL:', fullUrl);
+  return fullUrl;
+};
+
 // 댓글 수정을 위한 인라인 폼 컴포넌트
 const CommentEditForm = ({ comment, onSave, onCancel }) => {
   const [editText, setEditText] = useState(comment.content);
@@ -162,7 +173,6 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
     }
   };
   
-  // [수정] 삭제된 댓글은 세지 않도록 로직 변경
   const getTotalCommentCount = (comments) => {
     if (!Array.isArray(comments)) return 0;
     
@@ -206,6 +216,20 @@ const MyPostForm = ({ postData, comments, setComments, onUpdateComment, onDelete
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-4">{postData.title}</h1>
         <div className="text-gray-700 leading-relaxed mb-6 whitespace-pre-line">{postData.content}</div>
+
+        {postData.imageUrls && postData.imageUrls.length > 0 && (
+          <div className="my-6 space-y-4">
+            {postData.imageUrls.map((url, index) => (
+              <img
+                key={index}
+                src={getFullImageUrl(url)}
+                alt={`첨부 이미지 ${index + 1}`}
+                className="max-w-full h-auto rounded-lg border"
+              />
+            ))}
+          </div>
+        )}
+        
         <div className="flex items-center gap-6 py-4 border-t border-gray-100">
           <div className="flex items-center gap-2 text-gray-600">
             <MessageCircle className="w-5 h-5" />

@@ -5,8 +5,7 @@ import { login } from '../../api/auth'
 import { Link } from 'react-router-dom';
 
 function LoginForm() {
-  // `loginId`와 `setLoginId` 선언
-  const [loginId, setLoginId] = useState('');  // `id`에서 `loginId`로 변경
+  const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = async (e) => {
@@ -20,17 +19,17 @@ function LoginForm() {
     }
 
     try {
-      const result = await login(loginId, password);  // `loginId`로 변경
+      const result = await login(loginId, password);
       console.log('로그인 성공', result);
 
-      // 토큰 저장 (예: localStorage)
+      // 토큰 저장
       localStorage.setItem('accessToken', result.accessToken);
       localStorage.setItem('refreshToken', result.refreshToken);
 
-      // 🔀 페이지 이동 (예: 게시판 등)
+      // 페이지 이동
       window.location.href = '/main';
     } catch (err) {
-      console.error('Error:', err);  // 에러 메시지 출력
+      console.error('Error:', err);
       if (err.response) {
         
         alert(err.response.data || '로그인에 실패했습니다.');
@@ -56,8 +55,8 @@ function LoginForm() {
           <div className="flex flex-col justify-between h-[94px]">
             <input
               type="text"
-              value={loginId}  // `loginId`로 연결
-              onChange={(e) => setLoginId(e.target.value)}  // `setLoginId`로 변경
+              value={loginId}
+              onChange={(e) => setLoginId(e.target.value)}
               className="w-[316px] h-[40px] border border-gray-300 px-3 bg-gray-100 rounded-none"
             />
             <input

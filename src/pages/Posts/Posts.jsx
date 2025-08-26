@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams, useParams } from 'react-router-dom';
 import { postAPI } from '../../api/post';
-import axiosInstance from '../../api/axiosInstance';
 import Header from '../../components/common/Header';
 import PostForm from '../../components/auth/PostForm';
 
@@ -51,14 +50,12 @@ const Post = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInfoPost, setIsInfoPost] = useState(false);
   const [error, setError] = useState(null);
-  const [uploadingImages, setUploadingImages] = useState(false);
 
   useEffect(() => {
     if (isEditMode && editData) {
       setFormData({
         title: editData.title,
         content: editData.content,
-        // [수정] boardCode를 이용해 프론트엔드 카테고리명으로 변환하여 설정합니다.
         category: CATEGORY_MAP_FRONTEND[editData.boardCode] || '자유게시판'
       });
       if (editData.imageUrls && editData.imageUrls.length > 0) {
@@ -103,39 +100,6 @@ const Post = () => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const removeUploadedImage = (index) => {
-    setUploadedImageUrls(prev => prev.filter((_, i) !== index));
-  };
-
-  const uploadImages = async () => {
-    if (selectedFiles.length === 0) return [];
-    setUploadingImages(true);
-    const uploadedUrls = [];
-    try {
-      for (const file of selectedFiles) {
-        const formData = new FormData();
-        formData.append('image', file);
-        try {
-          const response = await axiosInstance.post('/upload/image', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          });
-          const imageUrl = response.data.imageUrl || response.data.url || response.data.data?.url;
-          if (imageUrl) {
-            uploadedUrls.push(imageUrl);
-          }
-        } catch (uploadError) {
-          console.error(`이미지 업로드 실패 (${file.name}):`, uploadError);
-          alert(`${file.name} 업로드에 실패했습니다.`);
-        }
-      }
-      return uploadedUrls;
-    } finally {
-      setUploadingImages(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -153,33 +117,30 @@ const Post = () => {
     setIsSubmitting(true);
 
     try {
-      const newImageUrls = await uploadImages();
-      const allImageUrls = [...uploadedImageUrls, ...newImageUrls];
       const board_code = getCategoryBoardCode(formData.category);
 
-      const postData = {
+      const postDataPayload = {
         title: formData.title,
         content: formData.content,
-        imageUrls: allImageUrls,
-        isInfoPost: isInfoPost && formData.category !== '정보게시판'
+        isInformation: isInfoPost && formData.category !== '정보게시판',
+        imageUrls: isEditMode ? uploadedImageUrls : [],
       };
 
       let result;
       if (isEditMode) {
-        result = await postAPI.updatePost(board_code, editPostId, postData);
+        result = await postAPI.updatePost(board_code, editPostId, postDataPayload, selectedFiles);
       } else {
-        result = await postAPI.createPost(board_code, postData);
+        result = await postAPI.createPost(board_code, postDataPayload, selectedFiles);
       }
       
       const message = isEditMode 
         ? '글이 성공적으로 수정되었습니다!'
         : isInfoPost && formData.category !== '정보게시판'
-          ? `글이 ${formData.category}과 정보게시판에 동시 게시되었습니다!`
+          ? `글이 ${formData.category}, 정보게시판에 동시 게시되었습니다!`
           : '글이 성공적으로 작성되었습니다!';
       
       alert(message);
       
-      // [수정] 글 수정 후, 해당 게시글의 상세 페이지로 이동하도록 경로를 수정합니다.
       if (isEditMode) {
         navigate(`/boards/${board_code}/posts/${editPostId}`);
       } else {
@@ -195,12 +156,12 @@ const Post = () => {
   };
 
   const handleCancel = () => {
-    if (formData.title || formData.content || selectedFiles.length > 0 || uploadedImageUrls.length > 0) {
+    if (formData.title || formData.content || selectedFiles.length > 0) {
       if (window.confirm('작성 중인 내용이 있습니다. 정말 취소하시겠습니까?')) {
-        navigate(-1); // 이전 페이지로 돌아가기
+        navigate(-1);
       }
     } else {
-      navigate(-1); // 이전 페이지로 돌아가기
+      navigate(-1);
     }
   };
 

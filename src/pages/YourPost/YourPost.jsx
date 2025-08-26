@@ -1,5 +1,3 @@
-// src/pages/YourPost/YourPost.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Header from '../../components/common/Header';
@@ -117,10 +115,10 @@ const YourPost = () => {
           }
         }
         
-        // ✅ 백엔드에서 받은 isScraped 값을 postData 상태에 올바르게 설정합니다.
+        // 백엔드에서 받은 isScraped 값을 postData 상태에 올바르게 설정
         setPostData({
             ...data.post,
-            isScraped: data.post.isScraped // 동기화 문제 해결
+            isScraped: data.post.isScraped
         });
         setComments(data.comments);
         setCurrentCategory(data.post.boardCode);

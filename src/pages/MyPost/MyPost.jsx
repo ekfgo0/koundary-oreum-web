@@ -1,5 +1,3 @@
-// src/pages/MyPost/MyPost.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Header from '../../components/common/Header';

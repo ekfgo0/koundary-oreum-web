@@ -1,4 +1,3 @@
-// src/routes/RequireAuth.jsx
 import { Navigate, useLocation } from 'react-router-dom';
 
 export default function RequireAuth({ children }) {

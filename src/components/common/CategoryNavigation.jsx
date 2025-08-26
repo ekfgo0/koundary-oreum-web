@@ -2,22 +2,19 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const TABS = [
-  { label: '소속 국가',        slug: 'NATIONALITY' },
-  { label: '소속 학교',        slug: 'UNIVERSITY'  },
-  { label: '자유 게시판',      slug: 'FREE'    },
-  { label: '정보 게시판',      slug: 'INFORMATION'    },
-  { label: '중고거래/나눔 게시판', slug: 'TRADE'  },
-  { label: '모임 게시판',      slug: 'MEETING'  },
+  { label: '소속 국가',        slug: 'NATIONALITY'},
+  { label: '소속 학교',        slug: 'UNIVERSITY'},
+  { label: '자유 게시판',      slug: 'FREE'},
+  { label: '정보 게시판',      slug: 'INFORMATION'},
+  { label: '중고거래/나눔 게시판', slug: 'TRADE'},
+  { label: '모임 게시판',      slug: 'MEETING'},
 ];
 
 const CategoryNavigation = ({ currentCategory = '', onCategoryChange }) => {
   const navigate = useNavigate();
-
   const handleCategoryClick = (tab) => {
     navigate(`/boards/${tab.slug}/posts`, {
-      state: { refresh: Date.now() }
-    });
-    
+      state: { refresh: Date.now() }});
     onCategoryChange?.(tab.slug);
   };
 

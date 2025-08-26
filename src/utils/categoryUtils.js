@@ -1,6 +1,4 @@
-// src/utils/categoryUtils.js
-
-// 카테고리명과 board_id 매핑 (백엔드와 확인 필요)
+// 카테고리명과 board_id 매핑
 export const CATEGORY_BOARD_MAP = {
   '소속국가': 1,
   '소속학교': 2,
@@ -25,11 +23,10 @@ export const getBoardCategoryName = (boardId) => {
   return BOARD_CATEGORY_MAP[boardId] || '소속국가'; // 기본값: 소속국가
 };
 
-// 언어 ID 매핑 (필요시)
+// 언어 ID 매핑
 export const LANGUAGE_MAP = {
   'ko': 1, // 한국어
   'en': 2, // 영어
-  // 추가 언어들...
 };
 
 export const getLanguageId = (languageCode = 'ko') => {

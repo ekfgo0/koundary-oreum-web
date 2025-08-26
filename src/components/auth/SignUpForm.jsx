@@ -8,7 +8,6 @@ import {
   signUp
 } from '../../api/auth';
 
-// 컴포넌트 상단에 추가
 const DOMAIN_BY_UNIV = {
   '홍익대학교': '@g.hongik.ac.kr',
   '연세대학교': '@yonsei.ac.kr',
@@ -278,8 +277,6 @@ const SignUpForm = () => {
     }
   };
 
-
-
   // 비밀번호와 비밀번호 확인이 일치하는지 확인하는 계산된 값
   // 비밀번호 확인 필드에 값이 있고, 두 비밀번호가 일치할 때 true
   const isMatching = form.confirmPassword && form.password === form.confirmPassword;
@@ -315,10 +312,36 @@ const SignUpForm = () => {
           style={selectStyle}
         >
           <option value="">선택하세요</option>
-          <option value="홍익대학교">홍익대학교</option>
+          <option value="서울대학교">서울대학교</option>
           <option value="연세대학교">연세대학교</option>
+          <option value="고려대학교">고려대학교</option>
           <option value="서강대학교">서강대학교</option>
+          <option value="성균관대학교">성균관대학교</option>
+          <option value="한양대학교">한양대학교</option>
+          <option value="중앙대학교">중앙대학교</option>
+          <option value="경희대학교">경희대학교</option>
+          <option value="한국외국어대학교">한국외국어대학교</option>
+          <option value="서울시립대학교">서울시립대학교</option>
+          <option value="건국대학교">건국대학교</option>
+          <option value="동국대학교">동국대학교</option>
+          <option value="홍익대학교">홍익대학교</option>
+          <option value="국민대학교">국민대학교</option>
+          <option value="숭실대학교">숭실대학교</option>
+          <option value="세종대학교">세종대학교</option>
+          <option value="단국대학교">단국대학교</option>
+          <option value="아주대학교">아주대학교</option>
+          <option value="인하대학교">인하대학교</option>
+          <option value="한성대학교">한성대학교</option>
+          <option value="서경대학교">서경대학교</option>
+          <option value="삼육대학교">삼육대학교</option>
+          <option value="가천대학교">가천대학교</option>
+          <option value="경기대학교">경기대학교</option>
           <option value="이화여자대학교">이화여자대학교</option>
+          <option value="숙명여자대학교">숙명여자대학교</option>
+          <option value="서울여자대학교">서울여자대학교</option>
+          <option value="동덕여자대학교">동덕여자대학교</option>
+          <option value="덕성여자대학교">덕성여자대학교</option>
+          <option value="성신여자대학교">성신여자대학교</option>
         </select>
       </div>
 
