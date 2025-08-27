@@ -3,14 +3,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Bookmark, User, Send, Flag } from 'lucide-react';
 
-const getFullImageUrl = (relativePath) => {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  if (!baseUrl || !relativePath) {
-    console.error("오류: VITE_API_BASE_URL 또는 이미지 경로가 없습니다.", { baseUrl, relativePath });
-    return "";
+const getFullImageUrl = (path) => {
+  // path가 유효하지 않으면 빈 문자열을 반환합니다.
+  if (!path) return ""; 
+
+  // 이미지가 미리보기(blob)이거나 완전한 URL 형태이면 그대로 사용합니다.
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:')) {
+    return path;
   }
-  const fullUrl = `${baseUrl.replace(/\/$/, '')}/${relativePath.replace(/^\//, '')}`;
-  console.log('생성된 이미지 URL:', fullUrl);
+
+  // .env 파일에 설정된 API 서버의 기본 URL을 가져옵니다.
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!baseUrl) {
+    console.error("오류: .env 파일에 VITE_API_BASE_URL이 설정되지 않았습니다.");
+    return path; 
+  }
+
+  // 서버 URL과 이미지 상대 경로를 합쳐 완전한 URL을 생성
+  const fullUrl = `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+  console.log('생성된 최종 이미지 URL:', fullUrl); // 콘솔에서 URL을 확인하기 위한 로그
   return fullUrl;
 };
 

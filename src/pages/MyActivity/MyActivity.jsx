@@ -122,7 +122,6 @@ export default function MyActivity() {
           <thead>
             <tr className="text-left text-gray-500">
               <th className="py-3">제목</th>
-              <th className="py-3 w-32">작성자</th>
               <th className="py-3 w-36">작성일</th>
             </tr>
           </thead>
@@ -151,7 +150,6 @@ export default function MyActivity() {
                 onClick={() => handleRowClick(item)}
               >
                 <td className="py-3 pr-4">{item.title}</td>
-                <td className="py-3">{item.nickname}</td>
                 <td className="py-3">
                   {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}
                 </td>
