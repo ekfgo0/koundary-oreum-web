@@ -20,7 +20,7 @@ function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
-      <Route path="/findid" element={<FindID />} />
+      <Route path="/findid" element={<FindId />} />
       <Route path="/resetpassword" element={<ResetPassword />} />
       <Route path="/myprofile" element={<MyProfile />} />
       <Route path="/myactivity/:activityType" element={<MyActivity />} />
