@@ -1,12 +1,19 @@
-# React + Vite
+# Koundary Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+한국에서 유학중인 외국인 유학생들을 위한 커뮤니티 서비스
 
-Currently, two official plugins are available:
+## 주요화면
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 로그인 / 회원가입
+- 메인 게시판 (소속국가/소속학교/자유게시판/중고거래게시판/정보게시판)
+- 글 작성
+- 마이 프로필
 
-## Expanding the ESLint configuration
+## 라이브러리
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React
+- Axios
+
+## 프레임워크
+
+- TailwindCSS

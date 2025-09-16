@@ -1,0 +1,44 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const TABS = [
+  { label: '소속 국가',        slug: 'NATIONALITY'},
+  { label: '소속 학교',        slug: 'UNIVERSITY'},
+  { label: '자유 게시판',      slug: 'FREE'},
+  { label: '정보 게시판',      slug: 'INFORMATION'},
+  { label: '중고거래/나눔 게시판', slug: 'TRADE'},
+  { label: '모임 게시판',      slug: 'MEETING'},
+];
+
+const CategoryNavigation = ({ currentCategory = '', onCategoryChange }) => {
+  const navigate = useNavigate();
+  const handleCategoryClick = (tab) => {
+    navigate(`/boards/${tab.slug}/posts`, {
+      state: { refresh: Date.now() }});
+    onCategoryChange?.(tab.slug);
+  };
+
+  return (
+    <div className="bg-blue-500 py-2">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="flex justify-between">
+          {TABS.map((tab) => {
+            const active = currentCategory === tab.slug;
+            return (
+              <button
+                key={tab.slug}
+                onClick={() => handleCategoryClick(tab)}
+                className={`flex-1 px-3 py-1 font-medium transition-all bg-blue-500 border-none outline-none focus:outline-none
+                  ${active ? 'text-blue-900' : 'text-white hover:text-blue-100'}`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CategoryNavigation;
