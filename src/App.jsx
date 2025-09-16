@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login/Login';
-import FindID from './pages/FindAccount/FindID';
+import FindID from './pages/FindAccount/FindId';
 import ResetPassword from './pages/FindAccount/ResetPassword';
 import MyProfile from './pages/MyProfile/MyProfile';
 import SignUp from './pages/SignUp/SignUp';
@@ -12,6 +12,7 @@ import BoardList from './pages/BoardList/BoardList';
 import PostDetail from './pages/PostDetail/PostDetail';
 import ResetConfirm from './pages/FindAccount/ResetConfirm';
 import MyActivity from './pages/MyActivity/MyActivity';
+import FindId from './pages/FindAccount/FindId';
 
 
 function App() {
@@ -20,7 +21,7 @@ function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
-      <Route path="/findid" element={<FindID />} />
+      <Route path="/findid" element={<FindId />} />
       <Route path="/resetpassword" element={<ResetPassword />} />
       <Route path="/myprofile" element={<MyProfile />} />
       <Route path="/myactivity/:activityType" element={<MyActivity />} />
