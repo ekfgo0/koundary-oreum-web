@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login/Login';
-import FindID from './pages/FindAccount/FindId';
+import FindId from './pages/FindAccount/FindId';
 import ResetPassword from './pages/FindAccount/ResetPassword';
 import MyProfile from './pages/MyProfile/MyProfile';
 import SignUp from './pages/SignUp/SignUp';
