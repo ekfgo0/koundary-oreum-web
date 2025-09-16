@@ -12,8 +12,6 @@ import BoardList from './pages/BoardList/BoardList';
 import PostDetail from './pages/PostDetail/PostDetail';
 import ResetConfirm from './pages/FindAccount/ResetConfirm';
 import MyActivity from './pages/MyActivity/MyActivity';
-import FindId from './pages/FindAccount/FindId';
-
 
 function App() {
   return (
